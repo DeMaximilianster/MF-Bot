@@ -2,14 +2,16 @@
 from multi_fandom.config.config_var import *
 from random import choice
 from time import ctime, time
+import log as l
 standart_commands_work = True
 
-
+log = l.Loger(l.LOG_TO_CONSOLE)
 @bot.message_handler(commands=['help'])
 def helper(message):
     """Предоставляет человеку список команд"""
     if not in_mf(message):
         return None
+    log.logPrint(str(message.from_user.id)+": helper invoked")
     answer = '**Команды:**\n\n'
     answer += '/help - Присылает это сообщение\n'
     answer += "/id - Присылает различные ID'шники, зачастую бесполезные\n"
@@ -28,6 +30,7 @@ def show_id(message):
     """Присылает различные ID'шники, зачастую бесполезные"""
     if not in_mf(message):
         return None
+    log.logPrint(str(message.from_user.id)+": show_id invoked")
     answer = 'Время отправки вашего сообщения: ` ' + ctime(message.date) + '`\n\n'
     answer += 'Переводя, выходит: ` ' + str(time_replace(message.date)) + '`\n\n'
     answer += 'Время отправки моего сообщения: ` ' + ctime(time()) + '`\n\n'
@@ -61,6 +64,7 @@ def show_id(message):
 @bot.message_handler(commands=['minet'])
 def minet(message):
     """Приносит удовольствие"""
+    log.logPrint(str(message.from_user.id)+": minet invoked")
     if not in_mf(message):
         return None
     if not cooldown(message):
@@ -73,6 +77,7 @@ def minet(message):
 @bot.message_handler(commands=['uberminet'])
 def uberminet(message):
     """ПРИНОСИТ УДОВОЛЬСТВИЕ"""
+    log.logPrint(str(message.from_user.id)+": uberminet invoked")
     if not in_mf(message):
         return None
     if not cooldown(message):
@@ -85,6 +90,7 @@ def uberminet(message):
 @bot.message_handler(commands=['drakken'])
 def send_drakken(message):
     """Присылает арт с Доктором Драккеном"""
+    log.logPrint(str(message.from_user.id)+": send_drakken invoked")
     if not in_mf(message):
         return None
     if not cooldown(message):
@@ -102,6 +108,8 @@ def send_drakken(message):
 @bot.message_handler(commands=['meme'])
 def send_meme(message):
     """Присылает мем про третью руку"""
+    
+    log.logPrint(str(message.from_user.id)+": send_meme invoked")
     if not in_mf(message):
         return None
     if not cooldown(message):
@@ -118,6 +126,8 @@ def send_meme(message):
 @bot.message_handler(commands=['me'], func=lambda message: in_mf(message))
 def send_me(message):
     """Присылает человеку его запись в БД"""
+    
+    log.logPrint(str(message.from_user.id)+": send_me invoked")
     database = Database()
     person = database.get(message.from_user.id)
     msg = 'ID: {}\n'.format(person[0])
