@@ -8,7 +8,7 @@ from multi_fandom.standart_commands import *
 import multi_fandom.standart_commands as standart_commands
 from multi_fandom.reactions import *
 from multi_fandom.other import *
-import log as l
+import multi_fandom.log as l
 
 # Печаем переменные из всех файлов, чтобы было понятно, что не зря импортируем все эти модули
 print(start_work)
