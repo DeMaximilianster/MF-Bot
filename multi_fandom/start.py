@@ -1,10 +1,12 @@
 # -*- coding: utf-8 -*-
 from multi_fandom.config.config_var import *
+import log as l
 start_work = True
 
+log = l.Loger(l.LOG_TO_CONSOLE)
 
 def new_option(message):
-
+    log.logPrint(str(message.from_user.id)+": new_option invoked")
     file = open("multi_fandom/shelve/upgraders.txt")
     upgraders = eval(file.read())  # Словарик улучшителей вида {айди челика: айди улучшаемой голосовашки}
     file.close()
@@ -20,6 +22,7 @@ def new_option(message):
 
 
 def new_adapt_option(message):
+    log.logPrint(str(message.from_user.id)+": new_adapt_option invoked")
 
     file = open("multi_fandom/shelve/adapt_upgraders.txt")
     upgraders = eval(file.read())  # Словарик улучшителей вида {айди челика: айди улучшаемой голосовашки}
@@ -37,6 +40,7 @@ def new_adapt_option(message):
 
 @bot.message_handler(commands=['start'])
 def starter(message):
+    log.logPrint(str(message.from_user.id)+": starter invoked")
     """Запуск бота в личке, в чате просто реагирует"""
     print(message.text)
     if not in_mf(message):
