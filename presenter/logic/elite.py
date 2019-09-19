@@ -1,4 +1,6 @@
-from multi_fandom.config.config_var import *
+from presenter.config.config_func import Database
+from telebot.types import ReplyKeyboardMarkup, ReplyKeyboardRemove
+from view.output import send, register_handler
 from random import choice
 elite_work = True
 
@@ -21,18 +23,18 @@ def ask_question(message, question):
     note = database.get(ask, 'basic_logic', 'text')  # Получаем полную инфу о вопросе
     answers = note[2:]  # Получаем варианты ответов на вопрос
     answers = shuffle(answers)  # Перемешиваем ответы
-    markup = telebot.types.ReplyKeyboardMarkup(row_width=3)  # Создаём клавиатуру для ответов
+    markup = ReplyKeyboardMarkup(row_width=3)  # Создаём клавиатуру для ответов
     for i in answers:  # Заполняем клавиатуру кнопками
         markup.add(i)
-    sent = bot.send_message(message.from_user.id, note[1], reply_markup=markup)  # Отправляем сообщение
+    sent = send(message.from_user.id, note[1], reply_markup=markup)  # Отправляем сообщение
     del database
-    bot.register_next_step_handler(sent, check)  # Следующее сообщение будет проверяться, как ответ на вопрос
+    register_handler(sent, check)  # Следующее сообщение будет проверяться, как ответ на вопрос
 
 
 def submit(message):  # TODO возможность отменить свои ответы
     """Подсчитывает результаты"""
     database = Database()
-    markup = telebot.types.ReplyKeyboardRemove(selective=False)  # убираем клаву
+    markup = ReplyKeyboardRemove(selective=False)  # убираем клаву
     success = 0  # Переменная для подсчёта правильных ответов
     answers = database.get(message.from_user.id, 'basic_logic_tested')[7:13]
     person = message.from_user
@@ -44,15 +46,15 @@ def submit(message):  # TODO возможность отменить свои о
     # TODO Записывать результаты в elite_results
     # TODO Добавить краткий єкскурс в тест на логику
     if success >= 4:
-        bot.send_message(person.id, "Поздравляю! Количество ваших правильных ответов ({}) достаточно для прохождения"
-                         .format(success), reply_markup=markup)
-        bot.send_message(-1001233124059, '{} ({}) [{}] осилил(а) тест со счётом {}'
-                         .format(person.first_name, person.username, person.id, success))
+        send(person.id, "Поздравляю! Количество ваших правильных ответов ({}) достаточно для прохождения"
+                        .format(success), reply_markup=markup)
+        send(-1001233124059, '{} ({}) [{}] осилил(а) тест со счётом {}'
+                             .format(person.first_name, person.username, person.id, success))
     else:
-        bot.send_message(person.id, "К сожалению, количество ваших правильных ответов ({}) недостаточно для прохождения"
-                         .format(success), reply_markup=markup)
-        bot.send_message(-1001233124059, '{} ({}) [{}] провалил(а) тест со счётом {}'
-                         .format(person.first_name, person.username, person.id, success))
+        send(person.id, "К сожалению, количество ваших правильных ответов ({}) недостаточно для прохождения"
+                        .format(success), reply_markup=markup)
+        send(-1001233124059, '{} ({}) [{}] провалил(а) тест со счётом {}'
+                             .format(person.first_name, person.username, person.id, success))
 
 
 def check(message):
@@ -73,11 +75,7 @@ def check(message):
         submit(message)
 
 
-@bot.message_handler(commands=['elite'])  # TODO Привести эти команды в порядок
-def elite(message):
-    if message.chat.type != 'private':  # Тест на элитность можно провести только в личке у бота
-        bot.reply_to(message, "Напиши мне это в личку, я в чате не буду этим заниматься")
-        return None
+def elite(message):  # TODO Привести эти команды в порядок
     database = Database()
     print(database.get(message.from_user.id, table='basic_logic_tested'))
     if database.get(message.from_user.id, table='basic_logic_tested') is None:
