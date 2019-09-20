@@ -25,11 +25,20 @@ def send_photo(chat_id, photo, caption=None, reply_to_message_id=None, reply_mar
 
 
 def send_video(chat_id, video, caption=None, reply_to_message_id=None, reply_markup=None, parse_mode=None):
-    """Отправить фото"""
+    """Отправить видео"""
     log.log_print("send_video invoked")
     try:
         return bot.send_video(chat_id, video, caption=caption, reply_to_message_id=reply_to_message_id,
                               reply_markup=reply_markup, parse_mode=parse_mode)
+    except Exception as e:
+        print(e)
+
+
+def send_sticker(chat_id, sticker, reply_to_message_id=None):
+    """Отправить стикер"""
+    log.log_print("send_sticker invoked")
+    try:
+        return bot.send_sticker(chat_id, sticker, reply_to_message_id=reply_to_message_id)
     except Exception as e:
         print(e)
 

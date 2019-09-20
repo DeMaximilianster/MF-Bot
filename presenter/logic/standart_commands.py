@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from view.output import reply, send_photo
+from view.output import reply, send_photo, send_sticker
 from presenter.config.config_func import time_replace, Database
 from random import choice
 from time import ctime, time
@@ -43,8 +43,8 @@ def show_id(message):
             answer += 'ID канала, из которого переслали сообщение: `' + str(reply_msg.forward_from_chat.id) + '`\n\n'
         if reply_msg.sticker:
             answer += 'ID стикера: `' + reply_msg.sticker.file_id + '`\n\n'
-            answer += 'Ссылка на набор с этим стикером: https://telegram.me/addstickers/'
-            answer += reply_msg.sticker.set_name + '\n\n'
+            # answer += 'Ссылка на набор с этим стикером: https://telegram.me/addstickers/'
+            # answer += reply_msg.sticker.set_name + '\n\n'
         elif reply_msg.photo:
             answer += 'ID фотографии `' + reply_msg.photo[0].file_id + '`'
             for i in reply_msg.photo[1:]:
@@ -60,9 +60,18 @@ def show_id(message):
 def minet(message):
     """Приносит удовольствие"""
     log.log_print(str(message.from_user.id)+": minet invoked")
-    rep = choice(('оаоаоаоаооа мммммм)))))', 'Э, нет, эта кнопка не для тебя', 'Попа чистая?', 'Кусь :3',
-                  'Открывай рот тогда)'))
-    reply(message, rep)
+    way = choice(('text', 'sticker'))
+    if way == 'text':
+        rep = choice(('оаоаоаоаооа мммммм)))))', 'Э, нет, эта кнопка не для тебя', 'Попа чистая?', 'Кусь :3',
+                      'Открывай рот тогда)'))
+        reply(message, rep)
+    else:
+        rep = choice(('CAADAgADWAADBoAqF4oogkZzHIvuFgQ',  # УНО-карточка
+                     'CAADBAADqlUAAuOnXQVKqOJLAf4RYBYE',  # ОК
+                     'CAADAgADewAD6J0qFmJL_8KisLg8FgQ',  # Гамлет
+                     'CAADAgADfAADq1fEC779DZWncMB2FgQ',  # Хонка
+                     'CAADAgADLQADb925FmFcbIKhK_3CFgQ'))  # Что-то нет настроения
+        send_sticker(message.chat.id, rep, reply_to_message_id=message.message_id)
 
 
 def uberminet(message):
