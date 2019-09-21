@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from presenter.config.config_func import update_adapt_vote, update_multi_vote, create_adapt_vote, create_vote, \
-    create_multi_vote, Database
+    create_multi_vote
+from presenter.config.database_lib import Database
 from presenter.config.config_var import test_keyboard, ironic_keyboard, m_where_keyboard, where_keyboard, \
     a_where_keyboard, vote_keyboard
 from presenter.config.files_paths import multi_votes_file, adapt_votes_file, votes_file

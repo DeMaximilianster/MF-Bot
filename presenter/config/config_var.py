@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from presenter.config.config_func import Database
+from presenter.config.database_lib import Database
 from telebot.types import InlineKeyboardButton, InlineKeyboardMarkup
 
 
@@ -67,6 +67,7 @@ a_adequate_keyboard.add(InlineKeyboardButton("Адекватно", callback_data
 a_adequate_keyboard.add(InlineKeyboardButton("Неадекватно", callback_data="inadequate"))
 a_adequate_keyboard.row_width = 1
 
-#Список всех ролей и их подтипы
+
+# Список всех ролей и их подтипы
 superior_roles = ["Заместитель", "Лидер"]
-admin_roles    = ["Админ", "Член Комитета"]+superior_roles
+admin_roles = ["Админ", "Член Комитета"]+superior_roles

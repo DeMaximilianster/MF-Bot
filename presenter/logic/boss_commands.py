@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from presenter.config.config_func import Database
+from presenter.config.database_lib import Database
 from presenter.config.config_var import full_chat_list, chat_list, channel_list
 import presenter.config.log as log
 from view.output import kick, reply, promote, send, forward
