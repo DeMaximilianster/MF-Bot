@@ -30,7 +30,7 @@ def cooldown(message):  # TODO если команда используется 
         if '@' in analyze:
             analyze = analyze.split('@')[0]  # Убираем собачку и то, что после неё
     database = Database()
-    commands = database.get_all(message.from_user.id, 'cooldown', 'id')
+    commands = database.get_many(message.from_user.id, 'cooldown', 'id')
     print(commands)
     for command in commands:
         if analyze in command:
@@ -117,7 +117,7 @@ def counter(message):
     del database
 
 
-# TODO перенести все голосовашки в базу данных или ещё куда-то
+# TODO перенести все голосовашки в базу данных или ещё куда-то (JSON)
 def create_vote(vote_message):
     """Создаёт голосовашку"""
     # TODO Параметр purpose, отвечающий за действие, которое надо сделать при закрытии голосовашки
@@ -247,11 +247,19 @@ class Database:
         self.cursor.execute(sql)
         return self.cursor.fetchone()
 
-    def get_all(self, value, table='chats', column='purpose'):
-        """Читает все записи в базе данных"""
+    def get_many(self, value, table='chats', column='purpose'):
+        """Читает несколько записей в базе данных"""
         sql = "SELECT * FROM {} WHERE {}='{}'".format(table, column, value)
         self.cursor.execute(sql)
         return self.cursor.fetchall()
+
+    def get_all(self, table):
+        """Читает все записи в одной таблице базы данных"""
+        sql = "SELECT rowid, * FROM {} ORDER BY id".format(table)
+        all_list = []
+        for element in self.cursor.execute(sql):
+            all_list.append(element[1:])  # Первый элемент это бесполезный номер
+        return all_list
 
     def change(self, set_value, where_value, table='members', set_column='messages', where_column='id'):
         """Меняет что-то в базе данных"""

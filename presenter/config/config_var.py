@@ -5,19 +5,16 @@ from telebot.types import InlineKeyboardButton, InlineKeyboardMarkup
 
 # Список всех МФ2-чатов, кроме Админосостава и Комитета
 global_database = Database()
-chat_list = global_database.get_all('Главный чат')
-chat_list += global_database.get_all('Подчат')
-chat_list += global_database.get_all('Игровая')
-chat_list += global_database.get_all('Ролевая')
+chat_list = global_database.get_many('Главный чат')
+chat_list += global_database.get_many('Подчат')
+chat_list += global_database.get_many('Игровая')
+chat_list += global_database.get_many('Ролевая')
 
 # Список всех МФ2-чатов
-# TODO тут слишком много строк, попробовать пофиксить
-full_chat_list = global_database.get_all('Главный чат')
-full_chat_list += global_database.get_all('Подчат')
-full_chat_list += global_database.get_all('Игровая')
-full_chat_list += global_database.get_all('Ролевая')
-full_chat_list += global_database.get_all('Админосостав')
-full_chat_list += global_database.get_all('Комитет')
+full_chat_list = global_database.get_all('chats')
+
+# Список всех МФ2-каналов
+channel_list = global_database.get_all('channels')
 del global_database
 
 # Клавиатура для вопроса, иронично ли признание оскорбления/провокации

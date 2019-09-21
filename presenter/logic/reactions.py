@@ -50,8 +50,8 @@ def new_member(message):
         reply(message, answer)  # То отправляем ответ
     # Держим Дэ'Макса в курсе происходящего
     person = message.new_chat_members[0]
-    send(381279599, '{} ({}) [{}] теперь в {}'.format(person.first_name, person.username, person.id,
-                                                      message.chat.title))
+    send(381279599, '{} (@{}) [{}] теперь в {}'.format(person.first_name, person.username, person.id,
+                                                       message.chat.title))
     print('{} ({}) [{}] теперь в {}'.format(person.first_name, person.username, person.id, message.chat.title))
 
 
@@ -72,6 +72,6 @@ def left_member(message):
     else:  # Чела забанили
         send_video(message.chat.id, "BAADAgADhgMAAgYqMUvW-ezcbZS2ohYE")
     # Держим Дэ'Макса в курсе происходящего
-    send(381279599, '{} ({}) [{}] теперь не в {}'.format(person.first_name, person.username, person.id,
-                                                         message.chat.title))
+    send(381279599, '{} (@{}) [{}] теперь не в {}'.format(person.first_name, person.username, person.id,
+                                                          message.chat.title))
     print('{} ({}) [{}] теперь не в {}'.format(person.first_name, person.username, person.id, message.chat.title))

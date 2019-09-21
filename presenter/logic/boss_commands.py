@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 from presenter.config.config_func import Database
-from presenter.config.config_var import full_chat_list, chat_list
+from presenter.config.config_var import full_chat_list, chat_list, channel_list
 import presenter.config.log as log
-from view.output import kick, reply, promote
+from view.output import kick, reply, promote, send, forward
 work = True
 log = log.Loger(log.LOG_TO_CONSOLE)  # TODO доделать этот прикол здесь и в остальных logic модулях
 
@@ -12,32 +12,37 @@ log = log.Loger(log.LOG_TO_CONSOLE)  # TODO доделать этот прико
 # TODO команда для делания гражданином, высшим гражданином
 # TODO команда для делания Членом Комитета
 
-'''
-@bot.message_handler(commands=['warn'])
+
 def warn(message):
     """Даёт участнику предупреждение"""
-    if not in_mf(message, False):
-        return None
     database = Database()
-    rank = database.get(message.from_user.id)[3]  # Получаем его звание
-    if rank != "Админ" and rank != "Член Комитета" and rank != "Заместитель" and rank != "Лидер":
-        bot.reply_to(message, "Э, нет, эта кнопка только для админов")
-        return None
-    database = Database()
-    person = database.get(message.from_user.id)
-    value = database.get(person.id)[5] + 1  # TODO автопостинг пруфов
+    person = message.reply_to_message.from_user
+    value = database.get(person.id)[5] + 1
+    database.change(value, person.id, table='members', set_column='warns', where_column='id')
+    reply(message, "Варн выдан. Теперь их {}".format(value))
+    blowout = database.get('Проколы', table='channels', column='name')[0]
+    how_many = 20  # Сколько пересылает сообщений
+    end_forwarding = message.reply_to_message.message_id
+    start_forwarding = end_forwarding - how_many
+    send(blowout, "В чате '{}' случилось нарушение участником {} (@{}) [{}]. Прысылаю {} сообщений".
+         format(message.chat.title, person.first_name, person.username, person.id, how_many))
+    for msg_id in range(start_forwarding, end_forwarding+1):
+        forward(blowout, message.chat.id, msg_id)
+    if value >= 3:
+        ban(message)
     del database
-'''
 
 
 def ban(message):
     """Даёт участнику бан"""
-
+    send(message.chat.id, "Ну всё, этому челику жопа")
     database = Database()
     database.change("Нарушитель", message.reply_to_message.from_user.id, 'members', 'rank', 'id')
     del database
     for chat in full_chat_list:
         kick(chat[0], message.reply_to_message.from_user.id)
+    for channel in channel_list:
+        kick(channel[0], message.reply_to_message.from_user.id)
 
 
 def deleter_mode(message):
@@ -62,16 +67,21 @@ def promotion(message):
     database.change("Админ", message.reply_to_message.from_user.id, 'members', 'rank', 'id')
     # TODO пусть бот шлёт админу ссылку на чат админосостава и меняет её при входе
     # TODO давать админку, не пингуя
-    # TODO надо его ещё научить быть на канале недостримов и голосовашек и там тоже порядки наводить
     # TODO сделать сменяемого зама автоматически (команда /vice)
     chats_promoted = []  # Сюда запишем все чаты, где чел словил админку
+    channels_promoted = []  # А сюда все каналы
     # Дать челу админку во всех чатах, кроме Комитета и Админосостава
     for chat in chat_list:
         promote(chat[0], message.reply_to_message.from_user.id,
                 can_change_info=False, can_delete_messages=True, can_invite_users=True,
                 can_restrict_members=True, can_pin_messages=True, can_promote_members=False)
         chats_promoted.append(chat[1])
-    reply(message, "Господин, теперь этот человек является админом в чатах: " + ", ".join(chats_promoted))
+    for channel in channel_list:
+        promote(channel[0], message.reply_to_message.from_user.id, can_post_messages=True, can_invite_users=True)
+        channels_promoted.append(channel[1])
+    text = "Господин, теперь этот человек является админом в чатах: " + ", ".join(chats_promoted) + "\n\n"
+    text += "А так же в каналах: " + ", ".join(channels_promoted)
+    reply(message, text)
     del database
 
 
@@ -80,15 +90,20 @@ def demotion(message):
     database = Database()
     database.change("Гость", message.reply_to_message.from_user.id, 'members', 'rank', 'id')
     # TODO забирать админку, не пингуя
-    chats_promoted = []  # Сюда запишем все чаты, где чел словил админку
-    # Дать челу админку во всех чатах, кроме Комитета и Админосостава
+    chats_promoted = []  # Сюда запишем все чаты, где чел потерял админку
+    channels_promoted = []  # А сюда все каналы
+    # Забрать у чела админку во всех чатах, кроме Комитета и Админосостава
     for chat in chat_list:
         promote(chat[0], message.reply_to_message.from_user.id,
                 can_change_info=False, can_delete_messages=False, can_invite_users=False,
                 can_restrict_members=False, can_pin_messages=False, can_promote_members=False)
         chats_promoted.append(chat[1])
-    reply(message, "Господин, теперь этот человек является гостем в чатах: " + ", ".join(chats_promoted))
-    del database
+    for channel in channel_list:
+        promote(channel[0], message.reply_to_message.from_user.id, can_post_messages=False, can_invite_users=False)
+        channels_promoted.append(channel[1])
+    text = "Господин, теперь этот человек является гостем в чатах: " + ", ".join(chats_promoted) + "\n\n"
+    text += "А так же в каналах: " + ", ".join(channels_promoted)
+    reply(message, text)
 
 
 def add_chat(message):

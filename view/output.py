@@ -53,6 +53,15 @@ def reply(message, message_text, parse_mode=None, reply_markup=None, disable_web
         print(e)
 
 
+def forward(chat_id, from_chat_id, message_id):
+    """Переслать сообщение"""
+    log.log_print("forward invoked")
+    try:
+        return bot.forward_message(chat_id, from_chat_id, message_id)
+    except Exception as e:
+        print(e)
+
+
 def edit_markup(chat_id, message_id, reply_markup=None):
     """Отредактировать кнопки сообщения"""
     log.log_print("edit_markup invoked")

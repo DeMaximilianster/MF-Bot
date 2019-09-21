@@ -67,10 +67,10 @@ def minet(message):
         reply(message, rep)
     else:
         rep = choice(('CAADAgADWAADBoAqF4oogkZzHIvuFgQ',  # УНО-карточка
-                     'CAADBAADqlUAAuOnXQVKqOJLAf4RYBYE',  # ОК
-                     'CAADAgADewAD6J0qFmJL_8KisLg8FgQ',  # Гамлет
-                     'CAADAgADfAADq1fEC779DZWncMB2FgQ',  # Хонка
-                     'CAADAgADLQADb925FmFcbIKhK_3CFgQ'))  # Что-то нет настроения
+                      'CAADBAADqlUAAuOnXQVKqOJLAf4RYBYE',  # ОК
+                      'CAADAgADewAD6J0qFmJL_8KisLg8FgQ',  # Гамлет
+                      'CAADAgADfAADq1fEC779DZWncMB2FgQ',  # Хонка
+                      'CAADAgADLQADb925FmFcbIKhK_3CFgQ'))  # Что-то нет настроения
         send_sticker(message.chat.id, rep, reply_to_message_id=message.message_id)
 
 
