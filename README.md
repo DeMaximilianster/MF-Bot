@@ -1,4 +1,4 @@
-# Бот для Telegram-чата [MultiFandomRu](t.me/MultiFandomRu) и его ответвлений
+# Бот для Telegram-чата [MultiFandomRu](http://t.me/MultiFandomRu) и его ответвлений
 
 Структура кода бота построена на основе шаблона проектирования MVC.
 Советуеи изучить, к примеру по следующему материалу:
