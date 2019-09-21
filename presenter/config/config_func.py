@@ -3,19 +3,23 @@ import sqlite3
 from telebot.types import InlineKeyboardButton, InlineKeyboardMarkup
 from presenter.config.files_paths import *
 from view.output import *
+from log import Loger, LOG_TO_CONSOLE
+from config_var import superior_roles, admin_roles
 
+log = Loger(LOG_TO_CONSOLE)
 
 def is_admin(message, superior=False):
+    log.log_print("Проверяем пользователя {0} на админку".format(message.from_user.username))
     database = Database()
     rank = database.get(message.from_user.id)[3]  # Получаем его звание
     del database
     if superior:
-        if rank == "Заместитель" or rank == "Лидер":
+        if rank in superior_roles:
             return True
         else:
             reply(message, "Э, нет, эта кнопка только для Лидера и его Заместителя")
             return False
-    elif rank == "Админ" or rank == "Член Комитета" or rank == "Заместитель" or rank == "Лидер":
+    elif rank in admin_roles:
         return True
     else:
         reply(message, "Э, нет, эта кнопка только для админов")
@@ -29,6 +33,7 @@ def cooldown(message):  # TODO если команда используется 
         analyze = message.text.split()[0]  # Первое слово в строке
         if '@' in analyze:
             analyze = analyze.split('@')[0]  # Убираем собачку и то, что после неё
+    log.log_print("Вызвана функция cooldown с параметрами {}:{}".format(message.from_user.id, message.text))
     database = Database()
     commands = database.get_many(message.from_user.id, 'cooldown', 'id')
     print(commands)
@@ -120,6 +125,7 @@ def counter(message):
 # TODO перенести все голосовашки в базу данных или ещё куда-то (JSON)
 def create_vote(vote_message):
     """Создаёт голосовашку"""
+    log.log_print("Создаём голосовашку с текстом: "+vote_message.text)
     # TODO Параметр purpose, отвечающий за действие, которое надо сделать при закрытии голосовашки
     file = open(votes_file, 'r')
     votes_shelve = file.read()
@@ -137,6 +143,7 @@ def create_vote(vote_message):
 
 def create_multi_vote(vote_message):
     """Создаёт мульти-голосовашку"""
+    log.log_print("Создаём мульти-голосовашку с текстом: "+vote_message.text)
     keyboard = InlineKeyboardMarkup()
     url = 'https://t.me/multifandomrubot?start=new_option{}'.format(vote_message.message_id)
     keyboard.row_width = 1
@@ -158,6 +165,7 @@ def create_multi_vote(vote_message):
 
 def create_adapt_vote(vote_message):
     """Создаёт адапт-голосовашку"""
+    log.log_print("Создаём адапт-голосовашку с текстом: "+vote_message.text)
     keyboard = InlineKeyboardMarkup()
     url = 'https://t.me/multifandomrubot?start=new_adapt_option{}'.format(vote_message.message_id)
     keyboard.row_width = 1
@@ -179,6 +187,7 @@ def create_adapt_vote(vote_message):
 
 def update_multi_vote(vote_id):
     """Обновляет мульти-голосовашку"""
+    log.log_print("обновляем мульти-голосовашку с id: "+str(vote_id))
     file = open(multi_votes_file)
     votes_shelve = file.read()
     if votes_shelve:
@@ -205,6 +214,7 @@ def update_multi_vote(vote_id):
 
 def update_adapt_vote(vote_id):
     """Обновляет адапт голосовашку"""
+    log.log_print("обновляем адапт-голосовашку с id: "+str(vote_id))
     file = open(adapt_votes_file)
     votes_shelve = file.read()
     if votes_shelve:
@@ -266,7 +276,7 @@ class Database:
         # Одинарные кавычки в sql очень важны
         sql = """
         UPDATE {}
-        SET {} = '{}'  
+        SET {} = '{}'
         WHERE {} = '{}'
         """.format(table, set_column, set_value, where_column, where_value)
         self.cursor.execute(sql)

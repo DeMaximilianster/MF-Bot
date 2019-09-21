@@ -3,7 +3,6 @@ LOG_TO_FILE = 1  # Записать только в файл
 LOG_TO_CONSOLE = 2  # Записать только в консоль
 LOG_BOTH = 0  # Записать и в файл, и в консоль
 
-
 class Loger:
     LOG_FILES = []
     method = 2
@@ -26,5 +25,3 @@ class Loger:
 
     def add_log_file(self, fname):
         self.LOG_FILES.append(fname)
-        
-

@@ -66,3 +66,7 @@ a_adequate_keyboard = InlineKeyboardMarkup()
 a_adequate_keyboard.add(InlineKeyboardButton("Адекватно", callback_data="a_adequate"))
 a_adequate_keyboard.add(InlineKeyboardButton("Неадекватно", callback_data="inadequate"))
 a_adequate_keyboard.row_width = 1
+
+#Список всех ролей и их подтипы
+superior_roles = ["Заместитель", "Лидер"]
+admin_roles    = ["Админ", "Член Комитета"]+superior_roles
