@@ -1,20 +1,20 @@
 # -*- coding: utf-8 -*-
 from presenter.config.database_lib import Database
 from presenter.config.config_var import full_chat_list, chat_list, channel_list
-import presenter.config.log as log
+from presenter.config.log import Loger, LOG_TO_CONSOLE
 from view.output import kick, reply, promote, send, forward
 work = True
-log = log.Loger(log.LOG_TO_CONSOLE)  # TODO доделать этот прикол здесь и в остальных logic модулях
+log = Loger(LOG_TO_CONSOLE)
 
-# TODO команда /warn
 # TODO команда /unwarn
-# TODO команда /unban
+
 # TODO команда для делания гражданином, высшим гражданином
 # TODO команда для делания Членом Комитета
 
 
 def warn(message):
     """Даёт участнику предупреждение"""
+    log.log_print("warn invoked")
     database = Database()
     person = message.reply_to_message.from_user
     value = database.get(person.id)[5] + 1
@@ -33,8 +33,22 @@ def warn(message):
     del database
 
 
+def unwarn(message):
+    """Снимает с участника предупреждение"""
+    log.log_print("unwarn invoked")
+    database = Database()
+    person = message.reply_to_message.from_user
+    value = database.get(person.id)[5] - 1
+    database.change(value, person.id, table='members', set_column='warns', where_column='id')
+    reply(message, "Варн снят. Теперь их {}".format(value))
+    if value < 3:
+        pass  # TODO команда /unban
+    del database
+
+
 def ban(message):
     """Даёт участнику бан"""
+    log.log_print("ban invoked")
     send(message.chat.id, "Ну всё, этому челику жопа")
     database = Database()
     database.change("Нарушитель", message.reply_to_message.from_user.id, 'members', 'rank', 'id')
@@ -47,6 +61,7 @@ def ban(message):
 
 def deleter_mode(message):
     """Удалять медиа или нет"""
+    log.log_print("deleter_mode invoked")
     global delete
     database = Database()
     delete = int(database.get('delete', 'config', 'var')[1])
@@ -63,6 +78,7 @@ def deleter_mode(message):
 
 def promotion(message):
     """Назначает человека админом"""
+    log.log_print("promotion invoked")
     database = Database()
     database.change("Админ", message.reply_to_message.from_user.id, 'members', 'rank', 'id')
     # TODO пусть бот шлёт админу ссылку на чат админосостава и меняет её при входе
@@ -87,6 +103,7 @@ def promotion(message):
 
 def demotion(message):
     """Забирает у человека админку"""
+    log.log_print("demotion invoked")
     database = Database()
     database.change("Гость", message.reply_to_message.from_user.id, 'members', 'rank', 'id')
     # TODO забирать админку, не пингуя
@@ -108,6 +125,7 @@ def demotion(message):
 
 def add_chat(message):
     """Добавляет чат в базу данных чатов, входящих в систему МФ2"""
+    log.log_print("add_chat invoked")
     database = Database()
     chat = (message.chat.id, message.chat.title, message.text[10:])
     database.append(chat, "chats")
