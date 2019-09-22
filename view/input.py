@@ -2,7 +2,7 @@ from presenter.config.token import bot
 from view.output import reply, answer_callback
 from presenter.config.config_func import in_mf, is_admin, counter, cooldown
 from presenter.logic.elite import elite
-from presenter.logic.boss_commands import ban, deleter_mode, promotion, demotion, add_chat, warn
+from presenter.logic.boss_commands import ban, deleter_mode, promotion, demotion, add_chat, warn, unwarn
 from presenter.logic.complicated_commands import adequate, inadequate, response, insult, non_ironic, ironic, \
     vote, place_here, mv, av, add_vote
 from presenter.logic.reactions import deleter, new_member, left_member
@@ -59,6 +59,16 @@ def warn_handler(message):
     if not is_admin(message):
         return None
     warn(message)
+
+
+@bot.message_handler(commands=['unwarn'])
+def unwarn_handler(message):
+    """Снимает с участника предупреждение"""
+    if not in_mf(message, False):
+        return None
+    if not is_admin(message):
+        return None
+    unwarn(message)
 
 
 @bot.message_handler(commands=['ban'])

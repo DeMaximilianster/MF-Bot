@@ -92,12 +92,10 @@ def in_mf(message, or_private=True):
                             .format(person.first_name, person.username, person.id, message.text))
             reply(message, "Эта команда отключена в ЛС")
             return False
-    try:
-        send(381279599, "Жалкие завистники из чата с ID {} и названием {} попытались мной воспользоваться"
-                        .format(message.chat.id, message.chat.title))
-        reply(message, "Я тут не работаю. Зато я работаю в @MultiFandomRu")
-    except Exception as e:
-        print(e)
+    text = "Жалкие завистники из чата с ID {} и названием {}, в частности {} (@{}) [{}] попытались мной воспользоваться"
+    send(381279599, text.format(message.chat.id, message.chat.title, message.from_user.first_name,
+                                message.from_user.username, message.from_user.id))
+    reply(message, "Я тут не работаю. Зато я работаю в @MultiFandomRu")
     return False
 
 

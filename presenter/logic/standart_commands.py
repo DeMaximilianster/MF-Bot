@@ -106,7 +106,7 @@ def send_meme(message):
     send_photo(message.chat.id, meme, reply_to_message_id=message.message_id)
 
 
-def send_me(message):
+def send_me(message):  # TODO Команда, с помощью которой можно чекнуть запись в БД другого чела (можно в эту же)
     """Присылает человеку его запись в БД"""
     log.log_print(str(message.from_user.id)+": send_me invoked")
     database = Database()
