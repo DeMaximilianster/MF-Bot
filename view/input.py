@@ -95,9 +95,7 @@ def deleter_mode_handler(message):
 @bot.message_handler(commands=['admin'])
 def promotion_handler(message):
     """Назначает человека админом"""
-    if not in_mf(message, False):
-        return None
-    elif not is_admin(message, True):
+    if not in_mf(message, False) or not is_admin(message, True):
         return None
     elif not message.reply_to_message:
         reply(message, "Надо ответить на сообщение того, кого надо апгрейднуть")
@@ -108,9 +106,7 @@ def promotion_handler(message):
 @bot.message_handler(commands=['guest'])
 def demotion_handler(message):
     """Забирает у человека админку"""
-    if not in_mf(message, False):
-        return None
-    elif not is_admin(message, True):
+    if not in_mf(message, False) or not is_admin(message, True):
         return None
     elif not message.reply_to_message:
         reply(message, "Надо ответить на сообщение того, кого надо даунгрейднуть")
