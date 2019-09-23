@@ -16,25 +16,22 @@ from presenter.logic.start import starter
 @bot.message_handler(content_types=['document', 'photo', 'sticker', 'video', 'video_note'])
 def deleter_handler(message):
     """Удаляет медиа ночью"""
-    if not in_mf(message):  # Если это не МФ2, то какая разница?
-        return None
-    deleter(message)
+    if in_mf(message):  # Если в МФ2 - то удаляем
+        deleter(message)
 
 
 @bot.message_handler(content_types=['new_chat_members'])
 def new_member_handler(message):
     """Реагирует на вход в чат"""
-    if not in_mf(message):
-        return None
-    new_member(message)
+    if in_mf(message):
+        new_member(message)
 
 
 @bot.message_handler(content_types=['left_chat_member'])
 def left_member_handler(message):
     """Комментирует уход участника и прощается участником"""
-    if not in_mf(message):
-        return None
-    left_member(message)
+    if in_mf(message):
+        left_member(message)
 
 
 '''Элитарные команды'''
@@ -42,10 +39,10 @@ def left_member_handler(message):
 
 @bot.message_handler(commands=['elite'])
 def elite_handler(message):
-    if message.chat.type != 'private':  # Тест на элитность можно провести только в личке у бота
+    if message.chat.type == 'private':  # Тест на элитность можно провести только в личке у бота
+        elite(message)
+    else:
         reply(message, "Напиши мне это в личку, я в чате не буду этим заниматься")
-        return None
-    elite(message)
 
 
 '''Админские обычные команды'''
@@ -54,43 +51,32 @@ def elite_handler(message):
 @bot.message_handler(commands=['warn'])
 def warn_handler(message):
     """Даёт участнику предупреждение"""
-    if not in_mf(message, False):
-        return None
-    if not is_admin(message):
-        return None
-    warn(message)
+    if in_mf(message, False) and is_admin(message):
+        warn(message)
 
 
 @bot.message_handler(commands=['unwarn'])
 def unwarn_handler(message):
     """Снимает с участника предупреждение"""
-    if not in_mf(message, False):
-        return None
-    if not is_admin(message):
-        return None
-    unwarn(message)
+    if in_mf(message, False) and is_admin(message):
+        unwarn(message)
 
 
 @bot.message_handler(commands=['ban'])
 def ban_handler(message):
-    if not in_mf(message, False):
-        return None
-    elif not is_admin(message):
-        return None
-    elif not message.reply_to_message:
-        reply(message, "Надо ответить на сообщение того, кого надо забанить")
-        return None
-    ban(message)
+    if in_mf(message, False) and is_admin(message):
+        if message.reply_to_message:
+            ban(message)
+        else:
+            reply(message, "Надо ответить на сообщение того, кого надо забанить")
 
 
 @bot.message_handler(commands=['delete_mode'])
 def deleter_mode_handler(message):
-    if not in_mf(message, False):
-        return None
-    elif not is_admin(message):
-        return None
-    deleter_mode(message)
+    if in_mf(message, False) and is_admin(message):
+        deleter_mode(message)
 
+# TODO Доделать оптимизацию логики в остальных хэндлерах
 
 @bot.message_handler(commands=['admin'])
 def promotion_handler(message):

@@ -2,6 +2,7 @@
 from view.input import *
 
 
+
 try:
     #  telebot.logger.setLevel("DEBUG")  # Иногда помогает, но обычно не нужна
     bot.polling()  # Запуск бота
