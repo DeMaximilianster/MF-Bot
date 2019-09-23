@@ -281,7 +281,7 @@ def send_meme_handler(message):
     send_meme(message)
 
 
-@bot.message_handler(commands=['me'])
+@bot.message_handler(commands=['me', 'check', 'check_me', 'check_ebalo'])
 def send_me_handler(message):
     """Присылает человеку его запись в БД"""
     if not in_mf(message):
