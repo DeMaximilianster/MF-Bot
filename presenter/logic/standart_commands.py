@@ -117,12 +117,15 @@ def send_me(message):
     database.change(person.username, person.id, set_column='username')
     database.change(person.first_name, person.id, set_column='nickname')
     person = database.get(person.id)
-    msg = 'ID: {}\n'.format(person[0])
-    msg += 'Юзернейм: {}\n'.format(person[1])
-    msg += 'Никнейм: {}\n'.format(person[2])
-    msg += 'Ранг: {}\n'.format(person[3])
-    msg += 'Кол-во сообщений: {}\n'.format(person[4])
-    msg += 'Кол-во предупреждений: {}\n'.format(person[5])
-    msg += 'Количество ябломилианов: {}\n'.format(person[6])
+    if person:
+        msg = 'ID: {}\n'.format(person[0])
+        msg += 'Юзернейм: {}\n'.format(person[1])
+        msg += 'Никнейм: {}\n'.format(person[2])
+        msg += 'Ранг: {}\n'.format(person[3])
+        msg += 'Кол-во сообщений: {}\n'.format(person[4])
+        msg += 'Кол-во предупреждений: {}\n'.format(person[5])
+        msg += 'Количество ябломилианов: {}\n'.format(person[6])
+    else:
+        msg = "Не знаю, чё это такое тут сидит"
     reply(message, msg)
     del database
