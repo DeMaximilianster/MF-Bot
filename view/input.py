@@ -76,7 +76,7 @@ def deleter_mode_handler(message):
     if in_mf(message, False) and is_admin(message):
         deleter_mode(message)
 
-# TODO Доделать оптимизацию логики в остальных хэндлерах
+
 @bot.message_handler(commands=['admin'])
 def promotion_handler(message):
     """Назначает человека админом"""

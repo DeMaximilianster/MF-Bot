@@ -27,33 +27,32 @@ def is_admin(message, superior=False):
         return False
 
 
-def cooldown(message):  # TODO если команда используется одновременно один из челов нарывается на кулдаун
+def cooldown(message):
+    log.log_print("Вызвана функция cooldown с параметрами {}:{}".format(message.from_user.id, message.text))
+    database = Database()
+    # Получаем наименование необходимой команды
     if 'есть один мем' in message.text.lower():
         analyze = '/meme'
     else:
         analyze = message.text.split()[0]  # Первое слово в строке
         if '@' in analyze:
             analyze = analyze.split('@')[0]  # Убираем собачку и то, что после неё
-    log.log_print("Вызвана функция cooldown с параметрами {}:{}".format(message.from_user.id, message.text))
-    database = Database()
-    commands = database.get_many(message.from_user.id, 'cooldown', 'id')
-    print(commands)
-    for command in commands:
-        if analyze in command:
-            time_passed = message.date - command[2]
-            if time_passed < 60:  # Кулдаун не прошёл
-                answer = "Воу, придержи коней, ковбой. Ты сможешь воспользоваться этой командой только "
-                answer += "через {} секунд 🤠".format(60 - time_passed)
-                reply(message, answer)
-                del database
-                return False
-            else:  # Кулдаун прошёл
-                database.change(message.date, command[2], 'cooldown', 'time', 'time')
-                del database
-                return True
-    else:  # Чел впервые пользуется коммандой
-        print('???')
-        database.append((message.from_user.id, analyze, message.date), 'cooldown')
+    cooldown_id = '{} {}'.format(message.from_user.id, analyze)
+    command = database.get(cooldown_id, 'cooldown')
+    if not command:  # Чел впервые пользуется коммандой
+        database.append((cooldown_id, message.date), 'cooldown')
+        del database
+        return True
+    # Чел уже пользовался командой
+    time_passed = message.date - command[1]
+    if time_passed < 60:  # Кулдаун не прошёл
+        answer = "Воу, придержи коней, ковбой. Ты сможешь воспользоваться этой командой только "
+        answer += "через {} секунд 🤠".format(60 - time_passed)
+        reply(message, answer)
+        del database
+        return False
+    else:  # Кулдаун прошёл
+        database.change(message.date, cooldown_id, 'cooldown', 'time')
         del database
         return True
 
