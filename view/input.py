@@ -255,5 +255,4 @@ def send_me_handler(message):
                                     'new_chat_photo', 'delete_chat_photo'])
 def counter_handler(message):
     """Подсчитывает сообщения"""
-    if message.chat.id == -1001408293838:  # Только сообщения в главном чате
-        counter(message)
+    counter(message)

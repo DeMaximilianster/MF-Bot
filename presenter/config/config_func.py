@@ -114,7 +114,7 @@ def counter(message):
             database.append(person)
         except Exception as e:
             error(message, e)
-    else:  # Чел есть в БД
+    elif message.chat.id == database.get('Главный чат', 'chats', 'purpose')[0]:  # Сообщение в главном чате
         value = database.get(person.id)[4] + 1
         database.change(value, person.id, 'members', 'messages', 'id')
     del database
