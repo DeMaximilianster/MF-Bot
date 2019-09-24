@@ -35,6 +35,8 @@ class Database:
 
     def change(self, set_value, where_value, table='members', set_column='messages', where_column='id'):
         """Меняет что-то в базе данных"""
+        set_value = str(set_value).replace("'", "").replace('"', '')
+        where_value = str(where_value).replace("'", "").replace('"', '')
         # Одинарные кавычки в sql очень важны
         sql = """
         UPDATE {}
