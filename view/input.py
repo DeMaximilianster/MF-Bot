@@ -77,35 +77,31 @@ def deleter_mode_handler(message):
         deleter_mode(message)
 
 # TODO Доделать оптимизацию логики в остальных хэндлерах
-
 @bot.message_handler(commands=['admin'])
 def promotion_handler(message):
     """Назначает человека админом"""
-    if not in_mf(message, False) or not is_admin(message, True):
-        return None
-    elif not message.reply_to_message:
-        reply(message, "Надо ответить на сообщение того, кого надо апгрейднуть")
-        return None
-    promotion(message)
+    if in_mf(message, False) and is_admin(message, True):
+        if message.reply_to_message:
+            promotion(message)
+        else:
+            reply(message, "Надо ответить на сообщение того, кого надо апгрейднуть")
 
 
 @bot.message_handler(commands=['guest'])
 def demotion_handler(message):
     """Забирает у человека админку"""
-    if not in_mf(message, False) or not is_admin(message, True):
-        return None
-    elif not message.reply_to_message:
-        reply(message, "Надо ответить на сообщение того, кого надо даунгрейднуть")
-        return None
-    demotion(message)
+    if in_mf(message, False) and is_admin(message, True):
+        if message.reply_to_message:
+            demotion(message)
+        else:
+            reply(message, "Надо ответить на сообщение того, кого надо апгрейднуть")
 
 
 @bot.message_handler(commands=['add_chat'])
 def add_chat_handler(message):
     """Добавляет чат в базу данных чатов, входящих в систему МФ2"""
-    if not is_admin(message, True):
-        return None
-    add_chat(message)
+    if is_admin(message, True):
+        add_chat(message)
 
 
 '''Составные команды'''
@@ -132,49 +128,45 @@ def response_handler(inline_query):
 @bot.message_handler(regexp='Признаю оскорблением')
 def insult_handler(message):
     """Спращивает, иронично ли признание оскорблением"""
-    if not in_mf(message, False):
-        return None
-    insult(message)
+    if in_mf(message, False):
+        insult(message)
 
 
 @bot.callback_query_handler(func=lambda call: call.data == 'non_ironic')  # триггерится, когда нажата кнопка "Нет"
 def non_ironic_handler(call):
     """Реакция, если обвинение было неироничным"""
     # Проверка, нажал ли на кнопку не тот, кто нужен
-    if call.message.reply_to_message.from_user.id != call.from_user.id:
+    if call.message.reply_to_message.from_user.id == call.from_user.id:
+        non_ironic(call)
+    else:
         answer_callback(call.id, "Э, нет, эта кнопка не для тебя")
-        return None
-    non_ironic(call)
 
 
 @bot.callback_query_handler(func=lambda call: call.data == 'ironic')  # триггерится, когда нажата кнопка "Да"
 def ironic_handler(call):
     """Реакция, если обвинение было ироничным"""
     # Проверка, нажал ли на кнопку не тот, кто нужен
-    if call.message.reply_to_message.from_user.id != call.from_user.id:
+    if call.message.reply_to_message.from_user.id == call.from_user.id:
+        ironic(call)
+    else:
         answer_callback(call.id, "Э, нет, эта кнопка не для тебя")
-        return None
-    ironic(call)
 
 
 @bot.message_handler(commands=['vote', 'multi_vote', 'adapt_vote'])
 def vote_handler(message):
     """Генерирует голосовашку"""
-    if not in_mf(message):
-        return None
-    if not is_admin(message):
-        return None
-    vote(message)
+    if in_mf(message) and is_admin(message):
+        vote(message)
 
 
 @bot.callback_query_handler(func=lambda call: 'here' in call.data)
 def place_here_handler(call):
     """Выбирает, куда прислать голосовашку"""
     # Проверка, нажал ли на кнопку не тот, кто нужен
-    if call.message.reply_to_message.from_user.id != call.from_user.id:
+    if call.message.reply_to_message.from_user.id == call.from_user.id:
+        place_here(call)
+    else:
         answer_callback(call.id, "Э, нет, эта кнопка не для тебя")
-        return None
-    place_here(call)
 
 
 @bot.callback_query_handler(func=lambda call: 'mv_' in call.data)
@@ -201,74 +193,58 @@ def add_vote_handler(call):
 @bot.message_handler(commands=['start'])
 def starter_handler(message):
     """Запуск бота в личке, в чате просто реагирует"""
-    if not in_mf(message):
-        return None
-    starter(message)
+    if in_mf(message):
+        starter(message)
 
 
 @bot.message_handler(commands=['help'])
 def helper_handler(message):
     """Предоставляет человеку список команд"""
-    if not in_mf(message):
-        return None
-    helper(message)
+    if in_mf(message):
+        helper(message)
 
 
 @bot.message_handler(commands=['id'])
 def show_id_handler(message):
     """Присылает различные ID'шники, зачастую бесполезные"""
-    if not in_mf(message):
-        return None
-    show_id(message)
+    if in_mf(message):
+        show_id(message)
 
 
 @bot.message_handler(commands=['minet'])
 def minet_handler(message):
     """Приносит удовольствие"""
-    if not in_mf(message):
-        return None
-    if not cooldown(message):
-        return None
-    minet(message)
+    if in_mf(message) and cooldown(message):
+        minet(message)
 
 
 @bot.message_handler(commands=['uberminet'])
 def uberminet_handler(message):
     """ПРИНОСИТ УДОВОЛЬСТВИЕ"""
-    if not in_mf(message):
-        return None
-    if not cooldown(message):
-        return None
-    uberminet(message)
+    if in_mf(message) and cooldown(message):
+        uberminet(message)
 
 
 @bot.message_handler(commands=['drakken'])
 def send_drakken_handler(message):
     """Присылает арт с Доктором Драккеном"""
-    if not in_mf(message):
-        return None
-    if not cooldown(message):
-        return None
-    send_drakken(message)
+    if in_mf(message) and cooldown(message):
+        send_drakken(message)
 
 
 @bot.message_handler(regexp='есть один мем')
 @bot.message_handler(commands=['meme'])
 def send_meme_handler(message):
     """Присылает мем"""
-    if not in_mf(message):
-        return None
-    if not cooldown(message):
-        return None
-    send_meme(message)
+    if in_mf(message) and cooldown(message):
+        send_meme(message)
 
 
 @bot.message_handler(commands=['me', 'check', 'check_me', 'check_ebalo'])
 def send_me_handler(message):
     """Присылает человеку его запись в БД"""
-    if not in_mf(message):
-        return None
-    send_me(message)
+    if in_mf(message):
+        send_me(message)
 
 
 '''Последний хэндлер. Просто считает сообщения, что не попали в другие хэндлеры'''
