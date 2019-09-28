@@ -2,10 +2,10 @@
 from view.output import send, reply, register_handler
 import presenter.config.log as log
 from presenter.config.files_paths import *
-from presenter.config.config_var import adequate_keyboard, a_adequate_keyboard
+from presenter.config.config_var import adequate_keyboard, a_adequate_keyboard, log_to
 start_work = True
 
-log = log.Loger(log.LOG_TO_CONSOLE)
+log = log.Loger(log_to)
 
 
 def new_option(message):

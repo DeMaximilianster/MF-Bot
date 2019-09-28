@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from presenter.config.database_lib import Database
 from telebot.types import InlineKeyboardButton, InlineKeyboardMarkup
+from log import LOG_BOTH
 
 
 # Список всех МФ2-чатов, кроме Админосостава и Комитета
@@ -71,3 +72,7 @@ a_adequate_keyboard.row_width = 1
 # Список всех ролей и их подтипы
 superior_roles = ["Заместитель", "Лидер"]
 admin_roles = ["Админ", "Член Комитета"]+superior_roles
+
+# Константы для логинга
+log_to = LOG_BOTH
+log_files = ["log.txt"]

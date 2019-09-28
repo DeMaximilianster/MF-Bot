@@ -1,11 +1,11 @@
 # -*- coding: utf-8 -*-
 from presenter.config.database_lib import Database
-from presenter.config.config_var import full_chat_list, chat_list, channel_list
+from presenter.config.config_var import full_chat_list, chat_list, channel_list, log_to
 from presenter.config.log import Loger, LOG_TO_CONSOLE
 from presenter.config.config_func import person_analyze
 from view.output import kick, reply, promote, send, forward
 work = True
-log = Loger(LOG_TO_CONSOLE)
+log = Loger(log_to)
 
 # TODO команда /unwarn
 

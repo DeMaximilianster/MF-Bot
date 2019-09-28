@@ -3,7 +3,7 @@ from presenter.config.config_func import update_adapt_vote, update_multi_vote, c
     create_multi_vote
 from presenter.config.database_lib import Database
 from presenter.config.config_var import test_keyboard, ironic_keyboard, m_where_keyboard, where_keyboard, \
-    a_where_keyboard, vote_keyboard
+    a_where_keyboard, vote_keyboard, log_to
 from presenter.config.files_paths import multi_votes_file, adapt_votes_file, votes_file
 from view.output import edit_markup, answer_inline, reply, answer_callback, edit_text, delete, send
 import presenter.config.log as log
@@ -11,7 +11,7 @@ import presenter.config.log as log
 from telebot.types import InlineQueryResultArticle, InputTextMessageContent
 from time import time
 
-log = log.Loger(log.LOG_TO_CONSOLE)
+log = log.Loger(log_to)
 work = True
 
 

@@ -5,8 +5,9 @@ from presenter.config.files_paths import adapt_votes_file, multi_votes_file, vot
 from view.output import *
 from presenter.config.log import Loger, LOG_TO_CONSOLE
 from presenter.config.config_var import superior_roles, admin_roles
+from config_var import log_to
 
-log = Loger(LOG_TO_CONSOLE)
+log = Loger(log_to)
 
 
 def person_analyze(message, to_self=False):

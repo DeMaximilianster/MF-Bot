@@ -2,11 +2,12 @@
 from view.output import reply, send_photo, send_sticker, send
 from presenter.config.config_func import time_replace, person_analyze
 from presenter.config.database_lib import Database
+from presenter.config.config_var import log_to
 from random import choice
 from time import ctime, time
 import presenter.config.log as log
 
-log = log.Loger(log.LOG_TO_CONSOLE)
+log = log.Loger(log_to)
 
 
 def helper(message):
