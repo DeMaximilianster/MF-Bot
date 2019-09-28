@@ -1,6 +1,7 @@
 import sqlite3
 from presenter.config.files_paths import database_file
 
+
 class Database:
     """Управление базой данных"""
 
@@ -25,9 +26,9 @@ class Database:
         self.cursor.execute(sql)
         return self.cursor.fetchall()
 
-    def get_all(self, table):
+    def get_all(self, table, order_by='id', how_sort='DESC'):
         """Читает все записи в одной таблице базы данных"""
-        sql = "SELECT rowid, * FROM {} ORDER BY id".format(table)
+        sql = "SELECT rowid, * FROM {} ORDER BY {} {}".format(table, order_by, how_sort)
         all_list = []
         for element in self.cursor.execute(sql):
             all_list.append(element[1:])  # Первый элемент это бесполезный номер

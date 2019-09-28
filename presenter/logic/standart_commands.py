@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
-from view.output import reply, send_photo, send_sticker
-from presenter.config.config_func import time_replace, Database
+from view.output import reply, send_photo, send_sticker, send
+from presenter.config.config_func import time_replace, person_analyze
+from presenter.config.database_lib import Database
 from random import choice
 from time import ctime, time
 import presenter.config.log as log
@@ -110,22 +111,38 @@ def send_me(message):
     """Присылает человеку его запись в БД"""
     log.log_print(str(message.from_user.id)+": send_me invoked")
     database = Database()
-    if message.reply_to_message:
-        person = message.reply_to_message.from_user
-    else:
-        person = message.from_user
-    database.change(person.username, person.id, set_column='username')
-    database.change(person.first_name, person.id, set_column='nickname')
-    person = database.get(person.id)
+    person = person_analyze(message, True)
     if person:
-        msg = 'ID: {}\n'.format(person[0])
-        msg += 'Юзернейм: {}\n'.format(person[1])
-        msg += 'Никнейм: {}\n'.format(person[2])
-        msg += 'Ранг: {}\n'.format(person[3])
-        msg += 'Кол-во сообщений: {}\n'.format(person[4])
-        msg += 'Кол-во предупреждений: {}\n'.format(person[5])
-        msg += 'Количество ябломилианов: {}\n'.format(person[6])
-    else:
-        msg = "Не знаю, чё это такое тут сидит"
-    reply(message, msg)
+        database.change(person.username, person.id, set_column='username')
+        database.change(person.first_name, person.id, set_column='nickname')
+        person = database.get(person.id)
+        if person:
+            msg = 'ID: {}\n'.format(person[0])
+            msg += 'Юзернейм: {}\n'.format(person[1])
+            msg += 'Никнейм: {}\n'.format(person[2])
+            msg += 'Ранг: {}\n'.format(person[3])
+            msg += 'Кол-во сообщений: {}\n'.format(person[4])
+            msg += 'Кол-во предупреждений: {}\n'.format(person[5])
+            msg += 'Количество ябломилианов: {}\n'.format(person[6])
+        else:
+            msg = "Не знаю, чё это такое тут сидит"
+        reply(message, msg)
     del database
+
+
+def all_members(message):
+    """Присылает человеку все записи в БД"""
+    database = Database()
+    members = database.get_all('members', 'messages')
+    if len(members) % 50 == 0:
+        fiftys = len(members) // 50
+    else:
+        fiftys = len(members) // 50 + 1
+    for fifty in range(fiftys):
+        one_message_list = members[50*(fifty-1): 50*fifty]
+        answer = ''
+        for member in one_message_list:
+            username = "[{}](tg://user?id={})".format(member[2].replace('[', '').replace(']', ''), member[0])
+            answer += '`' + str(member[0]) + '` ' + username + '\n'
+        send(message.from_user.id, answer, parse_mode='Markdown')
+    reply(message, "Выслал БД в личку")

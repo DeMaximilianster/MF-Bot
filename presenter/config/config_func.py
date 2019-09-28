@@ -9,12 +9,34 @@ from presenter.config.config_var import superior_roles, admin_roles
 log = Loger(LOG_TO_CONSOLE)
 
 
+def person_analyze(message, to_self=False):
+    if message.reply_to_message:  # Сообщение является ответом
+        return message.reply_to_message.from_user
+    elif len(message.text.split()) > 1:
+        par = message.text.split()[1]
+        try:
+            if int(par) and len(str(par)) == 9:
+                return get_member(-1001408293838, par).user
+            else:
+                reply(message, "Некорректный ID. ID содержит в себе 9 цифр")
+                return None
+        except Exception as e:
+            print(e)
+            reply(message, "Некорректный ID. ID это целое число. Либо такого ID ни у кого нет")
+            return None
+    elif to_self:
+        return message.from_user
+    else:
+        reply(message, "Ответьте на сообщение необходимого человека или напишите после команды его ID")
+        return None
+
+
 def is_admin(message, superior=False):
     log.log_print("Проверяем пользователя {0} на админку".format(message.from_user.username))
     database = Database()
     rank = database.get(message.from_user.id)[3]  # Получаем его звание
     del database
-    if superior:
+    if superior:  # Обязательно быть Лидером или Заместителем
         if rank in superior_roles:
             return True
         else:

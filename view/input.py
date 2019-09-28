@@ -6,7 +6,8 @@ from presenter.logic.boss_commands import ban, deleter_mode, promotion, demotion
 from presenter.logic.complicated_commands import adequate, inadequate, response, insult, non_ironic, ironic, \
     vote, place_here, mv, av, add_vote
 from presenter.logic.reactions import deleter, new_member, left_member
-from presenter.logic.standart_commands import helper, send_drakken, send_me, send_meme, minet, uberminet, show_id
+from presenter.logic.standart_commands import helper, send_drakken, send_me, send_meme, minet, uberminet, show_id, \
+    all_members
 from presenter.logic.start import starter
 
 
@@ -52,7 +53,10 @@ def elite_handler(message):
 def warn_handler(message):
     """Даёт участнику предупреждение"""
     if in_mf(message, False) and is_admin(message):
-        warn(message)
+        if message.reply_to_message:
+            warn(message)
+        else:
+            reply(message, "Надо ответить на сообщение с актом преступления, чтобы переслать контекст в хранилище")
 
 
 @bot.message_handler(commands=['unwarn'])
@@ -65,10 +69,7 @@ def unwarn_handler(message):
 @bot.message_handler(commands=['ban'])
 def ban_handler(message):
     if in_mf(message, False) and is_admin(message):
-        if message.reply_to_message:
-            ban(message)
-        else:
-            reply(message, "Надо ответить на сообщение того, кого надо забанить")
+        ban(message)
 
 
 @bot.message_handler(commands=['delete_mode'])
@@ -81,20 +82,14 @@ def deleter_mode_handler(message):
 def promotion_handler(message):
     """Назначает человека админом"""
     if in_mf(message, False) and is_admin(message, True):
-        if message.reply_to_message:
-            promotion(message)
-        else:
-            reply(message, "Надо ответить на сообщение того, кого надо апгрейднуть")
+        promotion(message)
 
 
 @bot.message_handler(commands=['guest'])
 def demotion_handler(message):
     """Забирает у человека админку"""
     if in_mf(message, False) and is_admin(message, True):
-        if message.reply_to_message:
-            demotion(message)
-        else:
-            reply(message, "Надо ответить на сообщение того, кого надо апгрейднуть")
+        demotion(message)
 
 
 @bot.message_handler(commands=['add_chat'])
@@ -245,6 +240,13 @@ def send_me_handler(message):
     """Присылает человеку его запись в БД"""
     if in_mf(message):
         send_me(message)
+
+
+@bot.message_handler(commands=['members'])
+def all_members_handler(message):
+    """Присылает человеку все записи в БД"""
+    if in_mf(message):
+        all_members(message)
 
 
 '''Последний хэндлер. Просто считает сообщения, что не попали в другие хэндлеры'''

@@ -140,4 +140,13 @@ def register_handler(sent, function):
         print(e)
 
 
+def get_member(chat_id, user_id):
+    """Получить участника чата"""
+    log.log_print("get_member invoked")
+    try:
+        return bot.get_chat_member(chat_id, user_id)
+    except Exception as e:
+        print(e)
+
+
 
