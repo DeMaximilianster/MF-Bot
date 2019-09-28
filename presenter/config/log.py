@@ -23,7 +23,7 @@ class Loger:
                       time_now[1], time_now[0], time_now[3], time_now[4], time_now[5]), arg))
         if self.method <= 1:  # Запись в файл
             for fname in self.LOG_FILES:
-                with open(fname, 'a+') as logFile:
+                with open(fname, 'a+', encoding='utf-8') as logFile:
                     for arg in args:
                         logFile.write("[{}] {}".format("{}.{}.{}|{}:{}:{}".format(time_now[2],
                                       time_now[1], time_now[0], time_now[3], time_now[4], time_now[5]), arg)+'\n')

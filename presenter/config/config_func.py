@@ -69,9 +69,12 @@ def cooldown(message):
         return True
     # Чел уже пользовался командой
     time_passed = message.date - command[1]
-    if time_passed < 60:  # Кулдаун не прошёл
+    if time_passed < 3600:  # Кулдаун не прошёл
+        seconds = 3600 - time_passed
+        minutes = seconds//60
+        seconds %= 60
         answer = "Воу, придержи коней, ковбой. Ты сможешь воспользоваться этой командой только "
-        answer += "через {} секунд 🤠".format(60 - time_passed)
+        answer += "через {} минут и {} секунд 🤠".format(minutes, seconds)
         reply(message, answer)
         del database
         return False
