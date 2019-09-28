@@ -133,6 +133,7 @@ def send_me(message):
 
 def all_members(message):
     """Присылает человеку все записи в БД"""
+    log.log_print("all_members invoked")
     database = Database()
     members = database.get_all('members', 'messages')
     if len(members) % 50 == 0:

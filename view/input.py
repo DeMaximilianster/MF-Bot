@@ -9,6 +9,10 @@ from presenter.logic.reactions import deleter, new_member, left_member
 from presenter.logic.standart_commands import helper, send_drakken, send_me, send_meme, minet, uberminet, show_id, \
     all_members
 from presenter.logic.start import starter
+from presenter.config.config_var import log_to
+from log import Loger
+
+log = Loger(log_to)
 
 
 '''Реакции на медиа, новых участников и выход участников'''
@@ -17,6 +21,7 @@ from presenter.logic.start import starter
 @bot.message_handler(content_types=['document', 'photo', 'sticker', 'video', 'video_note'])
 def deleter_handler(message):
     """Удаляет медиа ночью"""
+    log.log_print("night media invoked")
     if in_mf(message):  # Если в МФ2 - то удаляем
         deleter(message)
 

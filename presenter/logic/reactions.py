@@ -1,10 +1,14 @@
 # -*- coding: utf-8 -*-
 from presenter.config.config_func import Database, time_replace, error
 from view.output import delete, kick, send, promote, reply, send_video
+from presenter.config.config_var import log_to
+from presenter.config.log import Loger
 
+log = Loger(log_to)
 
 def deleter(message):
     """Удаляет медиа ночью"""
+    log.log_print("deleter invoked")
     database = Database()
     # Получаем из БД переменную, отвечающую за работу это функции
     delete_mode = database.get('delete', 'config', 'var')[1]
@@ -25,6 +29,7 @@ def deleter(message):
 
 def new_member(message):
     """Реагирует на вход в чат"""
+    log.log_print("new_member invoked")
     database = Database()
     member = message.new_chat_members[0]
     answer = ''
@@ -57,6 +62,7 @@ def new_member(message):
 
 def left_member(message):
     """Комментирует уход участника и прощается участником"""
+    log.log_print("left_member invoked")
     person = message.left_chat_member
     if message.from_user.id == person.id:  # Чел вышел самостоятельно
         reply(message, "Минус чувачок")

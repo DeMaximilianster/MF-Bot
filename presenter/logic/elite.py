@@ -2,11 +2,15 @@ from presenter.config.config_func import Database
 from telebot.types import ReplyKeyboardMarkup, ReplyKeyboardRemove
 from view.output import send, register_handler
 from random import choice
-elite_work = True
+from presenter.config.config_var import log_to
+from presenter.config.log import Loger
 
+log = Loger(log_to)
+elite_work = True
 
 def shuffle(old_list):
     """Перемешивает список или кортеж"""
+    log.log_print("shuffle invoked")
     old_list = list(old_list)
     new_list = []
     while old_list:
@@ -18,6 +22,7 @@ def shuffle(old_list):
 
 def ask_question(message, question):
     """Задаём вопрос"""
+    log.log_print("ask_question invoked")
     database = Database()
     ask = database.get(message.from_user.id, 'basic_logic_tested')[question]  # Получаем вопрос
     note = database.get(ask, 'basic_logic', 'text')  # Получаем полную инфу о вопросе
@@ -33,6 +38,7 @@ def ask_question(message, question):
 
 def submit(message):  # TODO возможность отменить свои ответы
     """Подсчитывает результаты"""
+    log.log_print("submit invoked")
     database = Database()
     markup = ReplyKeyboardRemove(selective=False)  # убираем клаву
     success = 0  # Переменная для подсчёта правильных ответов
@@ -59,6 +65,7 @@ def submit(message):  # TODO возможность отменить свои о
 
 def check(message):
     """Запись ответа"""
+    log.log_print("check invoked")
     database = Database()
     # TODO Пусть бот ставит тест на паузу, когда видит, что в сообщений есть "/"
     answer = 0
@@ -76,6 +83,7 @@ def check(message):
 
 
 def elite(message):  # TODO Привести эти команды в порядок
+    log.log_print("elite invoked")
     database = Database()
     print(database.get(message.from_user.id, table='basic_logic_tested'))
     if database.get(message.from_user.id, table='basic_logic_tested') is None:

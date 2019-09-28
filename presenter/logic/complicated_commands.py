@@ -17,6 +17,7 @@ work = True
 
 def adequate(call):
     """Вариант адекватен"""
+    log.log_print("adequate invoked")
     file_place = None
     if call.data == 'adequate':
         file_place = multi_votes_file
@@ -42,11 +43,13 @@ def adequate(call):
 
 def inadequate(call):
     """Вариант неадекватен"""
+    log.log_print("inadequate invoked")
     edit_markup(call.message.chat.id, call.message.message_id)
 
 
 def response(inline_query):
     """Тестовая инлайновая команда, бесполезная"""
+    log.log_print("response invoked")
     results = [InlineQueryResultArticle('1', 'Тестовый заголовок', InputTextMessageContent("Тестовый текст"),
                                         reply_markup=test_keyboard)]
     answer_inline(inline_query.id, results=results, cache_time=1)
@@ -54,6 +57,7 @@ def response(inline_query):
 
 def insult(message):
     """Спращивает, иронично ли признание оскорблением"""
+    log.log_print("insult invoked")
     text = "Иронично? \n\n(обращаем ваше внимание на то, что если вы по приколу нажмёте на 'нет', то "
     text += "ваши действия могут быть сочтены админами, как провокация)"
     reply(message, text, reply_markup=ironic_keyboard)
@@ -61,6 +65,7 @@ def insult(message):
 
 def non_ironic(call):
     """Реакция, если обвинение было неироничным"""
+    log.log_print("non_ironic invoked")
     # Проверка, нажал ли на кнопку не тот, кто нужен
     edit_text("Неиронично!", call.message.chat.id, call.message.message_id)
     database = Database()
@@ -78,12 +83,14 @@ def non_ironic(call):
 
 def ironic(call):
     """Реакция, если обвинение было ироничным"""
+    log.log_print("ironic invoked")
     edit_text("Иронично, так иронично", call.message.chat.id, call.message.message_id)
     answer_callback(call.id)
 
 
 def vote(message):
     """Генерирует голосовашку"""
+    log.log_print("vote invoked")
     reply_markup = None
     if '/vote' in message.text:
         reply_markup = where_keyboard
@@ -96,6 +103,7 @@ def vote(message):
 
 def place_here(call):
     """Выбирает, куда прислать голосовашку"""
+    log.log_print("place_here invoked")
     # Проверка, нажал ли на кнопку не тот, кто нужен
     where = None
     if call.data == 'here' or call.data == 'm_here' or call.data == 'a_here':
@@ -119,6 +127,7 @@ def place_here(call):
 
 def mv(call):
     """Обновляет мульти-голосовашку"""
+    log.log_print("mv invoked")
     user_id = str(call.from_user.id)  # Ай ди жмакнувшего челика
     msg_id = call.message.message_id  # Ай ди жмакнутого сообщения
     # Как этот челик будет отображаться в сообщении
@@ -146,6 +155,7 @@ def mv(call):
 
 def av(call):
     """Обновляет адапт-голосовашку"""
+    log.log_print("av invoked")
     user_id = str(call.from_user.id)  # Ай ди жмакнувшего челика
     msg_id = call.message.message_id  # Ай ди жмакнутого сообщения
     # Как этот челик будет отображаться в сообщении
@@ -175,6 +185,7 @@ def av(call):
 
 def add_vote(call):
     """Вставляет голос в голосоовашку"""
+    log.log_print("add_vote invoked")
     reply_markup = vote_keyboard
     text = ''
     user_id = call.from_user.id  # Ай ди жмакнувшего челика
