@@ -1,5 +1,9 @@
 import sqlite3
 from presenter.config.files_paths import database_file
+from log import Loger
+from config_var import log_to
+
+log = Loger(log_to)
 
 
 class Database:
@@ -7,28 +11,33 @@ class Database:
 
     def __init__(self):
         """Подключается к базе данных"""
+        log.log_print("Init database")
         self.connection = sqlite3.connect(database_file)
         self.cursor = self.connection.cursor()
 
     def __del__(self):
         """Отключается от базы данных"""
+        log.log_print("Closing database")
         self.connection.close()  # Закрываем БД
 
     def get(self, value, table='members', column='id'):
         """Читает запись в базе данных"""
         sql = "SELECT * FROM {} WHERE {}='{}'".format(table, column, value)
+        log.log_print("[SQL]: "+sql)
         self.cursor.execute(sql)
         return self.cursor.fetchone()
 
     def get_many(self, value, table='chats', column='purpose'):
         """Читает несколько записей в базе данных"""
         sql = "SELECT * FROM {} WHERE {}='{}'".format(table, column, value)
+        log.log_print("[SQL]: "+sql)
         self.cursor.execute(sql)
         return self.cursor.fetchall()
 
     def get_all(self, table, order_by='id', how_sort='DESC'):
         """Читает все записи в одной таблице базы данных"""
         sql = "SELECT rowid, * FROM {} ORDER BY {} {}".format(table, order_by, how_sort)
+        log.log_print("[SQL]: "+sql)
         all_list = []
         for element in self.cursor.execute(sql):
             all_list.append(element[1:])  # Первый элемент это бесполезный номер
@@ -44,6 +53,7 @@ class Database:
         SET {} = '{}'
         WHERE {} = '{}'
         """.format(table, set_column, set_value, where_column, where_value)
+        log.log_print("[SQL]: "+sql)
         self.cursor.execute(sql)
         self.connection.commit()  # Сохраняем изменения
 
@@ -55,6 +65,7 @@ class Database:
             INSERT INTO {}
             VALUES {}
             """.format(table, values)
+            log.log_print("[SQL]: "+sql)
             self.cursor.execute(sql)
         except Exception as e:
             print(e)

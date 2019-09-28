@@ -11,6 +11,7 @@ log = Loger(log_to)
 
 
 def person_analyze(message, to_self=False):
+    log.log_print("person_analyze invoked")
     if message.reply_to_message:  # Сообщение является ответом
         return message.reply_to_message.from_user
     elif len(message.text.split()) > 1:
@@ -33,7 +34,7 @@ def person_analyze(message, to_self=False):
 
 
 def is_admin(message, superior=False):
-    log.log_print("Проверяем пользователя {0} на админку".format(message.from_user.username))
+    log.log_print("is_admin invoked from userID {}".format(message.from_user.id))
     database = Database()
     rank = database.get(message.from_user.id)[3]  # Получаем его звание
     del database
@@ -51,7 +52,7 @@ def is_admin(message, superior=False):
 
 
 def cooldown(message):
-    log.log_print("Вызвана функция cooldown с параметрами {}:{}".format(message.from_user.id, message.text))
+    log.log_print("cooldown invoked")
     database = Database()
     # Получаем наименование необходимой команды
     if 'есть один мем' in message.text.lower():
@@ -101,6 +102,7 @@ def error(message, e):
 
 def in_mf(message, or_private=True):
     """Позволяет регулировать использование команл вне чатов и в личке"""
+    log.log_print("in_mf invoked")
     database = Database()
     if database.get(message.chat.id, 'chats'):  # Команда вызвана в системе МФ2
         counter(message)  # Отправляем сообщение на учёт в БД
@@ -123,6 +125,7 @@ def in_mf(message, or_private=True):
 
 def counter(message):
     """Подсчитывает сообщения, отправленные челом"""
+    log.log_print("counter invoked")
     database = Database()
     if message.new_chat_members:
         person = message.new_chat_members[0]
@@ -146,7 +149,7 @@ def counter(message):
 # TODO перенести все голосовашки в базу данных или ещё куда-то (JSON)
 def create_vote(vote_message):
     """Создаёт голосовашку"""
-    log.log_print("Создаём голосовашку с текстом: "+vote_message.text)
+    log.log_print("create_vote invoked")
     # TODO Параметр purpose, отвечающий за действие, которое надо сделать при закрытии голосовашки
     file = open(votes_file, 'r')
     votes_shelve = file.read()
@@ -164,7 +167,7 @@ def create_vote(vote_message):
 
 def create_multi_vote(vote_message):
     """Создаёт мульти-голосовашку"""
-    log.log_print("Создаём мульти-голосовашку с текстом: "+vote_message.text)
+    log.log_print("create_multi_vote invoked")
     keyboard = InlineKeyboardMarkup()
     url = 'https://t.me/multifandomrubot?start=new_option{}'.format(vote_message.message_id)
     keyboard.row_width = 1
@@ -186,7 +189,7 @@ def create_multi_vote(vote_message):
 
 def create_adapt_vote(vote_message):
     """Создаёт адапт-голосовашку"""
-    log.log_print("Создаём адапт-голосовашку с текстом: "+vote_message.text)
+    log.log_print("create_adapt_vote invoked")
     keyboard = InlineKeyboardMarkup()
     url = 'https://t.me/multifandomrubot?start=new_adapt_option{}'.format(vote_message.message_id)
     keyboard.row_width = 1
@@ -208,7 +211,7 @@ def create_adapt_vote(vote_message):
 
 def update_multi_vote(vote_id):
     """Обновляет мульти-голосовашку"""
-    log.log_print("обновляем мульти-голосовашку с id: "+str(vote_id))
+    log.log_print("update_multi_vote invoked")
     file = open(multi_votes_file)
     votes_shelve = file.read()
     if votes_shelve:
@@ -235,7 +238,7 @@ def update_multi_vote(vote_id):
 
 def update_adapt_vote(vote_id):
     """Обновляет адапт голосовашку"""
-    log.log_print("обновляем адапт-голосовашку с id: "+str(vote_id))
+    log.log_print("update_adapt_vote")
     file = open(adapt_votes_file)
     votes_shelve = file.read()
     if votes_shelve:
