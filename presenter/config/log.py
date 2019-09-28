@@ -1,5 +1,5 @@
 import time
-from config_var import log_files
+from files_paths import log_files
 LOG_TO_FILE = 1  # Записать только в файл
 LOG_TO_CONSOLE = 2  # Записать только в консоль
 LOG_BOTH = 0  # Записать и в файл, и в консоль

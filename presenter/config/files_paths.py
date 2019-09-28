@@ -8,3 +8,4 @@ etiquette = 'model/texts/etiquette.txt'
 elitocracy = 'model/texts/elitocracy.txt'
 ranks = 'model/texts/ranks.txt'
 database_file = 'model/MF.db'
+log_files = ["presenter/config/log.txt"]

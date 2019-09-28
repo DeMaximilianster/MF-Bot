@@ -75,4 +75,3 @@ admin_roles = ["Админ", "Член Комитета"]+superior_roles
 
 # Константы для логинга
 log_to = LOG_BOTH
-log_files = ["log.txt"]
