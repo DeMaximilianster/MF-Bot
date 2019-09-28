@@ -3,9 +3,9 @@ from presenter.config.database_lib import Database
 from telebot.types import InlineKeyboardButton, InlineKeyboardMarkup
 from presenter.config.files_paths import adapt_votes_file, multi_votes_file, votes_file
 from view.output import *
-from presenter.config.log import Loger, LOG_TO_CONSOLE
+from presenter.config.log import Loger
 from presenter.config.config_var import superior_roles, admin_roles
-from config_var import log_to
+from presenter.config.log import log_to
 
 log = Loger(log_to)
 

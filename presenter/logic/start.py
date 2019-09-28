@@ -1,11 +1,11 @@
 # -*- coding: utf-8 -*-
 from view.output import send, reply, register_handler
-import presenter.config.log as log
+from presenter.config.log import Loger, log_to
 from presenter.config.files_paths import *
-from presenter.config.config_var import adequate_keyboard, a_adequate_keyboard, log_to
+from presenter.config.config_var import adequate_keyboard, a_adequate_keyboard
 start_work = True
 
-log = log.Loger(log_to)
+log = Loger(log_to)
 
 
 def new_option(message):

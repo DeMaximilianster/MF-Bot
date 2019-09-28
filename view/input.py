@@ -9,8 +9,7 @@ from presenter.logic.reactions import deleter, new_member, left_member
 from presenter.logic.standart_commands import helper, send_drakken, send_me, send_meme, minet, uberminet, show_id, \
     all_members
 from presenter.logic.start import starter
-from presenter.config.config_var import log_to
-from log import Loger
+from presenter.config.log import Loger, log_to
 
 log = Loger(log_to)
 

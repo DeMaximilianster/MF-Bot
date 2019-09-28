@@ -1,0 +1,63 @@
+[28.9.2019|12:44:27] Init database[28.9.2019|12:44:27] [SQL]: SELECT * FROM chats WHERE purpose='Главный чат'[28.9.2019|12:44:27] [SQL]: SELECT * FROM chats WHERE purpose='Подчат'[28.9.2019|12:44:27] [SQL]: SELECT * FROM chats WHERE purpose='Игровая'[28.9.2019|12:44:27] [SQL]: SELECT * FROM chats WHERE purpose='Ролевая'[28.9.2019|12:44:27] [SQL]: SELECT rowid, * FROM chats ORDER BY id DESC[28.9.2019|12:44:27] [SQL]: SELECT rowid, * FROM channels ORDER BY id DESC[28.9.2019|12:44:27] Closing database[28.9.2019|12:45:24] Init database
+[28.9.2019|12:45:24] [SQL]: SELECT * FROM chats WHERE purpose='Главный чат'
+[28.9.2019|12:45:24] [SQL]: SELECT * FROM chats WHERE purpose='Подчат'
+[28.9.2019|12:45:24] [SQL]: SELECT * FROM chats WHERE purpose='Игровая'
+[28.9.2019|12:45:24] [SQL]: SELECT * FROM chats WHERE purpose='Ролевая'
+[28.9.2019|12:45:24] [SQL]: SELECT rowid, * FROM chats ORDER BY id DESC
+[28.9.2019|12:45:24] [SQL]: SELECT rowid, * FROM channels ORDER BY id DESC
+[28.9.2019|12:45:24] Closing database
+[28.9.2019|12:46:3] in_mf invoked
+[28.9.2019|12:46:3] Init database
+[28.9.2019|12:46:3] [SQL]: SELECT * FROM chats WHERE id='-1001408293838'
+[28.9.2019|12:46:3] counter invoked
+[28.9.2019|12:46:3] Init database
+[28.9.2019|12:46:3] [SQL]: SELECT * FROM members WHERE id='381279599'
+[28.9.2019|12:46:3] [SQL]: SELECT * FROM chats WHERE purpose='Главный чат'
+[28.9.2019|12:46:3] [SQL]: SELECT * FROM members WHERE id='381279599'
+[28.9.2019|12:46:3] [SQL]: 
+        UPDATE members
+        SET messages = '12351'
+        WHERE id = '381279599'
+        
+[28.9.2019|12:46:3] Closing database
+[28.9.2019|12:46:3] Closing database
+[28.9.2019|12:46:3] cooldown invoked
+[28.9.2019|12:46:3] Init database
+[28.9.2019|12:46:3] [SQL]: SELECT * FROM cooldown WHERE id='381279599 /minet'
+[28.9.2019|12:46:3] [SQL]: 
+        UPDATE cooldown
+        SET time = '1569674767'
+        WHERE id = '381279599 /minet'
+        
+[28.9.2019|12:46:3] Closing database
+[28.9.2019|12:46:3] 381279599: minet invoked
+[28.9.2019|12:46:39] in_mf invoked
+[28.9.2019|12:46:39] Init database
+[28.9.2019|12:46:39] [SQL]: SELECT * FROM chats WHERE id='-1001408293838'
+[28.9.2019|12:46:39] counter invoked
+[28.9.2019|12:46:39] Init database
+[28.9.2019|12:46:39] [SQL]: SELECT * FROM members WHERE id='381279599'
+[28.9.2019|12:46:39] [SQL]: SELECT * FROM chats WHERE purpose='Главный чат'
+[28.9.2019|12:46:39] [SQL]: SELECT * FROM members WHERE id='381279599'
+[28.9.2019|12:46:39] [SQL]: 
+        UPDATE members
+        SET messages = '12352'
+        WHERE id = '381279599'
+        
+[28.9.2019|12:46:39] Closing database
+[28.9.2019|12:46:39] Closing database
+[28.9.2019|12:46:39] 381279599: send_me invoked
+[28.9.2019|12:46:39] Init database
+[28.9.2019|12:46:39] person_analyze invoked
+[28.9.2019|12:46:39] [SQL]: 
+        UPDATE members
+        SET username = 'DeMaximilianster'
+        WHERE id = '381279599'
+        
+[28.9.2019|12:46:39] [SQL]: 
+        UPDATE members
+        SET nickname = 'DeMaximilianster!'
+        WHERE id = '381279599'
+        
+[28.9.2019|12:46:39] [SQL]: SELECT * FROM members WHERE id='381279599'
+[28.9.2019|12:46:40] Closing database

@@ -2,11 +2,11 @@ from presenter.config.config_func import Database
 from telebot.types import ReplyKeyboardMarkup, ReplyKeyboardRemove
 from view.output import send, register_handler
 from random import choice
-from presenter.config.config_var import log_to
-from presenter.config.log import Loger
+from presenter.config.log import Loger, log_to
 
 log = Loger(log_to)
 elite_work = True
+
 
 def shuffle(old_list):
     """Перемешивает список или кортеж"""

@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
 from presenter.config.config_func import Database, time_replace, error
 from view.output import delete, kick, send, promote, reply, send_video
-from presenter.config.config_var import log_to
-from presenter.config.log import Loger
+from presenter.config.log import Loger, log_to
 
 log = Loger(log_to)
+
 
 def deleter(message):
     """Удаляет медиа ночью"""

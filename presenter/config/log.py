@@ -1,8 +1,11 @@
 import time
-from files_paths import log_files
+from presenter.config.files_paths import log_files
 LOG_TO_FILE = 1  # Записать только в файл
 LOG_TO_CONSOLE = 2  # Записать только в консоль
 LOG_BOTH = 0  # Записать и в файл, и в консоль
+
+# Константы для логинга
+log_to = LOG_BOTH
 
 
 class Loger:
@@ -23,7 +26,7 @@ class Loger:
                 with open(fname, 'a+') as logFile:
                     for arg in args:
                         logFile.write("[{}] {}".format("{}.{}.{}|{}:{}:{}".format(time_now[2],
-                                      time_now[1], time_now[0], time_now[3], time_now[4], time_now[5]), arg))
+                                      time_now[1], time_now[0], time_now[3], time_now[4], time_now[5]), arg)+'\n')
 
     def add_log_file(self, fname):
         self.LOG_FILES.append(fname)

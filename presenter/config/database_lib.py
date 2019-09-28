@@ -1,7 +1,6 @@
 import sqlite3
 from presenter.config.files_paths import database_file
-from log import Loger
-from config_var import log_to
+from presenter.config.log import Loger, log_to
 
 log = Loger(log_to)
 
