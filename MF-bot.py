@@ -4,7 +4,7 @@ from view.input import *
 
 try:
     #  telebot.logger.setLevel("DEBUG")  # Иногда помогает, но обычно не нужна
-    bot.polling()  # Запуск бота
+    bot.polling(none_stop=True)  # Запуск бота
 except Exception as e:
     print(e)
 input()  # Чтобы при запуске с консоли при вылете можно было узнать причину

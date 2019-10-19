@@ -64,14 +64,18 @@ def minet(message):
     way = choice(('text', 'sticker'))
     if way == 'text':
         rep = choice(('оаоаоаоаооа мммммм)))))', 'Э, нет, эта кнопка не для тебя', 'Попа чистая?', 'Кусь :3',
-                      'Открывай рот тогда)'))
+                      'Открывай рот тогда)', 'О, да, эта кнопка для тебя', '😏🤤', 'Одна фелляция\nНикакой фрустрации'))
         reply(message, rep)
     else:
         rep = choice(('CAADAgADWAADBoAqF4oogkZzHIvuFgQ',  # УНО-карточка
                       'CAADBAADqlUAAuOnXQVKqOJLAf4RYBYE',  # ОК
                       'CAADAgADewAD6J0qFmJL_8KisLg8FgQ',  # Гамлет
                       'CAADAgADfAADq1fEC779DZWncMB2FgQ',  # Хонка
-                      'CAADAgADLQADb925FmFcbIKhK_3CFgQ'))  # Что-то нет настроения
+                      'CAADAgADLQADb925FmFcbIKhK_3CFgQ',  # Что-то нет настроения
+                      'CAADAgADOAADb925FlKHKgxtlre-FgQ',  # Я с йогуртом
+                      'CAADAgADGAADobczCKi7TanwsWyoFgQ',  # хоошо
+                      'CAADAgADTwEAAqfkvganUQktSzVbkRYE'  # Инангай
+                      ))
         send_sticker(message.chat.id, rep, reply_to_message_id=message.message_id)
 
 
