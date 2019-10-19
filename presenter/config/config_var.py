@@ -19,8 +19,8 @@ del global_database
 
 # Клавиатура для вопроса, иронично ли признание оскорбления/провокации
 ironic_keyboard = InlineKeyboardMarkup()
-ironic_keyboard.add(InlineKeyboardButton("Иронично", callback_data="ironic"))
-ironic_keyboard.add(InlineKeyboardButton("Неиронично", callback_data="non_ironic"))
+ironic_keyboard.add(InlineKeyboardButton("Да", callback_data="ironic"))
+ironic_keyboard.add(InlineKeyboardButton("Нет", callback_data="non_ironic"))
 ironic_keyboard.row_width = 1
 
 # Клавиатура для голосовашек

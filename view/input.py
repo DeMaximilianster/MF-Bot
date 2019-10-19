@@ -246,7 +246,7 @@ def send_me_handler(message):
         send_me(message)
 
 
-@bot.message_handler(commands=['members', 'database'])
+@bot.message_handler(commands=['members'])
 def all_members_handler(message):
     """Присылает человеку все записи в БД"""
     if in_mf(message):
