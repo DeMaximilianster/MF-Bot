@@ -64,14 +64,18 @@ def minet(message):
     way = choice(('text', 'sticker'))
     if way == 'text':
         rep = choice(('оаоаоаоаооа мммммм)))))', 'Э, нет, эта кнопка не для тебя', 'Попа чистая?', 'Кусь :3',
-                      'Открывай рот тогда)'))
+                      'Открывай рот тогда)', 'О, да, эта кнопка для тебя', '😏🤤', 'Одна фелляция\nНикакой фрустрации'))
         reply(message, rep)
     else:
         rep = choice(('CAADAgADWAADBoAqF4oogkZzHIvuFgQ',  # УНО-карточка
                       'CAADBAADqlUAAuOnXQVKqOJLAf4RYBYE',  # ОК
                       'CAADAgADewAD6J0qFmJL_8KisLg8FgQ',  # Гамлет
                       'CAADAgADfAADq1fEC779DZWncMB2FgQ',  # Хонка
-                      'CAADAgADLQADb925FmFcbIKhK_3CFgQ'))  # Что-то нет настроения
+                      'CAADAgADLQADb925FmFcbIKhK_3CFgQ',  # Что-то нет настроения
+                      'CAADAgADOAADb925FlKHKgxtlre-FgQ',  # Я с йогуртом
+                      'CAADAgADGAADobczCKi7TanwsWyoFgQ',  # хоошо
+                      'CAADAgADTwEAAqfkvganUQktSzVbkRYE'  # Инангай
+                      ))
         send_sticker(message.chat.id, rep, reply_to_message_id=message.message_id)
 
 
@@ -117,8 +121,8 @@ def send_me(message):
         database.change(person.first_name, person.id, set_column='nickname')
         person = database.get(person.id)
         if person:
-            msg = 'ID: {}\n'.format(person[0])
-            msg += 'Юзернейм: {}\n'.format(person[1])
+            msg = 'ID: `{}`\n'.format(person[0])
+            msg += 'Юзернейм: @{}\n'.format(person[1])
             msg += 'Никнейм: {}\n'.format(person[2])
             msg += 'Ранг: {}\n'.format(person[3])
             msg += 'Кол-во сообщений: {}\n'.format(person[4])
@@ -126,7 +130,7 @@ def send_me(message):
             msg += 'Количество ябломилианов: {}\n'.format(person[6])
         else:
             msg = "Не знаю, чё это такое тут сидит"
-        reply(message, msg)
+        reply(message, msg, parse_mode='Markdown')
     del database
 
 
