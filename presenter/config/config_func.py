@@ -163,7 +163,7 @@ def create_vote(vote_message):
     file.close()
     votes_shelve[vote_message.message_id] = {"time": vote_message.date, "text": vote_message.text,
                                              "favor": {}, "against": {}, "abstain": {}}
-    file = open(votes_file, 'w')
+    file = open(votes_file, 'w', encoding='utf-8')
     file.write(str(votes_shelve))
     file.close()
 
@@ -175,7 +175,7 @@ def create_multi_vote(vote_message):
     url = 'https://t.me/multifandomrubot?start=new_option{}'.format(vote_message.message_id)
     keyboard.row_width = 1
     keyboard.add(InlineKeyboardButton("Предложить вариант", url=url))
-    file = open(multi_votes_file)
+    file = open(multi_votes_file, encoding='utf-8')
     votes_shelve = file.read()
     if votes_shelve:
         votes_shelve = eval(votes_shelve)
@@ -184,7 +184,7 @@ def create_multi_vote(vote_message):
     file.close()
     votes_shelve[vote_message.message_id] = {"text": vote_message.text, "votes": [], "keyboard": [],
                                              "chat": vote_message.chat.id}
-    file = open(multi_votes_file, 'w')
+    file = open(multi_votes_file, 'w', encoding='utf-8')
     file.write(str(votes_shelve))
     file.close()
     edit_markup(vote_message.chat.id, vote_message.message_id, reply_markup=keyboard)
@@ -197,7 +197,7 @@ def create_adapt_vote(vote_message):
     url = 'https://t.me/multifandomrubot?start=new_adapt_option{}'.format(vote_message.message_id)
     keyboard.row_width = 1
     keyboard.add(InlineKeyboardButton("Предложить вариант", url=url))
-    file = open(adapt_votes_file)
+    file = open(adapt_votes_file, encoding='utf-8')
     votes_shelve = file.read()
     if votes_shelve:
         votes_shelve = eval(votes_shelve)
@@ -206,7 +206,7 @@ def create_adapt_vote(vote_message):
     file.close()
     votes_shelve[vote_message.message_id] = {"text": vote_message.text, "votes": [], "keyboard": [],
                                              "chat": vote_message.chat.id}
-    file = open(adapt_votes_file, 'w')
+    file = open(adapt_votes_file, 'w', encoding='utf-8')
     file.write(str(votes_shelve))
     file.close()
     edit_markup(vote_message.chat.id, vote_message.message_id, reply_markup=keyboard)
@@ -215,7 +215,7 @@ def create_adapt_vote(vote_message):
 def update_multi_vote(vote_id):
     """Обновляет мульти-голосовашку"""
     log.log_print("update_multi_vote invoked")
-    file = open(multi_votes_file)
+    file = open(multi_votes_file, encoding='utf-8')
     votes_shelve = file.read()
     if votes_shelve:
         votes_shelve = eval(votes_shelve)
@@ -242,7 +242,7 @@ def update_multi_vote(vote_id):
 def update_adapt_vote(vote_id):
     """Обновляет адапт голосовашку"""
     log.log_print("update_adapt_vote")
-    file = open(adapt_votes_file)
+    file = open(adapt_votes_file, encoding='utf-8')
     votes_shelve = file.read()
     if votes_shelve:
         votes_shelve = eval(votes_shelve)

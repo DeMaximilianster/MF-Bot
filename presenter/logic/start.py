@@ -10,13 +10,13 @@ log = Loger(log_to)
 
 def new_option(message):
     log.log_print(str(message.from_user.id)+": new_option invoked")
-    file = open(upgraders_file)
+    file = open(upgraders_file, encoding='utf-8')  # TODO файл upgraders.txt это чистое воплощение быдлокода
     upgraders = eval(file.read())  # Словарик улучшителей вида {айди челика: айди улучшаемой голосовашки}
     file.close()
     vote_id = upgraders[message.from_user.id]
 
     del upgraders[message.from_user.id]
-    file = open(upgraders_file, 'w')
+    file = open(upgraders_file, 'w', encoding='utf-8')
     file.write(str(upgraders))
     file.close()
 
@@ -27,13 +27,13 @@ def new_option(message):
 def new_adapt_option(message):
     log.log_print(str(message.from_user.id)+": new_adapt_option invoked")
 
-    file = open(adapt_upgraders_file)
+    file = open(adapt_upgraders_file, encoding='utf-8')
     upgraders = eval(file.read())  # Словарик улучшителей вида {айди челика: айди улучшаемой голосовашки}
     file.close()
     vote_id = upgraders[message.from_user.id]
 
     del upgraders[message.from_user.id]
-    file = open(adapt_upgraders_file, 'w')
+    file = open(adapt_upgraders_file, 'w', encoding='utf-8')
     file.write(str(upgraders))
     file.close()
 
@@ -54,7 +54,7 @@ def starter(message):
     elif "ranks" in message.text:
         reply(message, open(ranks).read(), parse_mode="Markdown")
     elif "new_option" in message.text:
-        file = open(upgraders_file)
+        file = open(upgraders_file, encoding='utf-8')
         votes_shelve = file.read()
         if votes_shelve:
             votes_shelve = eval(votes_shelve)
@@ -62,13 +62,13 @@ def starter(message):
             votes_shelve = {}
         file.close()
         votes_shelve[message.from_user.id] = int(message.text[17:])
-        file = open(upgraders_file, 'w')
+        file = open(upgraders_file, 'w', encoding='utf-8')
         file.write(str(votes_shelve))
         file.close()
         sent = reply(message, "Введите ваш вариант ответа на голосовании")
         register_handler(sent, new_option)
     elif "new_adapt_option" in message.text:
-        file = open(adapt_upgraders_file)
+        file = open(adapt_upgraders_file, encoding='utf-8')
         votes_shelve = file.read()
         if votes_shelve:
             votes_shelve = eval(votes_shelve)
@@ -76,7 +76,7 @@ def starter(message):
             votes_shelve = {}
         file.close()
         votes_shelve[message.from_user.id] = int(message.text[23:])
-        file = open(adapt_upgraders_file, 'w')
+        file = open(adapt_upgraders_file, 'w', encoding='utf-8')
         file.write(str(votes_shelve))
         file.close()
         sent = reply(message, "Введите ваш вариант ответа на голосовании")
