@@ -10,6 +10,7 @@ from random import choice
 
 log = Loger(log_to)
 
+
 def shuffle(old_list):
     """Перемешивает список или кортеж"""
     log.log_print("shuffle invoked")
@@ -21,10 +22,14 @@ def shuffle(old_list):
         old_list.remove(element)
     return new_list
 
+
 def person_analyze(message, to_self=False):
     log.log_print("person_analyze invoked")
     if message.reply_to_message:  # Сообщение является ответом
-        return message.reply_to_message.from_user
+        if message.reply_to_message.new_chat_members:
+            return message.reply_to_message.new_chat_members[0]
+        else:
+            return message.reply_to_message.from_user
     elif len(message.text.split()) > 1:
         par = message.text.split()[1]
         try:

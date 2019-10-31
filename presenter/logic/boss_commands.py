@@ -17,10 +17,15 @@ def warn(message):
     """Даёт участнику предупреждение"""
     log.log_print("warn invoked")
     database = Database()
-    person = message.reply_to_message.from_user
-    value = database.get(person.id)[5] + 1
+    person = person_analyze(message)
+    try:
+        warns = int(message.text.split()[1])
+    except Exception as e:
+        print(e)
+        warns = 1
+    value = database.get(person.id)[5] + warns
     database.change(value, person.id, table='members', set_column='warns', where_column='id')
-    reply(message, "Варн выдан. Теперь их {}".format(value))
+    reply(message, "Варн(ы) выдан(ы). Теперь их {}".format(value))
     blowout = database.get('Проколы', table='channels', column='name')[0]
     how_many = 20  # Сколько пересылает сообщений
     end_forwarding = message.reply_to_message.message_id
@@ -48,13 +53,22 @@ def unwarn(message):
     del database
 
 
+# TODO команда /kick, которая даёт бан и сразу его снимает
 def ban(message):
     """Даёт участнику бан"""
     log.log_print("ban invoked")
-    send(message.chat.id, "Ну всё, этому челику жопа")
     database = Database()
     person = person_analyze(message)
     if person:
+        blowout = database.get('Проколы', table='channels', column='name')[0]
+        how_many = 10  # Сколько пересылает сообщений
+        end_forwarding = message.reply_to_message.message_id
+        start_forwarding = end_forwarding - how_many
+        send(blowout, "В чате '{}' забанили участника {} (@{}) [{}]. Прысылаю {} сообщений".
+             format(message.chat.title, person.first_name, person.username, person.id, how_many))
+        for msg_id in range(start_forwarding, end_forwarding + 1):
+            forward(blowout, message.chat.id, msg_id)
+        send(message.chat.id, "Ну всё, этому челику жопа")
         database.change("Нарушитель", person.id, 'members', 'rank', 'id')
         for chat in full_chat_list:
             kick(chat[0], person.id)
