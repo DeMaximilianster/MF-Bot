@@ -106,7 +106,7 @@ def add_chat_handler(message):
 '''Составные команды'''
 
 
-@bot.callback_query_handler(func=lambda call: 'adequate' in call.data)  # TODO Из-за этой хрени "Неадекватно" ломает бот
+@bot.callback_query_handler(func=lambda call: 'adequate' in call.data and call.data != 'inadequate')
 def adequate_handler(call):
     """Вариант адекватен"""
     adequate(call)
