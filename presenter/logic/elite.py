@@ -1,4 +1,4 @@
-from presenter.config.config_func import Database
+from presenter.config.config_func import Database, shuffle
 from telebot.types import ReplyKeyboardMarkup, ReplyKeyboardRemove
 from view.output import send, register_handler
 from random import choice
@@ -6,18 +6,6 @@ from presenter.config.log import Loger, log_to
 
 log = Loger(log_to)
 elite_work = True
-
-
-def shuffle(old_list):
-    """Перемешивает список или кортеж"""
-    log.log_print("shuffle invoked")
-    old_list = list(old_list)
-    new_list = []
-    while old_list:
-        element = choice(old_list)
-        new_list.append(element)
-        old_list.remove(element)
-    return new_list
 
 
 def ask_question(message, question):
@@ -87,6 +75,7 @@ def elite(message):  # TODO Привести эти команды в поряд
     database = Database()
     print(database.get(message.from_user.id, table='basic_logic_tested'))
     if database.get(message.from_user.id, table='basic_logic_tested') is None:
+        send(message.chat.id, "Сейчас я буду давать вам утверждения, а вы выбирайте те, что из них логически вытекают")
         person = (message.from_user.id, 'None', 'None', 'None', 'None', 'None', 'None', 'None', 'None', 'None',
                   'None', 'None', 'None', 'None')
         database.append(person, 'basic_logic_tested')

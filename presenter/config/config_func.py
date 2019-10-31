@@ -6,9 +6,20 @@ from view.output import *
 from presenter.config.log import Loger
 from presenter.config.config_var import superior_roles, admin_roles
 from presenter.config.log import log_to
+from random import choice
 
 log = Loger(log_to)
 
+def shuffle(old_list):
+    """Перемешивает список или кортеж"""
+    log.log_print("shuffle invoked")
+    old_list = list(old_list)
+    new_list = []
+    while old_list:
+        element = choice(old_list)
+        new_list.append(element)
+        old_list.remove(element)
+    return new_list
 
 def person_analyze(message, to_self=False):
     log.log_print("person_analyze invoked")
