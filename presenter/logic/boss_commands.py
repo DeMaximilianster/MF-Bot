@@ -44,12 +44,11 @@ def unwarn(message):
     log.log_print("unwarn invoked")
     database = Database()
     person = person_analyze(message)
-    if person:
-        value = database.get(person.id)[5] - 1
-        database.change(value, person.id, table='members', set_column='warns', where_column='id')
-        reply(message, "Варн снят. Теперь их {}".format(value))
-        if value < 3:
-            pass  # TODO команда /unban
+    value = database.get(person.id)[5] - 1
+    database.change(value, person.id, table='members', set_column='warns', where_column='id')
+    reply(message, "Варн снят. Теперь их {}".format(value))
+    if value < 3:
+        pass  # TODO команда /unban
     del database
 
 
@@ -59,21 +58,20 @@ def ban(message):
     log.log_print("ban invoked")
     database = Database()
     person = person_analyze(message)
-    if person:
-        blowout = database.get('Проколы', table='channels', column='name')[0]
-        how_many = 10  # Сколько пересылает сообщений
-        end_forwarding = message.reply_to_message.message_id
-        start_forwarding = end_forwarding - how_many
-        send(blowout, "В чате '{}' забанили участника {} (@{}) [{}]. Прысылаю {} сообщений".
-             format(message.chat.title, person.first_name, person.username, person.id, how_many))
-        for msg_id in range(start_forwarding, end_forwarding + 1):
-            forward(blowout, message.chat.id, msg_id)
-        send(message.chat.id, "Ну всё, этому челику жопа")
-        database.change("Нарушитель", person.id, 'members', 'rank', 'id')
-        for chat in full_chat_list:
-            kick(chat[0], person.id)
-        for channel in channel_list:
-            kick(channel[0], person.id)
+    blowout = database.get('Проколы', table='channels', column='name')[0]
+    how_many = 10  # Сколько пересылает сообщений
+    end_forwarding = message.reply_to_message.message_id
+    start_forwarding = end_forwarding - how_many
+    send(blowout, "В чате '{}' забанили участника {} (@{}) [{}]. Прысылаю {} сообщений".
+         format(message.chat.title, person.first_name, person.username, person.id, how_many))
+    for msg_id in range(start_forwarding, end_forwarding + 1):
+        forward(blowout, message.chat.id, msg_id)
+    send(message.chat.id, "Ну всё, этому челику жопа")
+    database.change("Нарушитель", person.id, 'members', 'rank', 'id')
+    for chat in full_chat_list:
+        kick(chat[0], person.id)
+    for channel in channel_list:
+        kick(channel[0], person.id)
     del database
 
 
@@ -82,19 +80,18 @@ def promotion(message):
     log.log_print("promotion invoked")
     database = Database()
     person = person_analyze(message)
-    if person:
-        database.change("Админ", person.id, 'members', 'rank', 'id')
-        # TODO пусть бот шлёт админу ссылку на чат админосостава и меняет её при входе
-        # TODO давать админку, не пингуя
-        # TODO сделать сменяемого зама автоматически (команда /vice)
-        # Дать челу админку во всех чатах, кроме Комитета и Админосостава
-        for chat in chat_list:
-            promote(chat[0], person.id,
-                    can_change_info=False, can_delete_messages=True, can_invite_users=True,
-                    can_restrict_members=True, can_pin_messages=True, can_promote_members=False)
-        for channel in channel_list:
-            promote(channel[0], person.id, can_post_messages=True, can_invite_users=True)
-        reply(message, "Теперь это админ!")
+    database.change("Админ", person.id, 'members', 'rank', 'id')
+    # TODO пусть бот шлёт админу ссылку на чат админосостава и меняет её при входе
+    # TODO давать админку, не пингуя
+    # TODO сделать сменяемого зама автоматически (команда /vice)
+    # Дать челу админку во всех чатах, кроме Комитета и Админосостава
+    for chat in chat_list:
+        promote(chat[0], person.id,
+                can_change_info=False, can_delete_messages=True, can_invite_users=True,
+                can_restrict_members=True, can_pin_messages=True, can_promote_members=False)
+    for channel in channel_list:
+        promote(channel[0], person.id, can_post_messages=True, can_invite_users=True)
+    reply(message, "Теперь это админ!")
     del database
 
 
@@ -103,24 +100,22 @@ def demotion(message):
     log.log_print("demotion invoked")
     database = Database()
     person = person_analyze(message)
-    if person:
-        database.change("Гость", person.id, 'members', 'rank', 'id')
-        # TODO забирать админку, не пингуя
-        # Забрать у чела админку во всех чатах, кроме Комитета и Админосостава
-        for chat in chat_list:
-            promote(chat[0], person.id,
-                    can_change_info=False, can_delete_messages=False, can_invite_users=False,
-                    can_restrict_members=False, can_pin_messages=False, can_promote_members=False)
-        for channel in channel_list:
-            promote(channel[0], person.id, can_post_messages=False, can_invite_users=False)
-        reply(message, "Теперь это гость!")
+    database.change("Гость", person.id, 'members', 'rank', 'id')
+    # TODO забирать админку, не пингуя
+    # Забрать у чела админку во всех чатах, кроме Комитета и Админосостава
+    for chat in chat_list:
+        promote(chat[0], person.id,
+                can_change_info=False, can_delete_messages=False, can_invite_users=False,
+                can_restrict_members=False, can_pin_messages=False, can_promote_members=False)
+    for channel in channel_list:
+        promote(channel[0], person.id, can_post_messages=False, can_invite_users=False)
+    reply(message, "Теперь это гость!")
     del database
 
 
 def deleter_mode(message):
     """Удалять медиа или нет"""
     log.log_print("deleter_mode invoked")
-    global delete
     database = Database()
     delete = int(database.get('delete', 'config', 'var')[1])
     print(delete)

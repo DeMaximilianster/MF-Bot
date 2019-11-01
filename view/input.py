@@ -1,6 +1,6 @@
 from presenter.config.token import bot
 from view.output import reply, answer_callback
-from presenter.config.config_func import in_mf, is_admin, counter, cooldown
+from presenter.config.config_func import in_mf, is_admin, counter, cooldown, person_analyze
 from presenter.logic.elite import elite
 from presenter.logic.boss_commands import ban, deleter_mode, promotion, demotion, add_chat, warn, unwarn
 from presenter.logic.complicated_commands import adequate, inadequate, response, insult, non_ironic, ironic, \
@@ -56,7 +56,7 @@ def elite_handler(message):
 @bot.message_handler(commands=['warn'])
 def warn_handler(message):
     """Даёт участнику предупреждение"""
-    if in_mf(message, False) and is_admin(message):
+    if in_mf(message, False) and is_admin(message) and person_analyze(message):
         if message.reply_to_message:
             warn(message)
         else:
@@ -66,13 +66,13 @@ def warn_handler(message):
 @bot.message_handler(commands=['unwarn'])
 def unwarn_handler(message):
     """Снимает с участника предупреждение"""
-    if in_mf(message, False) and is_admin(message):
+    if in_mf(message, False) and is_admin(message) and person_analyze(message):
         unwarn(message)
 
 
 @bot.message_handler(commands=['ban'])
 def ban_handler(message):
-    if in_mf(message, False) and is_admin(message):
+    if in_mf(message, False) and is_admin(message) and person_analyze(message):
         ban(message)
 
 
@@ -85,14 +85,14 @@ def deleter_mode_handler(message):
 @bot.message_handler(commands=['admin'])
 def promotion_handler(message):
     """Назначает человека админом"""
-    if in_mf(message, False) and is_admin(message, True):
+    if in_mf(message, False) and is_admin(message, True) and person_analyze(message):
         promotion(message)
 
 
 @bot.message_handler(commands=['guest'])
 def demotion_handler(message):
     """Забирает у человека админку"""
-    if in_mf(message, False) and is_admin(message, True):
+    if in_mf(message, False) and is_admin(message, True) and person_analyze(message):
         demotion(message)
 
 
