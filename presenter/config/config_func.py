@@ -27,9 +27,16 @@ def person_analyze(message, to_self=False):
     log.log_print("person_analyze invoked")
     if message.reply_to_message:  # Сообщение является ответом
         if message.reply_to_message.new_chat_members:
-            return message.reply_to_message.new_chat_members[0]
+            person = message.reply_to_message.new_chat_members[0]
         else:
-            return message.reply_to_message.from_user
+            person = message.reply_to_message.from_user
+        print(person)
+        print(message.from_user)
+        if person.id == message.from_user.id and not to_self:
+            reply(message, "Что с тобой не так?")
+            return None
+        else:
+            return person
     elif len(message.text.split()) > 1:
         par = message.text.split()[1]
         try:
