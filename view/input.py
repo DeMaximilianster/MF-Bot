@@ -154,7 +154,7 @@ def ironic_handler(call):
 @bot.message_handler(commands=['vote', 'multi_vote', 'adapt_vote'])
 def vote_handler(message):
     """Генерирует голосовашку"""
-    if in_mf(message) and is_admin(message):
+    if in_mf(message, False) and is_admin(message):
         vote(message)
 
 

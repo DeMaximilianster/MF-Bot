@@ -131,11 +131,11 @@ def answer_callback(callback_query_id, text=None):
         print(e)
 
 
-def register_handler(sent, function):
+def register_handler(sent, function, *args, **kwargs):
     """Следующее сообщение будет обработано заданной функцией"""
     log.log_print("register_handler invoked")
     try:
-        return bot.register_next_step_handler(sent, function)
+        return bot.register_next_step_handler(sent, function, *args, **kwargs)
     except Exception as e:
         print(e)
 
