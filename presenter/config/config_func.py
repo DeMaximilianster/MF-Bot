@@ -62,7 +62,9 @@ def rank_required(message, min_rank):
     your_rank = database.get(message.from_user.id)[3]
     your_rank_n = roles.index(your_rank)
     min_rank_n = roles.index(min_rank)
-    reply(message, "Ваше звание ({}) не дотягивает до необходимого ({}) для данной команды".format(your_rank, min_rank))
+    if your_rank_n < min_rank_n:
+        reply(message, "Ваше звание ({}) не дотягивает до необходимого ({}) для данной команды"
+                       .format(your_rank, min_rank))
     del database
     return your_rank_n >= min_rank_n
 
