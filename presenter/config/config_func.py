@@ -30,18 +30,11 @@ def person_analyze(message, to_self=False):
             person = message.reply_to_message.new_chat_members[0]
         else:
             person = message.reply_to_message.from_user
-        print(person)
-        print(message.from_user)
-        if person.id == message.from_user.id and not to_self:
-            reply(message, "Что с тобой не так?")
-            return None
-        else:
-            return person
     elif len(message.text.split()) > 1:
         par = message.text.split()[1]
         try:
             if int(par) and len(str(par)) == 9:
-                return get_member(-1001408293838, par).user
+                person = get_member(-1001408293838, par).user
             else:
                 reply(message, "Некорректный ID. ID содержит в себе 9 цифр")
                 return None
@@ -54,6 +47,11 @@ def person_analyze(message, to_self=False):
     else:
         reply(message, "Ответьте на сообщение необходимого человека или напишите после команды его ID")
         return None
+    if person.id == message.from_user.id and not to_self:
+        reply(message, "Я вам запрещаю пользоваться этой командой на самом себе")
+        return None
+    else:
+        return person
 
 
 def rank_required(message, min_rank):
