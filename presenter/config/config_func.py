@@ -4,7 +4,7 @@ from telebot.types import InlineKeyboardButton, InlineKeyboardMarkup
 from presenter.config.files_paths import adapt_votes_file, multi_votes_file, votes_file
 from view.output import *
 from presenter.config.log import Loger
-from presenter.config.config_var import superior_roles, admin_roles
+from presenter.config.config_var import roles
 from presenter.config.log import log_to
 from random import choice
 
@@ -56,22 +56,15 @@ def person_analyze(message, to_self=False):
         return None
 
 
-def is_admin(message, superior=False):  # TODO Заменить на функцию, где можно поставить любое звание минимальным
-    log.log_print("is_admin invoked from userID {}".format(message.from_user.id))
+def rank_required(message, min_rank):
+    log.log_print("rank_required invoked from userID {}".format(message.from_user.id))
     database = Database()
-    rank = database.get(message.from_user.id)[3]  # Получаем его звание
+    your_rank = database.get(message.from_user.id)[3]
+    your_rank_n = roles.index(your_rank)
+    min_rank_n = roles.index(min_rank)
+    reply(message, "Ваше звание ({}) не дотягивает до необходимого ({}) для данной команды".format(your_rank, min_rank))
     del database
-    if superior:  # Обязательно быть Лидером или Заместителем
-        if rank in superior_roles:
-            return True
-        else:
-            reply(message, "Э, нет, эта кнопка только для Лидера и его Заместителя")
-            return False
-    elif rank in admin_roles:
-        return True
-    else:
-        reply(message, "Э, нет, эта кнопка только для админов")
-        return False
+    return your_rank_n >= min_rank_n
 
 
 def cooldown(message):
@@ -178,7 +171,7 @@ def create_vote(vote_message):
     """Создаёт голосовашку"""
     log.log_print("create_vote invoked")
     # TODO Параметр purpose, отвечающий за действие, которое надо сделать при закрытии голосовашки
-    file = open(votes_file, 'r')
+    file = open(votes_file, 'r', encoding='utf-8')
     votes_shelve = file.read()
     if votes_shelve:
         votes_shelve = eval(votes_shelve)
@@ -288,6 +281,3 @@ def update_adapt_vote(vote_id):
         edit_text(text=text, chat_id=votey['chat'], message_id=vote_id, reply_markup=keyboard, parse_mode="Markdown")
     except Exception as e:
         print(e)
-
-
-

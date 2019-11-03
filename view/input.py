@@ -1,6 +1,6 @@
 from presenter.config.token import bot
 from view.output import reply, answer_callback
-from presenter.config.config_func import in_mf, is_admin, counter, cooldown, person_analyze
+from presenter.config.config_func import in_mf, counter, cooldown, person_analyze, rank_required
 from presenter.logic.elite import elite
 from presenter.logic.boss_commands import ban, deleter_mode, promotion, demotion, add_chat, warn, unwarn, message_change
 from presenter.logic.complicated_commands import adequate, inadequate, response, insult, non_ironic, ironic, \
@@ -56,7 +56,7 @@ def elite_handler(message):
 @bot.message_handler(commands=['warn'])
 def warn_handler(message):
     """Даёт участнику предупреждение"""
-    if in_mf(message, False) and is_admin(message) and person_analyze(message):
+    if in_mf(message, False) and rank_required(message, "Админ") and person_analyze(message):
         if message.reply_to_message:
             warn(message)
         else:
@@ -66,40 +66,40 @@ def warn_handler(message):
 @bot.message_handler(commands=['unwarn'])
 def unwarn_handler(message):
     """Снимает с участника предупреждение"""
-    if in_mf(message, False) and is_admin(message) and person_analyze(message):
+    if in_mf(message, False) and rank_required(message, "Админ") and person_analyze(message):
         unwarn(message)
 
 
 @bot.message_handler(commands=['ban'])
 def ban_handler(message):
-    if in_mf(message, False) and is_admin(message) and person_analyze(message):
+    if in_mf(message, False) and rank_required(message, "Админ") and person_analyze(message):
         ban(message)
 
 
 @bot.message_handler(commands=['delete_mode'])
 def deleter_mode_handler(message):
-    if in_mf(message, False) and is_admin(message):
+    if in_mf(message, False) and rank_required(message, "Админ"):
         deleter_mode(message)
 
 
 @bot.message_handler(commands=['admin'])
 def promotion_handler(message):
     """Назначает человека админом"""
-    if in_mf(message, False) and is_admin(message, True) and person_analyze(message):
+    if in_mf(message, False) and rank_required(message, "Член Комитета") and person_analyze(message):
         promotion(message)
 
 
 @bot.message_handler(commands=['guest'])
 def demotion_handler(message):
     """Забирает у человека админку"""
-    if in_mf(message, False) and is_admin(message, True) and person_analyze(message):
+    if in_mf(message, False) and rank_required(message, "Член Комитета") and person_analyze(message):
         demotion(message)
 
 
 @bot.message_handler(commands=['messages'])
 def messages_change_handler(message):
     """Меняет запись в БД о количестве сообщений чела"""
-    if in_mf(message, False) and is_admin(message, True) and person_analyze(message):
+    if in_mf(message, False) and rank_required(message, "Член Комитета") and person_analyze(message):
         if (len(message.text.split()) == 2 and message.reply_to_message) or len(message.text.split()) == 3:
             message_change(message)
         else:
@@ -109,7 +109,7 @@ def messages_change_handler(message):
 @bot.message_handler(commands=['add_chat'])
 def add_chat_handler(message):
     """Добавляет чат в базу данных чатов, входящих в систему МФ2"""
-    if is_admin(message, True):
+    if rank_required(message, "Заместитель"):
         add_chat(message)
 
 
@@ -164,7 +164,7 @@ def ironic_handler(call):
 @bot.message_handler(commands=['vote', 'multi_vote', 'adapt_vote'])
 def vote_handler(message):
     """Генерирует голосовашку"""
-    if in_mf(message, False) and is_admin(message):
+    if in_mf(message, False) and rank_required(message, "Админ"):
         vote(message)
 
 
