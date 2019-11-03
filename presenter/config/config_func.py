@@ -32,15 +32,15 @@ def person_analyze(message, to_self=False):
             person = message.reply_to_message.from_user
     elif len(message.text.split()) > 1:
         par = message.text.split()[1]
-        try:
-            if int(par) and len(str(par)) == 9:
-                person = get_member(-1001408293838, par).user
+        if par.isdigit() and len(par) == 9:
+            person = get_member(-1001408293838, par)
+            if person:
+                person = person.user
             else:
-                reply(message, "Некорректный ID. ID содержит в себе 9 цифр")
+                reply(message, "Такого ID ни у кого нет")
                 return None
-        except Exception as e:
-            print(e)
-            reply(message, "Некорректный ID. ID это целое число. Либо такого ID ни у кого нет")
+        else:
+            reply(message, "Некорректный ID. ID это число, которое содержит в себе 9 цифр")
             return None
     elif to_self:
         return message.from_user
