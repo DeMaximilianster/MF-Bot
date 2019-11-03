@@ -18,7 +18,7 @@ def warn(message):
     log.log_print("warn invoked")
     database = Database()
     person = person_analyze(message)
-    try:
+    try:  # TODO поменять на if-else
         warns = int(message.text.split()[1])
     except Exception as e:
         print(e)
@@ -44,7 +44,8 @@ def unwarn(message):
     log.log_print("unwarn invoked")
     database = Database()
     person = person_analyze(message)
-    value = database.get(person.id)[5] - 1
+    value = database.get(person.id)[5] - 1  # TODO Возможность снимать несколько варнов за раз
+    # TODO Предохранитель от отрицательного числа варнов
     database.change(value, person.id, table='members', set_column='warns', where_column='id')
     reply(message, "Варн снят. Теперь их {}".format(value))
     if value < 3:
@@ -110,6 +111,30 @@ def demotion(message):
     for channel in channel_list:
         promote(channel[0], person.id, can_post_messages=False, can_invite_users=False)
     reply(message, "Теперь это гость!")
+    del database
+
+
+def message_change(message):
+    """Меняет запись в БД о количестве сообщений чела"""
+    database = Database()
+    p_id = person_analyze(message).id
+    messages = message.text.split()[-1]
+    if messages[0] == '+':
+        messages = int(messages)
+        value = database.get(p_id)[4] + messages
+        reply(message, "Прибавляю человеку с ID {} {} сообщений. В итоге получается {}".format(p_id, messages, value))
+    elif messages[0] == '-':
+        messages = -int(messages)  # Делаем из отрицательного числа положительное
+        value = database.get(p_id)[4] - messages
+        if value >= 0:
+            reply(message, "Отнимаю человеку с ID {} {} сообщений. В итоге получается {}".format(p_id, messages, value))
+        else:
+            reply(message, "Часто у людей видишь отрицательное количество сообщений?")
+            value = database.get(p_id)[4]
+    else:
+        value = int(messages)
+        reply(message, "Ставлю человеку с ID {} количество сообщений равное {}".format(p_id, value))
+    database.change(value, p_id, 'members', 'messages', 'id')
     del database
 
 

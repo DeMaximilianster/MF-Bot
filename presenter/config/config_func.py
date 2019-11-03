@@ -56,7 +56,7 @@ def person_analyze(message, to_self=False):
         return None
 
 
-def is_admin(message, superior=False):
+def is_admin(message, superior=False):  # TODO Заменить на функцию, где можно поставить любое звание минимальным
     log.log_print("is_admin invoked from userID {}".format(message.from_user.id))
     database = Database()
     rank = database.get(message.from_user.id)[3]  # Получаем его звание
@@ -169,6 +169,7 @@ def counter(message):
     elif message.chat.id in [x[0] for x in database.get_many('Главный чат') + database.get_many('Подчат')]:
         value = database.get(person.id)[4] + 1
         database.change(value, person.id, 'members', 'messages', 'id')
+        # TODO Добавить время последнего сообщения и элитократические взаимодействия с ним
     del database
 
 

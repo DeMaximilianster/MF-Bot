@@ -2,7 +2,7 @@ from presenter.config.token import bot
 from view.output import reply, answer_callback
 from presenter.config.config_func import in_mf, is_admin, counter, cooldown, person_analyze
 from presenter.logic.elite import elite
-from presenter.logic.boss_commands import ban, deleter_mode, promotion, demotion, add_chat, warn, unwarn
+from presenter.logic.boss_commands import ban, deleter_mode, promotion, demotion, add_chat, warn, unwarn, message_change
 from presenter.logic.complicated_commands import adequate, inadequate, response, insult, non_ironic, ironic, \
     vote, place_here, mv, av, add_vote
 from presenter.logic.reactions import deleter, new_member, left_member
@@ -94,6 +94,16 @@ def demotion_handler(message):
     """Забирает у человека админку"""
     if in_mf(message, False) and is_admin(message, True) and person_analyze(message):
         demotion(message)
+
+
+@bot.message_handler(commands=['messages'])
+def messages_change_handler(message):
+    """Меняет запись в БД о количестве сообщений чела"""
+    if in_mf(message, False) and is_admin(message, True) and person_analyze(message):
+        if (len(message.text.split()) == 2 and message.reply_to_message) or len(message.text.split()) == 3:
+            message_change(message)
+        else:
+            reply(message, "Либо не указана персона, к которой это применяется, либо количество сообщений")
 
 
 @bot.message_handler(commands=['add_chat'])
