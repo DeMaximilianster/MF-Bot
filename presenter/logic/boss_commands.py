@@ -76,6 +76,33 @@ def ban(message):
     del database
 
 
+def money_pay(message):
+    """Платит человеку деньги из ниоткуда"""
+    database = Database()
+    p_id = person_analyze(message).id
+    money = message.text.split()[-1]
+    value = database.get(p_id)[6]
+    if not money.isdigit() and not (money[1:].isdigit() and money[0] == '-'):
+        reply(message, "Последнее слово должно быть числом, сколько ябломилианов прибавляем или убавляем")
+    elif money[0] == '-':
+        money = -int(money)  # Делаем из отрицательного числа положительное
+        if value-money >= 0:
+            value -= money
+            reply(message, "#Финансы\n\nID {} [{} --> {}]".format(p_id, value+money, value))
+            admin_place = database.get("Админосостав", 'chats', 'purpose')[0]
+            send(admin_place, "#Финансы\n\nID {} [{} --> {}]".format(p_id, value+money, value))
+        else:
+            reply(message, "Часто у людей видишь отрицательное количество денег?")
+    else:
+        money = int(money)
+        value += money
+        reply(message, "#Финансы\n\nID {} [{} --> {}]".format(p_id, value-money, value))
+        admin_place = database.get("Админосостав", 'chats', 'purpose')[0]
+        send(admin_place, "#Финансы\n\nID {} [{} --> {}]".format(p_id, value-money, value))
+    database.change(value, p_id, 'members', 'money', 'id')
+    del database
+
+
 def promotion(message):
     """Назначает человека админом"""
     log.log_print("promotion invoked")
@@ -119,7 +146,10 @@ def message_change(message):
     database = Database()
     p_id = person_analyze(message).id
     messages = message.text.split()[-1]
-    if messages[0] == '+':
+    value = database.get(p_id)[4]
+    if not messages.isdigit() and not (messages[1:].isdigit() and messages[0] == '-'):
+        reply(message, "Последнее слово должно быть числом, сколько сообщений ставим, прибавляем или убавляем")
+    elif messages[0] == '+':
         messages = int(messages)
         value = database.get(p_id)[4] + messages
         reply(message, "Прибавляю человеку с ID {} {} сообщений. В итоге получается {}".format(p_id, messages, value))
@@ -130,7 +160,7 @@ def message_change(message):
             reply(message, "Отнимаю человеку с ID {} {} сообщений. В итоге получается {}".format(p_id, messages, value))
         else:
             reply(message, "Часто у людей видишь отрицательное количество сообщений?")
-            value = database.get(p_id)[4]
+
     else:
         value = int(messages)
         reply(message, "Ставлю человеку с ID {} количество сообщений равное {}".format(p_id, value))

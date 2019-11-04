@@ -116,7 +116,7 @@ def send_me(message):
     log.log_print(str(message.from_user.id)+": send_me invoked")
     database = Database()
     person = person_analyze(message, True)
-    if person:
+    if person:  # TODO Перенести проверку на person_analyze в input.py
         database.change(person.username, person.id, set_column='username')
         database.change(person.first_name, person.id, set_column='nickname')
         person = database.get(person.id)
@@ -151,3 +151,32 @@ def all_members(message):
             answer += '`' + str(member[0]) + '` ' + username + '\n'
         send(message.from_user.id, answer, parse_mode='Markdown')
     reply(message, "Выслал БД в личку")
+
+
+def money_give(message):
+    """Функция обмена деньгами между людьми"""
+    database = Database()
+    getter = person_analyze(message).id
+    giver = message.from_user.id
+    money = message.text.split()[-1]
+    value_getter = database.get(getter)[6]
+    value_giver = database.get(giver)[6]
+    if not money.isdigit() and not (money[1:].isdigit() and money[0] == '-'):
+        reply(message, "Последнее слово должно быть числом, сколько ябломилианов даёте")
+    elif money[0] == '-':
+        reply(message, "Неплохая попытка")
+    else:
+        money = int(money)
+        if money > value_giver:
+            reply(message, "Деньжат не хватает")
+        else:
+            value_getter += money
+            value_giver -= money
+            reply(message, "#Финансы\n\nID {} [{} --> {}]\nID {} [{} --> {}]\n"
+                  .format(getter, value_getter-money, value_getter, giver, value_giver+money, value_giver))
+            admin_place = database.get("Админосостав", 'chats', 'purpose')[0]
+            send(admin_place, "#Финансы\n\nID {} [{} --> {}]\nID {} [{} --> {}]\n"
+                 .format(getter, value_getter-money, value_getter, giver, value_giver+money, value_giver))
+    database.change(value_getter, getter, 'members', 'money', 'id')
+    database.change(value_giver, giver, 'members', 'money', 'id')
+    del database

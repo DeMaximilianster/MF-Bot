@@ -2,12 +2,13 @@ from presenter.config.token import bot
 from view.output import reply, answer_callback
 from presenter.config.config_func import in_mf, counter, cooldown, person_analyze, rank_required
 from presenter.logic.elite import elite
-from presenter.logic.boss_commands import ban, deleter_mode, promotion, demotion, add_chat, warn, unwarn, message_change
+from presenter.logic.boss_commands import ban, deleter_mode, promotion, demotion, add_chat, warn, unwarn,\
+    message_change, money_pay
 from presenter.logic.complicated_commands import adequate, inadequate, response, insult, non_ironic, ironic, \
     vote, place_here, mv, av, add_vote
 from presenter.logic.reactions import deleter, new_member, left_member
 from presenter.logic.standart_commands import helper, send_drakken, send_me, send_meme, minet, uberminet, show_id, \
-    all_members
+    all_members, money_give
 from presenter.logic.start import starter
 from presenter.config.log import Loger, log_to
 
@@ -74,6 +75,12 @@ def unwarn_handler(message):
 def ban_handler(message):
     if in_mf(message, False) and rank_required(message, "Админ") and person_analyze(message):
         ban(message)
+
+
+@bot.message_handler(commands=['pay'])
+def money_pay_handler(message):
+    if in_mf(message, False) and rank_required(message, "Админ") and person_analyze(message):
+        money_pay(message)
 
 
 @bot.message_handler(commands=['delete_mode'])
@@ -261,6 +268,13 @@ def all_members_handler(message):
     """Присылает человеку все записи в БД"""
     if in_mf(message):
         all_members(message)
+
+
+@bot.message_handler(commands=['give'])
+def money_give_handler(message):
+    """Обмен денег между пользователями"""
+    if in_mf(message) and person_analyze(message):
+        money_give(message)
 
 
 '''Последний хэндлер. Просто считает сообщения, что не попали в другие хэндлеры'''

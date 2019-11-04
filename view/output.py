@@ -147,6 +147,3 @@ def get_member(chat_id, user_id):
         return bot.get_chat_member(chat_id, user_id)
     except Exception as e:
         print(e)
-
-
-
