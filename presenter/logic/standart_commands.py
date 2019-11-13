@@ -79,14 +79,6 @@ def minet(message):
         send_sticker(message.chat.id, rep, reply_to_message_id=message.message_id)
 
 
-def uberminet(message):
-    """ПРИНОСИТ УДОВОЛЬСТВИЕ"""
-    log.log_print(str(message.from_user.id)+": uberminet invoked")
-    rep = choice(('оаоаоаоаооа мммммм)))))', 'Э, нет, эта кнопка не для тебя', 'Попа чистая?', 'Кусь :3',
-                  'Открывай рот тогда)'))
-    reply(message, " *"+rep.upper()+"!!!!!*", parse_mode='Markdown')
-
-
 def send_drakken(message):
     """Присылает арт с Доктором Драккеном"""
     log.log_print(str(message.from_user.id)+": send_drakken invoked")

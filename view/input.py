@@ -7,7 +7,7 @@ from presenter.logic.boss_commands import ban, deleter_mode, promotion, demotion
 from presenter.logic.complicated_commands import adequate, inadequate, response, insult, non_ironic, ironic, \
     vote, place_here, mv, av, add_vote
 from presenter.logic.reactions import deleter, new_member, left_member
-from presenter.logic.standart_commands import helper, send_drakken, send_me, send_meme, minet, uberminet, show_id, \
+from presenter.logic.standart_commands import helper, send_drakken, send_me, send_meme, minet, show_id, \
     all_members, money_give
 from presenter.logic.start import starter
 from presenter.config.log import Loger, log_to
@@ -232,13 +232,6 @@ def minet_handler(message):
     """Приносит удовольствие"""
     if in_mf(message) and cooldown(message):
         minet(message)
-
-
-@bot.message_handler(commands=['uberminet'])
-def uberminet_handler(message):
-    """ПРИНОСИТ УДОВОЛЬСТВИЕ"""
-    if in_mf(message) and cooldown(message):
-        uberminet(message)
 
 
 @bot.message_handler(commands=['drakken'])
