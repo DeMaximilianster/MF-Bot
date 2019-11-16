@@ -95,9 +95,15 @@ def ban(message):
 
 
 def money_pay(message):
-    """Платит человеку деньги из ниоткуда"""
+    """Платит человеку деньги из бюджета чата"""
     database = Database()
+    bot_id = 575704111
+    bot_money = database.get(bot_id)[6]
     p_id = person_analyze(message).id
+    if p_id == bot_id:
+        reply(message, "Ты додик?")
+        del database
+        return None
     money = message.text.split()[-1]
     value = database.get(p_id)[6]
     if not money.isdigit() and not (money[1:].isdigit() and money[0] == '-'):
@@ -106,18 +112,28 @@ def money_pay(message):
         money = -int(money)  # Делаем из отрицательного числа положительное
         if value-money >= 0:
             value -= money
-            reply(message, "#Финансы\n\nID {} [{} --> {}]".format(p_id, value+money, value))
+            bot_money += money
+            reply(message, "#Финансы\n\nБюджет [{} --> {}]\nID {} [{} --> {}]"
+                  .format(bot_money-money, bot_money, p_id, value+money, value))
             admin_place = database.get("Админосостав", 'chats', 'purpose')[0]
-            send(admin_place, "#Финансы\n\nID {} [{} --> {}]".format(p_id, value+money, value))
+            send(admin_place, "#Финансы\n\nБюджет [{} --> {}]\nID {} [{} --> {}]"
+                 .format(bot_money-money, bot_money, p_id, value+money, value))
         else:
             reply(message, "Часто у людей видишь отрицательное количество денег?")
     else:
         money = int(money)
-        value += money
-        reply(message, "#Финансы\n\nID {} [{} --> {}]".format(p_id, value-money, value))
-        admin_place = database.get("Админосостав", 'chats', 'purpose')[0]
-        send(admin_place, "#Финансы\n\nID {} [{} --> {}]".format(p_id, value-money, value))
+        if bot_money < money:
+            reply(message, "У нас нет столько в бюджете")
+        else:
+            value += money
+            bot_money -= money
+            reply(message, "#Финансы\n\nБюджет [{} --> {}]\nID {} [{} --> {}]"
+                  .format(bot_money+money, bot_money, p_id, value-money, value))
+            admin_place = database.get("Админосостав", 'chats', 'purpose')[0]
+            send(admin_place, "#Финансы\n\nБюджет [{} --> {}]\nID {} [{} --> {}]"
+                 .format(bot_money+money, bot_money, p_id, value-money, value))
     database.change(value, p_id, 'members', 'money', 'id')
+    database.change(bot_money, bot_id, 'members', 'money', 'id')
     del database
 
 
