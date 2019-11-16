@@ -12,6 +12,24 @@ log = Loger(log_to)
 # TODO команда для делания гражданином, высшим гражданином
 # TODO команда для делания Членом Комитета
 
+"""
+def chat_search(message):
+    reply(message, "Приступаю к выполнению")
+    # i = -1001250000000
+    i = "@trachDeMax"
+    while True:
+        chat = get_chat(i)
+        if chat:
+            if chat.username:
+                send(message.chat.id, chat.username)
+                break
+            else:
+                send(message.chat.id, "Нашёл супергруппу, но она приватная")
+        elif i % 100 == 0:
+            send(message.chat.id, "Достиг отметки в {}".format(i))
+        i -= 1
+"""
+
 
 def warn(message):
     """Даёт участнику предупреждение"""

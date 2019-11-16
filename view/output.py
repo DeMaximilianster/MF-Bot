@@ -147,3 +147,12 @@ def get_member(chat_id, user_id):
         return bot.get_chat_member(chat_id, user_id)
     except Exception as e:
         print(e)
+
+
+def get_chat(chat_id):
+    """Получить чат"""
+    log.log_print("get_chat invoked")
+    try:
+        return bot.get_chat(chat_id)
+    except Exception as e:
+        print(e)

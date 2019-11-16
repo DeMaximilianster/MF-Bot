@@ -53,6 +53,14 @@ def elite_handler(message):
 
 '''Админские обычные команды'''
 
+"""
+@bot.message_handler(commands=['search'])
+def chat_search_handler(message):
+    # Ищет чаты
+    if in_mf(message) and rank_required(message, "Админ"):
+        chat_search(message)
+"""
+
 
 @bot.message_handler(commands=['warn'])
 def warn_handler(message):
