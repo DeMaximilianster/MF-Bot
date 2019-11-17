@@ -2,6 +2,7 @@
 from view.output import reply, send_photo, send_sticker, send
 from presenter.config.config_func import time_replace, person_analyze
 from presenter.config.database_lib import Database
+from presenter.config.config_var import bot_id
 from random import choice
 from time import ctime, time
 from presenter.config.log import Loger, log_to
@@ -171,4 +172,21 @@ def money_give(message):
                  .format(getter, value_getter-money, value_getter, giver, value_giver+money, value_giver))
     database.change(value_getter, getter, 'members', 'money', 'id')
     database.change(value_giver, giver, 'members', 'money', 'id')
+    del database
+
+
+def money_top(message):
+    database = Database()
+    bot_money = database.get(bot_id)[6]
+    people = list(database.get_all("members", 'money'))
+    not_poor_people = []
+    for person in people:
+        if person[6] != 0 and person[0] != bot_id:
+            not_poor_people.append(person)
+    i = 1
+    text = "Бюджет: {} 🍎\n".format(bot_money)
+    for person in not_poor_people:
+        text += "\n{}. {} -- {} 🍎".format(i, person[2], person[6])  # TODO Добавить сюда красивые ссылки на чела
+        i += 1
+    reply(message, text)
     del database

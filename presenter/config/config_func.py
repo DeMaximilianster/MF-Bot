@@ -4,7 +4,7 @@ from telebot.types import InlineKeyboardButton, InlineKeyboardMarkup
 from presenter.config.files_paths import adapt_votes_file, multi_votes_file, votes_file
 from view.output import *
 from presenter.config.log import Loger
-from presenter.config.config_var import roles
+from presenter.config.config_var import roles, bot_id
 from presenter.config.log import log_to
 from random import choice
 
@@ -23,7 +23,7 @@ def shuffle(old_list):
     return new_list
 
 
-def person_analyze(message, to_self=False):
+def person_analyze(message, to_self=False, to_bot=True):
     log.log_print("person_analyze invoked")
     if message.reply_to_message:  # Сообщение является ответом
         if message.reply_to_message.new_chat_members:
@@ -47,20 +47,23 @@ def person_analyze(message, to_self=False):
     else:
         reply(message, "Ответьте на сообщение необходимого человека или напишите после команды его ID")
         return None
-    if person.id == message.from_user.id and not to_self:
-        reply(message, "Я вам запрещаю пользоваться этой командой на самом себе")
+    if (person.id == message.from_user.id and not to_self) and not rank_required(message, "Лидер", False):
+        reply(message, "Я вам запрещаю пользоваться этой командой на самом себе (если вы не Лидер, конечно)")
+        return None
+    elif person.id == bot_id and not to_bot:
+        reply(message, "Я вам запрещаю пользоваться этой командой на мне")
         return None
     else:
         return person
 
 
-def rank_required(message, min_rank):
+def rank_required(message, min_rank, loud=True):
     log.log_print("rank_required invoked from userID {}".format(message.from_user.id))
     database = Database()
     your_rank = database.get(message.from_user.id)[3]
     your_rank_n = roles.index(your_rank)
     min_rank_n = roles.index(min_rank)
-    if your_rank_n < min_rank_n:
+    if your_rank_n < min_rank_n and loud:
         reply(message, "Ваше звание ({}) не дотягивает до необходимого ({}) для данной команды"
                        .format(your_rank, min_rank))
     del database

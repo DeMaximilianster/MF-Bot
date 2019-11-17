@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 from presenter.config.database_lib import Database
-from presenter.config.config_var import full_chat_list, chat_list, channel_list
+from presenter.config.config_var import full_chat_list, chat_list, channel_list, bot_id
 from presenter.config.log import Loger, log_to
 from presenter.config.config_func import person_analyze
 from view.output import kick, reply, promote, send, forward
@@ -97,13 +97,8 @@ def ban(message):
 def money_pay(message):
     """Платит человеку деньги из бюджета чата"""
     database = Database()
-    bot_id = 575704111
     bot_money = database.get(bot_id)[6]
     p_id = person_analyze(message).id
-    if p_id == bot_id:
-        reply(message, "Ты додик?")
-        del database
-        return None
     money = message.text.split()[-1]
     value = database.get(p_id)[6]
     if not money.isdigit() and not (money[1:].isdigit() and money[0] == '-'):

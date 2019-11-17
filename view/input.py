@@ -8,7 +8,7 @@ from presenter.logic.complicated_commands import adequate, inadequate, response,
     vote, place_here, mv, av, add_vote
 from presenter.logic.reactions import deleter, new_member, left_member
 from presenter.logic.standart_commands import helper, send_drakken, send_me, send_meme, minet, show_id, \
-    all_members, money_give
+    all_members, money_give, money_top
 from presenter.logic.start import starter
 from presenter.config.log import Loger, log_to
 
@@ -87,7 +87,7 @@ def ban_handler(message):
 
 @bot.message_handler(commands=['pay'])
 def money_pay_handler(message):
-    if in_mf(message, False) and rank_required(message, "Админ") and person_analyze(message):
+    if in_mf(message, False) and rank_required(message, "Админ") and person_analyze(message, to_bot=False):
         money_pay(message)
 
 
@@ -276,6 +276,13 @@ def money_give_handler(message):
     """Обмен денег между пользователями"""
     if in_mf(message) and person_analyze(message):
         money_give(message)
+
+
+@bot.message_handler(commands=['top'])
+def money_top_handler(message):
+    """Топ ЯМ"""
+    if in_mf(message):
+        money_top(message)
 
 
 '''Последний хэндлер. Просто считает сообщения, что не попали в другие хэндлеры'''

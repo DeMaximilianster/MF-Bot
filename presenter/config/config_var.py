@@ -2,6 +2,7 @@
 from presenter.config.database_lib import Database
 from telebot.types import InlineKeyboardButton, InlineKeyboardMarkup
 
+bot_id = 575704111
 
 # Список всех МФ2-чатов, кроме Админосостава и Комитета
 global_database = Database()
