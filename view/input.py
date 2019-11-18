@@ -288,9 +288,7 @@ def money_top_handler(message):
 '''Последний хэндлер. Просто считает сообщения, что не попали в другие хэндлеры'''
 
 
-@bot.message_handler(content_types=['text', 'audio', 'document', 'photo', 'sticker', 'video', 'video_note', 'voice',
-                                    'location', 'contact', 'new_chat_members', 'left_chat_member', 'new_chat_title',
-                                    'new_chat_photo', 'delete_chat_photo'])
+@bot.message_handler(func=lambda message: True, content_types=None)
 def counter_handler(message):
     """Подсчитывает сообщения"""
     counter(message)
