@@ -1,6 +1,6 @@
 from presenter.config.token import bot
 from view.output import reply, answer_callback
-from presenter.config.config_func import in_mf, counter, cooldown, person_analyze, rank_required
+from presenter.config.config_func import in_mf, counter, cooldown, person_analyze, rank_required, rank_superiority
 from presenter.logic.elite import elite
 from presenter.logic.boss_commands import ban, deleter_mode, promotion, demotion, add_chat, warn, unwarn,\
     message_change, money_pay
@@ -65,7 +65,8 @@ def chat_search_handler(message):
 @bot.message_handler(commands=['warn'])
 def warn_handler(message):
     """Даёт участнику предупреждение"""
-    if in_mf(message, False) and rank_required(message, "Админ") and person_analyze(message):
+    if in_mf(message, False) and rank_required(message, "Админ") and person_analyze(message)\
+            and rank_superiority(message):
         if message.reply_to_message:
             warn(message)
         else:
@@ -81,13 +82,14 @@ def unwarn_handler(message):
 
 @bot.message_handler(commands=['ban'])
 def ban_handler(message):
-    if in_mf(message, False) and rank_required(message, "Админ") and person_analyze(message):
+    if in_mf(message, False) and rank_required(message, "Админ") and person_analyze(message)\
+            and rank_superiority(message):
         ban(message)
 
 
 @bot.message_handler(commands=['pay'])
 def money_pay_handler(message):
-    if in_mf(message, False) and rank_required(message, "Админ") and person_analyze(message, to_bot=False):
+    if in_mf(message, False) and rank_required(message, "Админ") and person_analyze(message):
         money_pay(message)
 
 
@@ -100,14 +102,16 @@ def deleter_mode_handler(message):
 @bot.message_handler(commands=['admin'])
 def promotion_handler(message):
     """Назначает человека админом"""
-    if in_mf(message, False) and rank_required(message, "Член Комитета") and person_analyze(message):
+    if in_mf(message, False) and rank_required(message, "Член Комитета") and person_analyze(message)\
+            and rank_superiority(message):
         promotion(message)
 
 
 @bot.message_handler(commands=['guest'])
 def demotion_handler(message):
     """Забирает у человека админку"""
-    if in_mf(message, False) and rank_required(message, "Член Комитета") and person_analyze(message):
+    if in_mf(message, False) and rank_required(message, "Член Комитета") and person_analyze(message)\
+            and rank_superiority(message):
         demotion(message)
 
 
@@ -274,7 +278,7 @@ def all_members_handler(message):
 @bot.message_handler(commands=['give'])
 def money_give_handler(message):
     """Обмен денег между пользователями"""
-    if in_mf(message) and person_analyze(message):
+    if in_mf(message) and person_analyze(message, to_bot=True):
         money_give(message)
 
 

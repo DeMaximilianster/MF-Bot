@@ -149,7 +149,7 @@ def all_members(message):
 def money_give(message):
     """Функция обмена деньгами между людьми"""
     database = Database()
-    getter = person_analyze(message).id
+    getter = person_analyze(message, to_bot=True).id
     giver = message.from_user.id
     money = message.text.split()[-1]
     value_getter = database.get(getter)[6]

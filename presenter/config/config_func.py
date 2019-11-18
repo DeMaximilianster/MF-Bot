@@ -23,7 +23,7 @@ def shuffle(old_list):
     return new_list
 
 
-def person_analyze(message, to_self=False, to_bot=True):
+def person_analyze(message, to_self=False, to_bot=False):
     log.log_print("person_analyze invoked")
     if message.reply_to_message:  # Сообщение является ответом
         if message.reply_to_message.new_chat_members:
@@ -55,6 +55,20 @@ def person_analyze(message, to_self=False, to_bot=True):
         return None
     else:
         return person
+
+
+def rank_superiority(message):
+    database = Database()
+    your_rank = database.get(message.from_user.id)[3]
+    their_rank = database.get(person_analyze(message).id)[3]
+    del database
+    your_rank_n = roles.index(your_rank)
+    their_rank_n = roles.index(their_rank)
+    if their_rank_n >= your_rank_n:
+        reply(message, "Для этого ваше звание ({}) должно превосходить звание цели ({})".format(your_rank, their_rank))
+        return False
+    else:
+        return True
 
 
 def rank_required(message, min_rank, loud=True):
