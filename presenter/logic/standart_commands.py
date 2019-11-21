@@ -142,8 +142,11 @@ def all_members(message):
         for member in one_message_list:
             username = "[{}](tg://user?id={})".format(member[2].replace('[', '').replace(']', ''), member[0])
             answer += '`' + str(member[0]) + '` ' + username + '\n'
-        send(message.from_user.id, answer, parse_mode='Markdown')
-    reply(message, "Выслал БД в личку")
+        sent = send(message.from_user.id, answer, parse_mode='Markdown')
+    if sent:
+        reply(message, "Выслал БД в личку")
+    else:
+        reply(message, "Сначала запусти меня в личных сообщениях")
 
 
 def money_give(message):
