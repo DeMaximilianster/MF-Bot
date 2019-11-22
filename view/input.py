@@ -1,6 +1,7 @@
 from presenter.config.token import bot
 from view.output import reply, answer_callback
-from presenter.config.config_func import in_mf, counter, cooldown, person_analyze, rank_required, rank_superiority
+from presenter.config.config_func import in_mf, counter, cooldown, person_analyze, rank_required, rank_superiority,\
+    language
 from presenter.logic.elite import elite
 from presenter.logic.boss_commands import ban, deleter_mode, promotion, demotion, add_chat, warn, unwarn,\
     message_change, money_pay
@@ -22,21 +23,24 @@ log = Loger(log_to)
 def deleter_handler(message):
     """Удаляет медиа ночью"""
     log.log_print("night media invoked")
-    if in_mf(message):  # Если в МФ2 - то удаляем
+    lang = language(message)
+    if in_mf(message, lang):  # Если в МФ2 - то удаляем
         deleter(message)
 
 
 @bot.message_handler(content_types=['new_chat_members'])
 def new_member_handler(message):
     """Реагирует на вход в чат"""
-    if in_mf(message):
+    lang = language(message)
+    if in_mf(message, lang):
         new_member(message)
 
 
 @bot.message_handler(content_types=['left_chat_member'])
 def left_member_handler(message):
     """Комментирует уход участника и прощается участником"""
-    if in_mf(message):
+    lang = language(message)
+    if in_mf(message, lang):
         left_member(message)
 
 
@@ -224,35 +228,40 @@ def add_vote_handler(call):
 @bot.message_handler(commands=['start'])
 def starter_handler(message):
     """Запуск бота в личке, в чате просто реагирует"""
-    if in_mf(message):
-        starter(message)
+    lang = language(message)
+    if in_mf(message, lang):
+        starter(message, lang)
 
 
 @bot.message_handler(commands=['help'])
 def helper_handler(message):
     """Предоставляет человеку список команд"""
-    if in_mf(message):
+    lang = language(message)
+    if in_mf(message, lang):
         helper(message)
 
 
 @bot.message_handler(commands=['id'])
 def show_id_handler(message):
     """Присылает различные ID'шники, зачастую бесполезные"""
-    if in_mf(message):
+    lang = language(message)
+    if in_mf(message, lang):
         show_id(message)
 
 
 @bot.message_handler(commands=['minet'])
 def minet_handler(message):
     """Приносит удовольствие"""
-    if in_mf(message) and cooldown(message):
+    lang = language(message)
+    if in_mf(message, lang) and cooldown(message):
         minet(message)
 
 
 @bot.message_handler(commands=['drakken'])
 def send_drakken_handler(message):
     """Присылает арт с Доктором Драккеном"""
-    if in_mf(message) and cooldown(message):
+    lang = language(message)
+    if in_mf(message, lang) and cooldown(message):
         send_drakken(message)
 
 
@@ -260,7 +269,8 @@ def send_drakken_handler(message):
 @bot.message_handler(commands=['meme'])
 def send_meme_handler(message):
     """Присылает мем"""
-    if in_mf(message) and cooldown(message):
+    lang = language(message)
+    if in_mf(message, lang) and cooldown(message):
         send_meme(message)
 
 
@@ -268,14 +278,16 @@ def send_meme_handler(message):
 def send_me_handler(message):
     """Присылает человеку его запись в БД"""
     person = person_analyze(message, to_self=True)
-    if in_mf(message):
+    lang = language(message)
+    if in_mf(message, lang):
         send_me(message, person)
 
 
 @bot.message_handler(commands=['members', 'database'])
 def all_members_handler(message):
     """Присылает человеку все записи в БД"""
-    if in_mf(message):
+    lang = language(message)
+    if in_mf(message, lang):
         all_members(message)
 
 
@@ -283,14 +295,16 @@ def all_members_handler(message):
 def money_give_handler(message):
     """Обмен денег между пользователями"""
     person = person_analyze(message, to_bot=True)
-    if in_mf(message) and person:
+    lang = language(message)
+    if in_mf(message, lang) and person:
         money_give(message, person)
 
 
 @bot.message_handler(commands=['top'])
 def money_top_handler(message):
     """Топ ЯМ"""
-    if in_mf(message):
+    lang = language(message)
+    if in_mf(message, lang):
         money_top(message)
 
 

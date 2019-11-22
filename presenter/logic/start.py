@@ -1,15 +1,16 @@
 # -*- coding: utf-8 -*-
-from view.output import send, reply, register_handler
+from view.output import send, reply, register_handler, get_chat
 from presenter.config.log import Loger, log_to
 from presenter.config.files_paths import *
 from presenter.config.config_var import adequate_keyboard, a_adequate_keyboard
+
 start_work = True
 
 log = Loger(log_to)
 
 
 def new_option(message, vote_id):
-    log.log_print(str(message.from_user.id)+": new_option invoked")
+    log.log_print(str(message.from_user.id) + ": new_option invoked")
     send(381279599, "[{}, '{}']".format(vote_id, message.text), reply_markup=adequate_keyboard)
     reply(message, "Ваше мнение выслано на проверку")
 
@@ -20,10 +21,13 @@ def new_adapt_option(message, vote_id):
     reply(message, "Ваше мнение выслано на проверку")
 
 
-def starter(message):
+def starter(message, lang):
     """Запуск бота в личке, в чате просто реагирует"""
-    log.log_print(str(message.from_user.id)+": starter invoked")
+    log.log_print(str(message.from_user.id) + ": starter invoked")
     print(message.text)
+    print(message.from_user.language_code)
+    print(get_chat(381279599).first_name)
+    print(get_chat(381279599).photo.big_file_id)
     if "full_rules" in message.text:
         reply(message, open(full_rules).read(), parse_mode="Markdown")
     elif "elitocracy" in message.text:
@@ -41,4 +45,9 @@ def starter(message):
         sent = reply(message, "Введите ваш вариант ответа на голосовании")
         register_handler(sent, new_adapt_option, vote_id)
     else:
-        reply(message, "Здравствуй. Для получения всех существующих функций нажми /help")
+        text = ''
+        if lang['en']:
+            text += "Hello. To get all existing functions click /help\n\n"
+        if lang['ru']:
+            text += "Здравствуй. Для получения всех существующих функций нажми /help\n\n"
+        reply(message, text)

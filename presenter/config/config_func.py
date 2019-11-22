@@ -11,6 +11,27 @@ from random import choice
 log = Loger(log_to)
 
 
+def language(message):
+    languages = {"ru": False, "en": False}
+    russian = set("ёйцукенгшщзхъфывапролджэячсмитьбюЁЙЦУКЕНГШЩЗХЪФЫВАПРОЛДЖЭЯЧСМИТЬБЮ")
+    english = set("qwertyuiopasdfghjklzxcvbnmQWERTYUIOPASDFGHJKLZXCVBNM")
+    text = ""
+    if message.chat.type == "private":
+        user = message.from_user
+        text += user.first_name
+        if user.last_name:
+            text += user.last_name
+    else:
+        chat = get_chat(message.chat.id)
+        text += chat.title
+        if chat.description:
+            text += chat.description
+    text = set(text)
+    languages['ru'] = bool(russian & text) | (message.from_user.language_code == 'ru')
+    languages['en'] = bool(english & text) | (message.from_user.language_code == 'en')
+    return languages
+
+
 def shuffle(old_list):
     """Перемешивает список или кортеж"""
     log.log_print("shuffle invoked")
@@ -142,7 +163,7 @@ def error(message, e):
     print(e)
 
 
-def in_mf(message, or_private=True):
+def in_mf(message, lang, or_private=True):
     """Позволяет регулировать использование команл вне чатов и в личке"""
     log.log_print("in_mf invoked")
     database = Database()
@@ -161,7 +182,12 @@ def in_mf(message, or_private=True):
     text = "Жалкие завистники из чата с ID {} и названием {}, в частности {} (@{}) [{}] попытались мной воспользоваться"
     send(381279599, text.format(message.chat.id, message.chat.title, message.from_user.first_name,
                                 message.from_user.username, message.from_user.id))
-    reply(message, "Я тут не работаю. Зато я работаю в @MultiFandomRu")
+    rep_text = ""
+    if lang['en']:
+        rep_text += "I don't work here. But I work in @MultiFandomEn\n\n"
+    if lang['ru']:
+        rep_text += "Я тут не работаю. Зато я работаю в @MultiFandomRu\n\n"
+    reply(message, rep_text)
     return False
 
 
