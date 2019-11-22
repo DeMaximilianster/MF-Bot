@@ -23,7 +23,7 @@ def shuffle(old_list):
     return new_list
 
 
-def person_analyze(message, to_self=False, to_bot=False):
+def person_analyze(message, to_self=False, to_self_leader=False, to_bot=False):
     log.log_print("person_analyze invoked")
     if message.reply_to_message:  # Сообщение является ответом
         if message.reply_to_message.new_chat_members:
@@ -32,24 +32,30 @@ def person_analyze(message, to_self=False, to_bot=False):
             person = message.reply_to_message.from_user
     elif len(message.text.split()) > 1:
         par = message.text.split()[1]
-        if par.isdigit() and len(par) == 9:
+        if par.isdigit() and 7 <= len(par) <= 9:
             person = get_member(-1001408293838, par)
             if person:
                 person = person.user
             else:
-                reply(message, "Такого ID ни у кого нет")
+                reply(message, "Не вижу такого ID")
                 return None
         else:
-            reply(message, "Некорректный ID. ID это число, которое содержит в себе 9 цифр")
+            reply(message, "Некорректный ID. ID это число, которое содержит в себе от 7 до 9 цифр")
             return None
     elif to_self:
         return message.from_user
     else:
         reply(message, "Ответьте на сообщение необходимого человека или напишите после команды его ID")
         return None
-    if (person.id == message.from_user.id and not to_self) and not rank_required(message, "Лидер", False):
-        reply(message, "Я вам запрещаю пользоваться этой командой на самом себе (если вы не Лидер, конечно)")
-        return None
+    if person.id == message.from_user.id and not to_self:
+        if to_self_leader and rank_required(message, "Лидер", False):
+            return person
+        elif to_self_leader:
+            reply(message, "Я вам запрещаю пользоваться этой командой на самом себе (если вы не Лидер, конечно)")
+            return None
+        else:
+            reply(message, "Я вам запрещаю пользоваться этой командой на самом себе (даже если вы Лидер)")
+            return None
     elif person.id == bot_id and not to_bot:
         reply(message, "Я вам запрещаю пользоваться этой командой на мне")
         return None

@@ -65,10 +65,10 @@ def chat_search_handler(message):
 @bot.message_handler(commands=['warn'])
 def warn_handler(message):
     """Даёт участнику предупреждение"""
-    if in_mf(message, False) and rank_required(message, "Админ") and person_analyze(message)\
-            and rank_superiority(message):
+    person = person_analyze(message)
+    if in_mf(message, False) and rank_required(message, "Админ") and person and rank_superiority(message):
         if message.reply_to_message:
-            warn(message)
+            warn(message, person)
         else:
             reply(message, "Надо ответить на сообщение с актом преступления, чтобы переслать контекст в хранилище")
 
@@ -76,21 +76,23 @@ def warn_handler(message):
 @bot.message_handler(commands=['unwarn'])
 def unwarn_handler(message):
     """Снимает с участника предупреждение"""
-    if in_mf(message, False) and rank_required(message, "Админ") and person_analyze(message):
-        unwarn(message)
+    person = person_analyze(message)
+    if in_mf(message, False) and rank_required(message, "Админ") and person:
+        unwarn(message, person)
 
 
 @bot.message_handler(commands=['ban'])
 def ban_handler(message):
-    if in_mf(message, False) and rank_required(message, "Админ") and person_analyze(message)\
-            and rank_superiority(message):
-        ban(message)
+    person = person_analyze(message)
+    if in_mf(message, False) and rank_required(message, "Админ") and person and rank_superiority(message):
+        ban(message, person)
 
 
 @bot.message_handler(commands=['pay'])
 def money_pay_handler(message):
-    if in_mf(message, False) and rank_required(message, "Админ") and person_analyze(message):
-        money_pay(message)
+    person = person_analyze(message, to_self_leader=True)
+    if in_mf(message, False) and rank_required(message, "Админ") and person:
+        money_pay(message, person)
 
 
 @bot.message_handler(commands=['delete_mode'])
@@ -102,25 +104,26 @@ def deleter_mode_handler(message):
 @bot.message_handler(commands=['admin'])
 def promotion_handler(message):
     """Назначает человека админом"""
-    if in_mf(message, False) and rank_required(message, "Член Комитета") and person_analyze(message)\
-            and rank_superiority(message):
-        promotion(message)
+    person = person_analyze(message)
+    if in_mf(message, False) and rank_required(message, "Член Комитета") and person and rank_superiority(message):
+        promotion(message, person)
 
 
 @bot.message_handler(commands=['guest'])
 def demotion_handler(message):
     """Забирает у человека админку"""
-    if in_mf(message, False) and rank_required(message, "Член Комитета") and person_analyze(message)\
-            and rank_superiority(message):
-        demotion(message)
+    person = person_analyze(message)
+    if in_mf(message, False) and rank_required(message, "Член Комитета") and person and rank_superiority(message):
+        demotion(message, person)
 
 
 @bot.message_handler(commands=['messages'])
 def messages_change_handler(message):
     """Меняет запись в БД о количестве сообщений чела"""
-    if in_mf(message, False) and rank_required(message, "Член Комитета") and person_analyze(message):
+    person = person_analyze(message)
+    if in_mf(message, False) and rank_required(message, "Член Комитета") and person:
         if (len(message.text.split()) == 2 and message.reply_to_message) or len(message.text.split()) == 3:
-            message_change(message)
+            message_change(message, person)
         else:
             reply(message, "Либо не указана персона, к которой это применяется, либо количество сообщений")
 
@@ -264,8 +267,9 @@ def send_meme_handler(message):
 @bot.message_handler(commands=['me', 'check', 'check_me', 'check_ebalo'])
 def send_me_handler(message):
     """Присылает человеку его запись в БД"""
+    person = person_analyze(message, to_self=True)
     if in_mf(message):
-        send_me(message)
+        send_me(message, person)
 
 
 @bot.message_handler(commands=['members', 'database'])
@@ -278,8 +282,9 @@ def all_members_handler(message):
 @bot.message_handler(commands=['give'])
 def money_give_handler(message):
     """Обмен денег между пользователями"""
-    if in_mf(message) and person_analyze(message, to_bot=True):
-        money_give(message)
+    person = person_analyze(message, to_bot=True)
+    if in_mf(message) and person:
+        money_give(message, person)
 
 
 @bot.message_handler(commands=['top'])

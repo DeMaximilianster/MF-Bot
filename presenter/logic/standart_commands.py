@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 from view.output import reply, send_photo, send_sticker, send
-from presenter.config.config_func import time_replace, person_analyze
+from presenter.config.config_func import time_replace
 from presenter.config.database_lib import Database
 from presenter.config.config_var import bot_id
 from random import choice
@@ -104,11 +104,10 @@ def send_meme(message):
     send_photo(message.chat.id, meme, reply_to_message_id=message.message_id)
 
 
-def send_me(message):
+def send_me(message, person):
     """Присылает человеку его запись в БД"""
     log.log_print(str(message.from_user.id)+": send_me invoked")
     database = Database()
-    person = person_analyze(message, True)
     if person:  # TODO Перенести проверку на person_analyze в input.py
         database.change(person.username, person.id, set_column='username')
         database.change(person.first_name, person.id, set_column='nickname')
@@ -132,6 +131,7 @@ def all_members(message):
     log.log_print("all_members invoked")
     database = Database()
     members = database.get_all('members', 'messages')
+    sent = None
     if len(members) % 50 == 0:
         fiftys = len(members) // 50
     else:
@@ -149,10 +149,10 @@ def all_members(message):
         reply(message, "Сначала запусти меня в личных сообщениях")
 
 
-def money_give(message):
+def money_give(message, person):
     """Функция обмена деньгами между людьми"""
     database = Database()
-    getter = person_analyze(message, to_bot=True).id
+    getter = person.id
     giver = message.from_user.id
     money = message.text.split()[-1]
     value_getter = database.get(getter)[6]
@@ -160,7 +160,9 @@ def money_give(message):
     if not money.isdigit() and not (money[1:].isdigit() and money[0] == '-'):
         reply(message, "Последнее слово должно быть числом, сколько ябломилианов даёте")
     elif money[0] == '-':
-        reply(message, "Неплохая попытка")
+        reply(message, "Я вам запрещаю воровать")
+    elif money == "0":
+        reply(message, "Я вам запрещаю делать подобные бессмысленные запросы")
     else:
         money = int(money)
         if money > value_giver:
@@ -168,11 +170,25 @@ def money_give(message):
         else:
             value_getter += money
             value_giver -= money
-            reply(message, "#Финансы\n\nID {} [{} --> {}]\nID {} [{} --> {}]\n"
-                  .format(getter, value_getter-money, value_getter, giver, value_giver+money, value_giver))
+            giv_m = send(giver, f"#Финансы\n\n Вы успешно перевели {money} ЯМ на счёт {getter}. "
+                                f"Теперь у вас их {value_giver}. А у него/неё {value_getter}")
+            get_m = send(getter, f"#Финансы\n\n На ваш счёт было {money} ЯМ со счёта {giver}. "
+                                 f"Теперь у вас их {value_getter}. А у него/неё {value_giver}")
+            if get_m:
+                get_m = "✅ уведомлён(а)"
+            else:
+                get_m = "❌ не уведомлён(а)"
+            if giv_m:
+                giv_m = "✅ уведомлён(а)"
+            else:
+                giv_m = "❌ не уведомлён(а)"
+            reply(message, f"#Финансы #Ф{getter} #Ф{giver}\n\n"
+                           f"ID {getter} [{value_getter-money} --> {value_getter}] {get_m}\n"
+                           f"ID {giver} [{value_giver+money} --> {value_giver}] {giv_m}\n")
             admin_place = database.get("Админосостав", 'chats', 'purpose')[0]
-            send(admin_place, "#Финансы\n\nID {} [{} --> {}]\nID {} [{} --> {}]\n"
-                 .format(getter, value_getter-money, value_getter, giver, value_giver+money, value_giver))
+            send(admin_place, f"#Финансы #Ф{getter} #Ф{giver}\n\n"
+                              f"ID {getter} [{value_getter-money} --> {value_getter}] {get_m}\n"
+                              f"ID {giver} [{value_giver+money} --> {value_giver}] {giv_m}\n")
     database.change(value_getter, getter, 'members', 'money', 'id')
     database.change(value_giver, giver, 'members', 'money', 'id')
     del database

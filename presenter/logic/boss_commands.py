@@ -2,15 +2,16 @@
 from presenter.config.database_lib import Database
 from presenter.config.config_var import full_chat_list, chat_list, channel_list, bot_id
 from presenter.config.log import Loger, log_to
-from presenter.config.config_func import person_analyze
 from view.output import kick, reply, promote, send, forward
 work = True
 log = Loger(log_to)
 
-# TODO команда /unwarn
+# TODO функция unwarn
+# TODO команда /kick, кикает и сразу разбанивает
 
 # TODO команда для делания гражданином, высшим гражданином
 # TODO команда для делания Членом Комитета
+# TODO сделать сменяемого зама автоматически (команда /vice)
 
 """
 def chat_search(message):
@@ -31,11 +32,10 @@ def chat_search(message):
 """
 
 
-def warn(message):
+def warn(message, person):
     """Даёт участнику предупреждение"""
     log.log_print("warn invoked")
     database = Database()
-    person = person_analyze(message)
     try:  # TODO поменять на if-else
         warns = int(message.text.split()[1])
     except Exception as e:
@@ -53,15 +53,14 @@ def warn(message):
     for msg_id in range(start_forwarding, end_forwarding+1):
         forward(blowout, message.chat.id, msg_id)
     if value >= 3:
-        ban(message)
+        ban(message, person)
     del database
 
 
-def unwarn(message):
+def unwarn(message, person):
     """Снимает с участника предупреждение"""
     log.log_print("unwarn invoked")
     database = Database()
-    person = person_analyze(message)
     value = database.get(person.id)[5] - 1  # TODO Возможность снимать несколько варнов за раз
     # TODO Предохранитель от отрицательного числа варнов
     database.change(value, person.id, table='members', set_column='warns', where_column='id')
@@ -72,11 +71,10 @@ def unwarn(message):
 
 
 # TODO команда /kick, которая даёт бан и сразу его снимает
-def ban(message):
+def ban(message, person):
     """Даёт участнику бан"""
     log.log_print("ban invoked")
     database = Database()
-    person = person_analyze(message)
     blowout = database.get('Проколы', table='channels', column='name')[0]
     how_many = 10  # Сколько пересылает сообщений
     end_forwarding = message.reply_to_message.message_id
@@ -94,25 +92,35 @@ def ban(message):
     del database
 
 
-def money_pay(message):
+def money_pay(message, person):
     """Платит человеку деньги из бюджета чата"""
     database = Database()
     bot_money = database.get(bot_id)[6]
-    p_id = person_analyze(message).id
+    p_id = person.id
     money = message.text.split()[-1]
     value = database.get(p_id)[6]
     if not money.isdigit() and not (money[1:].isdigit() and money[0] == '-'):
         reply(message, "Последнее слово должно быть числом, сколько ябломилианов прибавляем или убавляем")
+    elif money == "0":
+        reply(message, "Я вам запрещаю делать подобные бессмысленные запросы")
     elif money[0] == '-':
         money = -int(money)  # Делаем из отрицательного числа положительное
         if value-money >= 0:
             value -= money
             bot_money += money
-            reply(message, "#Финансы\n\nБюджет [{} --> {}]\nID {} [{} --> {}]"
-                  .format(bot_money-money, bot_money, p_id, value+money, value))
+            sent = send(p_id, f"#Финансы\n\n"
+                              f"С вашего счёта было снято {money} ЯМ в фонд чата. У вас осталось {value} ЯМ")
+            if sent:
+                sent = "✅ уведомлён(а)"
+            else:
+                sent = "❌ не уведомлён(а)"
+            reply(message, f"#Финансы #Бюджет #Ф{p_id}\n\n"
+                           f"Бюджет [{bot_money-money} --> {bot_money}]\n"
+                           f"ID {p_id} [{value+money} --> {value}] {sent}")
             admin_place = database.get("Админосостав", 'chats', 'purpose')[0]
-            send(admin_place, "#Финансы\n\nБюджет [{} --> {}]\nID {} [{} --> {}]"
-                 .format(bot_money-money, bot_money, p_id, value+money, value))
+            send(admin_place, f"#Финансы #Бюджет #Ф{p_id}\n\n"
+                              f"Бюджет [{bot_money-money} --> {bot_money}]\n"
+                              f"ID {p_id} [{value+money} --> {value}] {sent}")
         else:
             reply(message, "Часто у людей видишь отрицательное количество денег?")
     else:
@@ -122,25 +130,30 @@ def money_pay(message):
         else:
             value += money
             bot_money -= money
-            reply(message, "#Финансы\n\nБюджет [{} --> {}]\nID {} [{} --> {}]"
-                  .format(bot_money+money, bot_money, p_id, value-money, value))
+            sent = send(p_id, f"#Финансы\n\n"
+                              f"На ваш счёт было переведено {money} ЯМ из фонда чата. Теперь у вас {value} ЯМ")
+            if sent:
+                sent = "✅ уведомлён(а)"
+            else:
+                sent = "❌ не уведомлён(а)"
+            reply(message, f"#Финансы #Бюджет #Ф{p_id}\n\n"
+                           f"Бюджет [{bot_money+money} --> {bot_money}]\n"
+                           f"ID {p_id} [{value-money} --> {value}] {sent}")
             admin_place = database.get("Админосостав", 'chats', 'purpose')[0]
-            send(admin_place, "#Финансы\n\nБюджет [{} --> {}]\nID {} [{} --> {}]"
-                 .format(bot_money+money, bot_money, p_id, value-money, value))
+            send(admin_place, f"#Финансы #Бюджет #Ф{p_id}\n\n"
+                              f"Бюджет [{bot_money+money} --> {bot_money}]\n"
+                              f"ID {p_id} [{value-money} --> {value}] {sent}")
     database.change(value, p_id, 'members', 'money', 'id')
     database.change(bot_money, bot_id, 'members', 'money', 'id')
     del database
 
 
-def promotion(message):
+def promotion(message, person):
     """Назначает человека админом"""
     log.log_print("promotion invoked")
     database = Database()
-    person = person_analyze(message)
     database.change("Админ", person.id, 'members', 'rank', 'id')
     # TODO пусть бот шлёт админу ссылку на чат админосостава и меняет её при входе
-    # TODO давать админку, не пингуя
-    # TODO сделать сменяемого зама автоматически (команда /vice)
     # Дать челу админку во всех чатах, кроме Комитета и Админосостава
     for chat in chat_list:
         promote(chat[0], person.id,
@@ -152,11 +165,10 @@ def promotion(message):
     del database
 
 
-def demotion(message):
+def demotion(message, person):
     """Забирает у человека админку"""
     log.log_print("demotion invoked")
     database = Database()
-    person = person_analyze(message)
     database.change("Гость", person.id, 'members', 'rank', 'id')
     # TODO забирать админку, не пингуя
     # Забрать у чела админку во всех чатах, кроме Комитета и Админосостава
@@ -170,10 +182,10 @@ def demotion(message):
     del database
 
 
-def message_change(message):
+def message_change(message, person):
     """Меняет запись в БД о количестве сообщений чела"""
     database = Database()
-    p_id = person_analyze(message).id
+    p_id = person.id
     messages = message.text.split()[-1]
     value = database.get(p_id)[4]
     if not messages.isdigit() and not (messages[1:].isdigit() and messages[0] == '-'):
