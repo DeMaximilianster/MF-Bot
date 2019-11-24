@@ -16,7 +16,7 @@ def language(message):
     russian = set("ёйцукенгшщзхъфывапролджэячсмитьбюЁЙЦУКЕНГШЩЗХЪФЫВАПРОЛДЖЭЯЧСМИТЬБЮ")
     english = set("qwertyuiopasdfghjklzxcvbnmQWERTYUIOPASDFGHJKLZXCVBNM")
     text = ""
-    if message.chat.type == "private":
+    if message.chat.id > 0:
         user = message.from_user
         text += user.first_name
         if user.last_name:
@@ -86,8 +86,8 @@ def person_analyze(message, to_self=False, to_self_leader=False, to_bot=False):
 
 def rank_superiority(message):
     database = Database()
-    your_rank = database.get(message.from_user.id)[3]
-    their_rank = database.get(person_analyze(message).id)[3]
+    your_rank = database.get('members', ('id', message.from_user.id))[3]
+    their_rank = database.get('members', ('id', person_analyze(message).id))[3]
     del database
     your_rank_n = roles.index(your_rank)
     their_rank_n = roles.index(their_rank)
@@ -101,7 +101,7 @@ def rank_superiority(message):
 def rank_required(message, min_rank, loud=True):
     log.log_print("rank_required invoked from userID {}".format(message.from_user.id))
     database = Database()
-    your_rank = database.get(message.from_user.id)[3]
+    your_rank = database.get('members', ('id', message.from_user.id))[3]
     your_rank_n = roles.index(your_rank)
     min_rank_n = roles.index(min_rank)
     if your_rank_n < min_rank_n and loud:
@@ -122,7 +122,7 @@ def cooldown(message):
         if '@' in analyze:
             analyze = analyze.split('@')[0]  # Убираем собачку и то, что после неё
     cooldown_id = '{} {}'.format(message.from_user.id, analyze)
-    command = database.get(cooldown_id, 'cooldown')
+    command = database.get('cooldown', ('id', cooldown_id))
     if not command:  # Чел впервые пользуется коммандой
         database.append((cooldown_id, message.date), 'cooldown')
         del database
@@ -167,7 +167,7 @@ def in_mf(message, lang, or_private=True):
     """Позволяет регулировать использование команл вне чатов и в личке"""
     log.log_print("in_mf invoked")
     database = Database()
-    if database.get(message.chat.id, 'chats'):  # Команда вызвана в системе МФ2
+    if database.get('chats', ('id', message.chat.id)):  # Команда вызвана в системе МФ2
         counter(message)  # Отправляем сообщение на учёт в БД
         return True
     elif message.chat.type == 'private':  # Команда вызвана в личке
@@ -199,7 +199,7 @@ def counter(message):
         person = message.new_chat_members[0]
     else:
         person = message.from_user
-    if database.get(person.id) is None:  # Нет такой записи
+    if database.get('members', ('id', person.id)) is None:  # Нет такой записи
         answer = 'Добро пожаловать в наш чат! Напиши мне в личку и в будущем получишь доступ '
         answer += 'к различным функциям. Читай закреп, веди себя хорошо, приятного времяпровождения!'
         reply(message, answer)
@@ -209,7 +209,7 @@ def counter(message):
         except Exception as e:
             error(message, e)
     elif message.chat.id in [x[0] for x in database.get_many('Главный чат') + database.get_many('Подчат')]:
-        value = database.get(person.id)[4] + 1
+        value = database.get('members', ('id', person.id))[4] + 1
         database.change(value, person.id, 'members', 'messages', 'id')
         # TODO Добавить время последнего сообщения и элитократические взаимодействия с ним
     del database

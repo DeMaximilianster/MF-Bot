@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 from presenter.config.database_lib import Database
-from presenter.config.config_var import full_chat_list, chat_list, channel_list, bot_id
+from presenter.config.config_var import full_chat_list, chat_list, channel_list, bot_id, admin_place
 from presenter.config.log import Loger, log_to
 from view.output import kick, reply, promote, send, forward
 work = True
@@ -41,10 +41,10 @@ def warn(message, person):
     except Exception as e:
         print(e)
         warns = 1
-    value = database.get(person.id)[5] + warns
+    value = database.get('members', ('id', person.id))[5] + warns
     database.change(value, person.id, table='members', set_column='warns', where_column='id')
     reply(message, "Варн(ы) выдан(ы). Теперь их {}".format(value))
-    blowout = database.get('Проколы', table='channels', column='name')[0]
+    blowout = database.get('channels', ('name', 'Проколы'))[0]
     how_many = 20  # Сколько пересылает сообщений
     end_forwarding = message.reply_to_message.message_id
     start_forwarding = end_forwarding - how_many
@@ -61,7 +61,7 @@ def unwarn(message, person):
     """Снимает с участника предупреждение"""
     log.log_print("unwarn invoked")
     database = Database()
-    value = database.get(person.id)[5] - 1  # TODO Возможность снимать несколько варнов за раз
+    value = database.get('members', ('id', person.id))[5] - 1  # TODO Возможность снимать несколько варнов за раз
     # TODO Предохранитель от отрицательного числа варнов
     database.change(value, person.id, table='members', set_column='warns', where_column='id')
     reply(message, "Варн снят. Теперь их {}".format(value))
@@ -75,7 +75,7 @@ def ban(message, person):
     """Даёт участнику бан"""
     log.log_print("ban invoked")
     database = Database()
-    blowout = database.get('Проколы', table='channels', column='name')[0]
+    blowout = database.get('channels', ('name', 'Проколы'))[0]
     how_many = 10  # Сколько пересылает сообщений
     end_forwarding = message.reply_to_message.message_id
     start_forwarding = end_forwarding - how_many
@@ -95,10 +95,10 @@ def ban(message, person):
 def money_pay(message, person):
     """Платит человеку деньги из бюджета чата"""
     database = Database()
-    bot_money = database.get(bot_id)[6]
+    bot_money = database.get('members', ('id', bot_id))[6]
     p_id = person.id
     money = message.text.split()[-1]
-    value = database.get(p_id)[6]
+    value = database.get('members', ('id', p_id))[6]
     if not money.isdigit() and not (money[1:].isdigit() and money[0] == '-'):
         reply(message, "Последнее слово должно быть числом, сколько ябломилианов прибавляем или убавляем")
     elif money == "0":
@@ -117,7 +117,6 @@ def money_pay(message, person):
             reply(message, f"#Финансы #Бюджет #Ф{p_id}\n\n"
                            f"Бюджет [{bot_money-money} --> {bot_money}]\n"
                            f"ID {p_id} [{value+money} --> {value}] {sent}")
-            admin_place = database.get("Админосостав", 'chats', 'purpose')[0]
             send(admin_place, f"#Финансы #Бюджет #Ф{p_id}\n\n"
                               f"Бюджет [{bot_money-money} --> {bot_money}]\n"
                               f"ID {p_id} [{value+money} --> {value}] {sent}")
@@ -139,7 +138,7 @@ def money_pay(message, person):
             reply(message, f"#Финансы #Бюджет #Ф{p_id}\n\n"
                            f"Бюджет [{bot_money+money} --> {bot_money}]\n"
                            f"ID {p_id} [{value-money} --> {value}] {sent}")
-            admin_place = database.get("Админосостав", 'chats', 'purpose')[0]
+
             send(admin_place, f"#Финансы #Бюджет #Ф{p_id}\n\n"
                               f"Бюджет [{bot_money+money} --> {bot_money}]\n"
                               f"ID {p_id} [{value-money} --> {value}] {sent}")
@@ -187,16 +186,16 @@ def message_change(message, person):
     database = Database()
     p_id = person.id
     messages = message.text.split()[-1]
-    value = database.get(p_id)[4]
+    value = database.get('members', ('id', p_id))[4]
     if not messages.isdigit() and not (messages[1:].isdigit() and messages[0] == '-'):
         reply(message, "Последнее слово должно быть числом, сколько сообщений ставим, прибавляем или убавляем")
     elif messages[0] == '+':
         messages = int(messages)
-        value = database.get(p_id)[4] + messages
+        value += messages
         reply(message, "Прибавляю человеку с ID {} {} сообщений. В итоге получается {}".format(p_id, messages, value))
     elif messages[0] == '-':
         messages = -int(messages)  # Делаем из отрицательного числа положительное
-        value = database.get(p_id)[4] - messages
+        value -= messages
         if value >= 0:
             reply(message, "Отнимаю человеку с ID {} {} сообщений. В итоге получается {}".format(p_id, messages, value))
         else:
@@ -213,10 +212,8 @@ def deleter_mode(message):
     """Удалять медиа или нет"""
     log.log_print("deleter_mode invoked")
     database = Database()
-    delete = int(database.get('delete', 'config', 'var')[1])
-    print(delete)
+    delete = int(database.get('config', ('var', 'delete'))[1])
     delete = (delete + 1) % 2  # Переводит 0 в 1, а 1 в 0
-    print(delete)
     database.change(delete, 'delete', 'config', 'value', 'var')
     del database
     if delete:
@@ -227,9 +224,17 @@ def deleter_mode(message):
 
 def add_chat(message):
     """Добавляет чат в базу данных чатов, входящих в систему МФ2"""
+    # TODO Предохранитель на purpose чата
+    # TODO Предохранитель на уникальность некоторых чатов
     log.log_print("add_chat invoked")
     database = Database()
     chat = (message.chat.id, message.chat.title, message.text[10:])
     database.append(chat, "chats")
+    # TODO Пофиксить необходимость перезагрузки
     reply(message, "Теперь это часть МФ2. Учтите, что для корректного бана и админок, необходимо перезагрузить меня")
     del database
+
+
+# TODO Команда /add_channel
+# TODO Команда /del_chat
+# TODO Команда /del_channel

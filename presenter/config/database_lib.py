@@ -18,11 +18,22 @@ class Database:
         """Отключается от базы данных"""
         log.log_print("Closing database")
         self.connection.close()  # Закрываем БД
-
+    '''
     def get(self, value, table='members', column='id'):
         """Читает запись в базе данных"""
         sql = "SELECT * FROM {} WHERE {}='{}'".format(table, column, value)
         log.log_print("[SQL]: "+sql)
+        self.cursor.execute(sql)
+        return self.cursor.fetchone()
+    '''
+
+    def get(self, table, *column_value):
+        sql = f"SELECT * FROM {table} WHERE "
+        reqs = []
+        for value in column_value:
+            reqs.append(f"{value[0]}='{value[1]}'")
+        sql += " AND ".join(reqs)
+        log.log_print("[SQL]: " + sql)
         self.cursor.execute(sql)
         return self.cursor.fetchone()
 

@@ -11,13 +11,13 @@ def deleter(message):
     log.log_print("deleter invoked")
     database = Database()
     # Получаем из БД переменную, отвечающую за работу это функции
-    delete_mode = database.get('delete', 'config', 'var')[1]
+    delete_mode = database.get('config', ('var', 'delete'))[1]
     del database
     if not delete_mode:
         return None
     if time_replace(message.date)[1] >= 22 or time_replace(message.date)[1] < 8:  # Время, когда надо удалять
         database = Database()
-        rank = database.get(message.from_user.id)[3]
+        rank = database.get('messages', ('id', message.from_user.id))[3]
         if rank == 'Гость' or rank == 'Кто-то':
             # TODO бот делает это предупреждение не чаще раза в 24 часа на человека
 
@@ -33,7 +33,7 @@ def new_member(message):
     database = Database()
     member = message.new_chat_members[0]
     answer = ''
-    rank = database.get(member.id)[3]  # Получаем его звание
+    rank = database.get('members', ('id', member.id))[3]  # Получаем его звание
     if member.is_bot:
         send(message.chat.id, "Ещё один бот, вряд-ли более умный, чем я")
     if rank == "Нарушитель":

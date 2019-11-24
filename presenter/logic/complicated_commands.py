@@ -1,9 +1,8 @@
 # -*- coding: utf-8 -*-
 from presenter.config.config_func import update_adapt_vote, update_multi_vote, create_adapt_vote, create_vote, \
     create_multi_vote
-from presenter.config.database_lib import Database
 from presenter.config.config_var import test_keyboard, ironic_keyboard, m_where_keyboard, where_keyboard, \
-    a_where_keyboard, vote_keyboard
+    a_where_keyboard, vote_keyboard, admin_place
 from presenter.config.files_paths import multi_votes_file, adapt_votes_file, votes_file
 from view.output import edit_markup, answer_inline, reply, answer_callback, edit_text, delete, send
 from presenter.config.log import Loger, log_to
@@ -68,10 +67,8 @@ def non_ironic(call):
     log.log_print("non_ironic invoked")
     # Проверка, нажал ли на кнопку не тот, кто нужен
     edit_text("Неиронично!", call.message.chat.id, call.message.message_id)
-    database = Database()
-    admins = database.get("Админосостав", "chats", "purpose")[0]  # Получаем ай ди нынешнего админосостава
     # TODO добавить сюда голосовашку
-    send(admins, "Если вы это читаете, то разработка авто-признавалки оскорблений проходит хорошо " +
+    send(admin_place, "Если вы это читаете, то разработка авто-признавалки оскорблений проходит хорошо " +
          "[Ссылка на инцидент](t.me/{}/{})".format(call.message.reply_to_message.chat.username,
                                                    call.message.reply_to_message.message_id),
          parse_mode="Markdown", disable_web_page_preview=True)

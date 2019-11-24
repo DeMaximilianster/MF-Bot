@@ -6,6 +6,9 @@ bot_id = 575704111
 
 # Список всех МФ2-чатов, кроме Админосостава и Комитета
 global_database = Database()
+
+admin_place = global_database.get('chats', ('purpose', "Админосостав"))[0]
+
 chat_list = global_database.get_many('Главный чат')
 chat_list += global_database.get_many('Подчат')
 chat_list += global_database.get_many('Игровая')

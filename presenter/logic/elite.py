@@ -12,8 +12,8 @@ def ask_question(message, question):
     """Задаём вопрос"""
     log.log_print("ask_question invoked")
     database = Database()
-    ask = database.get(message.from_user.id, 'basic_logic_tested')[question]  # Получаем вопрос
-    note = database.get(ask, 'basic_logic', 'text')  # Получаем полную инфу о вопросе
+    ask = database.get('basic_logic_tested', ('id', message.from_user.id))[question]  # Получаем вопрос
+    note = database.get('basic_logic', ('text', ask))  # Получаем полную инфу о вопросе
     answers = note[2:]  # Получаем варианты ответов на вопрос
     answers = shuffle(answers)  # Перемешиваем ответы
     markup = ReplyKeyboardMarkup(row_width=3)  # Создаём клавиатуру для ответов
@@ -30,10 +30,10 @@ def submit(message):  # TODO возможность отменить свои о
     database = Database()
     markup = ReplyKeyboardRemove(selective=False)  # убираем клаву
     success = 0  # Переменная для подсчёта правильных ответов
-    answers = database.get(message.from_user.id, 'basic_logic_tested')[7:13]
+    answers = database.get('basic_logic_tested', ('id', message.from_user.id))[7:13]
     person = message.from_user
     for i in range(6):
-        if database.get(answers[i], 'basic_logic', 'right'):
+        if database.get('basic_logic', ('right', answers[i])):
             success += 1
     # TODO записывать время прохождения
     # TODO В некоторые вопросы и ответы теста добавить капс лок
@@ -56,7 +56,7 @@ def check(message):
     database = Database()
     # TODO Пусть бот ставит тест на паузу, когда видит, что в сообщений есть "/"
     answer = 0
-    person = database.get(message.from_user.id, 'basic_logic_tested')  # Запись чела в списке проходящих тест
+    person = database.get('basic_logic_tested', ('id', message.from_user.id))  # Запись чела в списке проходящих тест
     for i in range(7, 13):
         if person[i] == "None":
             answer = i - 6
@@ -72,8 +72,7 @@ def check(message):
 def elite(message):  # TODO Привести эти команды в порядок
     log.log_print("elite invoked")
     database = Database()
-    print(database.get(message.from_user.id, table='basic_logic_tested'))
-    if database.get(message.from_user.id, table='basic_logic_tested') is None:
+    if database.get('basic_logic_tested', ('id', message.from_user.id)) is None:
         send(message.chat.id, "Сейчас я буду давать вам утверждения, а вы выбирайте те, что из них логически вытекают")
         person = (message.from_user.id, 'None', 'None', 'None', 'None', 'None', 'None', 'None', 'None', 'None',
                   'None', 'None', 'None', 'None')
@@ -82,14 +81,12 @@ def elite(message):  # TODO Привести эти команды в поряд
         all_questions = list(range(1, 31))
         for i in range(6):
             question = choice(all_questions)
-            value = database.get(question, 'basic_logic')[1]
+            value = database.get('basic_logic', ('id', question))[1]
             print(value)
             database.change(value, message.from_user.id, 'basic_logic_tested', 'question_{}'.format(i+1))
             all_questions.remove(question)
-    print(database.get(message.from_user.id, 'basic_logic_tested'))
-    print(database.get(message.from_user.id, 'basic_logic_tested')[7])
     for i in range(7, 13):
-        if database.get(message.from_user.id, 'basic_logic_tested')[i] == "None":
+        if database.get('basic_logic_tested', ('id', message.from_user.id))[i] == "None":
             ask_question(message, i - 6)
             del database
             break

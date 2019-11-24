@@ -2,7 +2,7 @@
 from view.output import reply, send_photo, send_sticker, send
 from presenter.config.config_func import time_replace
 from presenter.config.database_lib import Database
-from presenter.config.config_var import bot_id
+from presenter.config.config_var import bot_id, admin_place
 from random import choice
 from time import ctime, time
 from presenter.config.log import Loger, log_to
@@ -34,13 +34,16 @@ def show_id(message):
     answer += 'Время отправки моего сообщения: ` ' + ctime(time()) + '`\n\n'
     answer += 'ID этого чата: `' + str(message.chat.id) + '`\n\n'
     answer += 'Ваш ID: `' + str(message.from_user.id) + '`\n\n'
+    answer += 'Ваш language code:  `{}`\n\n'.format(message.from_user.language_code)
     answer += 'ID вашего сообщения: `' + str(message.message_id) + '`\n\n'
     reply_msg = message.reply_to_message
     if reply_msg:  # Сообщение является ответом
         answer += 'ID человека, на сообщение которого ответили: `' + str(reply_msg.from_user.id) + '`\n\n'
+        answer += 'Его/её language code:  `{}`\n\n'.format(reply_msg.from_user.language_code)
         answer += 'ID сообщения, на которое ответили: `' + str(reply_msg.message_id) + '`\n\n'
         if reply_msg.forward_from:  # Сообщение, на которое ответили, является форвардом
             answer += 'ID человека, написавшего пересланное сообщение: `' + str(reply_msg.forward_from.id) + '`\n\n'
+            answer += 'Его/её language code:  `{}`\n\n'.format(reply_msg.forward_from.language_code)
         elif reply_msg.forward_from_chat:  # Сообщение, на которое ответили, является форвардом из канала
             answer += 'ID канала, из которого переслали сообщение: `' + str(reply_msg.forward_from_chat.id) + '`\n\n'
         if reply_msg.sticker:
@@ -62,21 +65,28 @@ def show_id(message):
 def minet(message):
     """Приносит удовольствие"""
     log.log_print(str(message.from_user.id)+": minet invoked")
-    way = choice(('text', 'sticker'))
+    minets = {'text':
+              ('оаоаоаоаооа мммммм)))))', 'Э, нет, эта кнопка не для тебя', 'Попа чистая?', 'Кусь :3',
+               'Открывай рот тогда)', 'О, да, эта кнопка для тебя', '😏🤤', 'Одна фелляция\nНикакой фрустрации'),
+              'sticker':
+                  ('CAADAgADWAADBoAqF4oogkZzHIvuFgQ',  # УНО-карточка
+                   'CAADBAADqlUAAuOnXQVKqOJLAf4RYBYE',  # ОК
+                   'CAADAgADewAD6J0qFmJL_8KisLg8FgQ',  # Гамлет
+                   'CAADAgADfAADq1fEC779DZWncMB2FgQ',  # Хонка
+                   'CAADAgADLQADb925FmFcbIKhK_3CFgQ',  # Что-то нет настроения
+                   'CAADAgADOAADb925FlKHKgxtlre-FgQ',  # Я с йогуртом
+                   'CAADAgADGAADobczCKi7TanwsWyoFgQ',  # хоошо
+                   'CAADAgADTwEAAqfkvganUQktSzVbkRYE'  # Инангай
+                   )
+              }
+    choices = []
+    for i in minets.keys():
+        choices.append(i)
+    way = choice(choices)
+    rep = choice(minets[way])
     if way == 'text':
-        rep = choice(('оаоаоаоаооа мммммм)))))', 'Э, нет, эта кнопка не для тебя', 'Попа чистая?', 'Кусь :3',
-                      'Открывай рот тогда)', 'О, да, эта кнопка для тебя', '😏🤤', 'Одна фелляция\nНикакой фрустрации'))
         reply(message, rep)
     else:
-        rep = choice(('CAADAgADWAADBoAqF4oogkZzHIvuFgQ',  # УНО-карточка
-                      'CAADBAADqlUAAuOnXQVKqOJLAf4RYBYE',  # ОК
-                      'CAADAgADewAD6J0qFmJL_8KisLg8FgQ',  # Гамлет
-                      'CAADAgADfAADq1fEC779DZWncMB2FgQ',  # Хонка
-                      'CAADAgADLQADb925FmFcbIKhK_3CFgQ',  # Что-то нет настроения
-                      'CAADAgADOAADb925FlKHKgxtlre-FgQ',  # Я с йогуртом
-                      'CAADAgADGAADobczCKi7TanwsWyoFgQ',  # хоошо
-                      'CAADAgADTwEAAqfkvganUQktSzVbkRYE'  # Инангай
-                      ))
         send_sticker(message.chat.id, rep, reply_to_message_id=message.message_id)
 
 
@@ -111,7 +121,7 @@ def send_me(message, person):
     if person:  # TODO Перенести проверку на person_analyze в input.py
         database.change(person.username, person.id, set_column='username')
         database.change(person.first_name, person.id, set_column='nickname')
-        person = database.get(person.id)
+        person = database.get('members', ('id', person.id))
         if person:
             msg = 'ID: {}\n'.format(person[0])
             msg += 'Юзернейм: {}\n'.format(person[1])
@@ -155,8 +165,8 @@ def money_give(message, person):
     getter = person.id
     giver = message.from_user.id
     money = message.text.split()[-1]
-    value_getter = database.get(getter)[6]
-    value_giver = database.get(giver)[6]
+    value_getter = database.get('members', ('id', getter))[6]
+    value_giver = database.get('members', ('id', giver))[6]
     if not money.isdigit() and not (money[1:].isdigit() and money[0] == '-'):
         reply(message, "Последнее слово должно быть числом, сколько ябломилианов даёте")
     elif money[0] == '-':
@@ -185,7 +195,6 @@ def money_give(message, person):
             reply(message, f"#Финансы #Ф{getter} #Ф{giver}\n\n"
                            f"ID {getter} [{value_getter-money} --> {value_getter}] {get_m}\n"
                            f"ID {giver} [{value_giver+money} --> {value_giver}] {giv_m}\n")
-            admin_place = database.get("Админосостав", 'chats', 'purpose')[0]
             send(admin_place, f"#Финансы #Ф{getter} #Ф{giver}\n\n"
                               f"ID {getter} [{value_getter-money} --> {value_getter}] {get_m}\n"
                               f"ID {giver} [{value_giver+money} --> {value_giver}] {giv_m}\n")
@@ -196,7 +205,7 @@ def money_give(message, person):
 
 def money_top(message):
     database = Database()
-    bot_money = database.get(bot_id)[6]
+    bot_money = database.get('members', ('id', bot_id))[6]
     people = list(database.get_all("members", 'money'))
     not_poor_people = []
     for person in people:
