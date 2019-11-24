@@ -161,6 +161,7 @@ def all_members(message):
 
 def money_give(message, person):
     """Функция обмена деньгами между людьми"""
+    log.log_print(f"money_give invoked to person {person.id}")
     database = Database()
     getter = person.id
     giver = message.from_user.id
@@ -204,6 +205,7 @@ def money_give(message, person):
 
 
 def money_top(message):
+    log.log_print("money_top invoked")
     database = Database()
     bot_money = database.get('members', ('id', bot_id))[6]
     people = list(database.get_all("members", 'money'))

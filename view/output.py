@@ -11,7 +11,7 @@ def send(chat_id, message_text, parse_mode=None, reply_markup=None, disable_web_
         return bot.send_message(chat_id, message_text, parse_mode=parse_mode, reply_markup=reply_markup,
                                 disable_web_page_preview=disable_web_page_preview)
     except Exception as e:
-        print(e)
+        log.log_print(e)
 
 
 def send_photo(chat_id, photo, caption=None, reply_to_message_id=None, reply_markup=None, parse_mode=None):
@@ -21,7 +21,7 @@ def send_photo(chat_id, photo, caption=None, reply_to_message_id=None, reply_mar
         return bot.send_photo(chat_id, photo, caption=caption, reply_to_message_id=reply_to_message_id,
                               reply_markup=reply_markup, parse_mode=parse_mode)
     except Exception as e:
-        print(e)
+        log.log_print(e)
 
 
 def send_video(chat_id, video, caption=None, reply_to_message_id=None, reply_markup=None, parse_mode=None):
@@ -31,7 +31,7 @@ def send_video(chat_id, video, caption=None, reply_to_message_id=None, reply_mar
         return bot.send_video(chat_id, video, caption=caption, reply_to_message_id=reply_to_message_id,
                               reply_markup=reply_markup, parse_mode=parse_mode)
     except Exception as e:
-        print(e)
+        log.log_print(e)
 
 
 def send_sticker(chat_id, sticker, reply_to_message_id=None):
@@ -40,7 +40,7 @@ def send_sticker(chat_id, sticker, reply_to_message_id=None):
     try:
         return bot.send_sticker(chat_id, sticker, reply_to_message_id=reply_to_message_id)
     except Exception as e:
-        print(e)
+        log.log_print(e)
 
 
 def reply(message, message_text, parse_mode=None, reply_markup=None, disable_web_page_preview=False):
@@ -50,7 +50,7 @@ def reply(message, message_text, parse_mode=None, reply_markup=None, disable_web
         return bot.reply_to(message, message_text, parse_mode=parse_mode, reply_markup=reply_markup,
                             disable_web_page_preview=disable_web_page_preview)
     except Exception as e:
-        print(e)
+        log.log_print(e)
 
 
 def forward(chat_id, from_chat_id, message_id):
@@ -59,7 +59,7 @@ def forward(chat_id, from_chat_id, message_id):
     try:
         return bot.forward_message(chat_id, from_chat_id, message_id)
     except Exception as e:
-        print(e)
+        log.log_print(e)
 
 
 def edit_markup(chat_id, message_id, reply_markup=None):
@@ -68,7 +68,7 @@ def edit_markup(chat_id, message_id, reply_markup=None):
     try:
         return bot.edit_message_reply_markup(chat_id, message_id, reply_markup=reply_markup)
     except Exception as e:
-        print(e)
+        log.log_print(e)
 
 
 def edit_text(text, chat_id, message_id, parse_mode=None, reply_markup=None):
@@ -77,7 +77,7 @@ def edit_text(text, chat_id, message_id, parse_mode=None, reply_markup=None):
     try:
         return bot.edit_message_text(text, chat_id, message_id, parse_mode=parse_mode, reply_markup=reply_markup)
     except Exception as e:
-        print(e)
+        log.log_print(e)
 
 
 def delete(chat_id, message_id):
@@ -86,7 +86,7 @@ def delete(chat_id, message_id):
     try:
         return bot.delete_message(chat_id, message_id)
     except Exception as e:
-        print(e)
+        log.log_print(e)
 
 
 def kick(chat_id, user_id, until_date=None):
@@ -95,7 +95,7 @@ def kick(chat_id, user_id, until_date=None):
     try:
         return bot.kick_chat_member(chat_id, user_id, until_date)
     except Exception as e:
-        print(e)
+        log.log_print(e)
 
 
 def promote(chat_id, user_id, can_change_info=False, can_post_messages=False, can_edit_messages=False,
@@ -110,7 +110,7 @@ def promote(chat_id, user_id, can_change_info=False, can_post_messages=False, ca
                                        can_invite_users=can_invite_users, can_restrict_members=can_restrict_members,
                                        can_pin_messages=can_pin_messages, can_promote_members=can_promote_members)
     except Exception as e:
-        print(e)
+        log.log_print(e)
 
 
 def answer_inline(inline_query_id, results, cache_time=None):
@@ -119,7 +119,7 @@ def answer_inline(inline_query_id, results, cache_time=None):
     try:
         return bot.answer_inline_query(inline_query_id, results, cache_time=cache_time)
     except Exception as e:
-        print(e)
+        log.log_print(e)
 
 
 def answer_callback(callback_query_id, text=None):
@@ -128,7 +128,7 @@ def answer_callback(callback_query_id, text=None):
     try:
         return bot.answer_callback_query(callback_query_id, text)
     except Exception as e:
-        print(e)
+        log.log_print(e)
 
 
 def register_handler(sent, function, *args, **kwargs):
@@ -137,7 +137,7 @@ def register_handler(sent, function, *args, **kwargs):
     try:
         return bot.register_next_step_handler(sent, function, *args, **kwargs)
     except Exception as e:
-        print(e)
+        log.log_print(e)
 
 
 def get_member(chat_id, user_id):
@@ -146,7 +146,7 @@ def get_member(chat_id, user_id):
     try:
         return bot.get_chat_member(chat_id, user_id)
     except Exception as e:
-        print(e)
+        log.log_print(e)
 
 
 def get_chat(chat_id):
@@ -155,4 +155,4 @@ def get_chat(chat_id):
     try:
         return bot.get_chat(chat_id)
     except Exception as e:
-        print(e)
+        log.log_print(e)

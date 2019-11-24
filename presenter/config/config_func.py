@@ -12,6 +12,7 @@ log = Loger(log_to)
 
 
 def language(message):
+    log.log_print("language invoked")
     languages = {"ru": False, "en": False}
     russian = set("ёйцукенгшщзхъфывапролджэячсмитьбюЁЙЦУКЕНГШЩЗХЪФЫВАПРОЛДЖЭЯЧСМИТЬБЮ")
     english = set("qwertyuiopasdfghjklzxcvbnmQWERTYUIOPASDFGHJKLZXCVBNM")
@@ -85,6 +86,7 @@ def person_analyze(message, to_self=False, to_self_leader=False, to_bot=False):
 
 
 def rank_superiority(message):
+    log.log_print("rank superiority invoked")
     database = Database()
     your_rank = database.get('members', ('id', message.from_user.id))[3]
     their_rank = database.get('members', ('id', person_analyze(message).id))[3]
@@ -155,14 +157,6 @@ def time_replace(seconds):
     return days, hours, minutes, seconds
 
 
-def error(message, e):
-    """Уведомляет Дэ'Максимилианстера об ошибке, не привёвшей к вылету"""
-    send(381279599, "Произошла ошибка")
-    send(381279599, e)
-    reply(message, "У меня произошла непроизвольная дефекация")
-    print(e)
-
-
 def in_mf(message, lang, or_private=True):
     """Позволяет регулировать использование команл вне чатов и в личке"""
     log.log_print("in_mf invoked")
@@ -203,11 +197,8 @@ def counter(message):
         answer = 'Добро пожаловать в наш чат! Напиши мне в личку и в будущем получишь доступ '
         answer += 'к различным функциям. Читай закреп, веди себя хорошо, приятного времяпровождения!'
         reply(message, answer)
-        try:
-            person = (person.id, str(person.username), person.first_name, 'Гость', 1, 0, 0)
-            database.append(person)
-        except Exception as e:
-            error(message, e)
+        person = (person.id, str(person.username), person.first_name, 'Гость', 1, 0, 0)
+        database.append(person)
     elif message.chat.id in [x[0] for x in database.get_many('Главный чат') + database.get_many('Подчат')]:
         value = database.get('members', ('id', person.id))[4] + 1
         database.change(value, person.id, 'members', 'messages', 'id')

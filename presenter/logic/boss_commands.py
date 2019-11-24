@@ -94,6 +94,7 @@ def ban(message, person):
 
 def money_pay(message, person):
     """Платит человеку деньги из бюджета чата"""
+    log.log_print(f"money pay invoked to person {person.id}")
     database = Database()
     bot_money = database.get('members', ('id', bot_id))[6]
     p_id = person.id
@@ -183,6 +184,7 @@ def demotion(message, person):
 
 def message_change(message, person):
     """Меняет запись в БД о количестве сообщений чела"""
+    log.log_print(f"message_change invoked to person {person.id}")
     database = Database()
     p_id = person.id
     messages = message.text.split()[-1]

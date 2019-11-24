@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from presenter.config.config_func import Database, time_replace, error
+from presenter.config.config_func import Database, time_replace
 from view.output import delete, kick, send, promote, reply, send_video
 from presenter.config.log import Loger, log_to
 
@@ -66,15 +66,7 @@ def left_member(message):
     person = message.left_chat_member
     if message.from_user.id == person.id:  # Чел вышел самостоятельно
         reply(message, "Минус чувачок")
-        try:
-            send(message.from_user.id, 'До встречи в @MultiFandomRu!')
-        except Exception as e:
-            if 'initiate conversation with a user' in str(e):
-                reply(message, "Этот чел не написал мне в личку...")
-            elif 'bot was blocked by the user' in str(e):
-                reply(message, "Он меня забанил, лол")
-            else:
-                error(message, e)
+        send(person.id, 'До встречи в @MultiFandomRu!')
     else:  # Чела забанили
         send_video(message.chat.id, "BAADAgADhgMAAgYqMUvW-ezcbZS2ohYE")
     # Держим Дэ'Макса в курсе происходящего

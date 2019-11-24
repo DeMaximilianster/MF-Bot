@@ -18,16 +18,9 @@ class Database:
         """Отключается от базы данных"""
         log.log_print("Closing database")
         self.connection.close()  # Закрываем БД
-    '''
-    def get(self, value, table='members', column='id'):
-        """Читает запись в базе данных"""
-        sql = "SELECT * FROM {} WHERE {}='{}'".format(table, column, value)
-        log.log_print("[SQL]: "+sql)
-        self.cursor.execute(sql)
-        return self.cursor.fetchone()
-    '''
 
     def get(self, table, *column_value):
+        """Получает запись из БД"""
         sql = f"SELECT * FROM {table} WHERE "
         reqs = []
         for value in column_value:
@@ -70,7 +63,6 @@ class Database:
     def append(self, values, table='members'):
         """Добавляет запись в базу данных"""
         try:
-            print('Таки добавляю запись')
             sql = """
             INSERT INTO {}
             VALUES {}

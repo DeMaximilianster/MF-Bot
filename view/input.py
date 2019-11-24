@@ -22,7 +22,7 @@ log = Loger(log_to)
 @bot.message_handler(content_types=['document', 'photo', 'sticker', 'video', 'video_note'])
 def deleter_handler(message):
     """Удаляет медиа ночью"""
-    log.log_print("night media invoked")
+    log.log_print(f"{__name__} invoked")
     lang = language(message)
     if in_mf(message, lang):  # Если в МФ2 - то удаляем
         deleter(message)
@@ -31,6 +31,7 @@ def deleter_handler(message):
 @bot.message_handler(content_types=['new_chat_members'])
 def new_member_handler(message):
     """Реагирует на вход в чат"""
+    log.log_print(f"{__name__} invoked")
     lang = language(message)
     if in_mf(message, lang):
         new_member(message)
@@ -39,6 +40,7 @@ def new_member_handler(message):
 @bot.message_handler(content_types=['left_chat_member'])
 def left_member_handler(message):
     """Комментирует уход участника и прощается участником"""
+    log.log_print(f"{__name__} invoked")
     lang = language(message)
     if in_mf(message, lang):
         left_member(message)
@@ -49,6 +51,7 @@ def left_member_handler(message):
 
 @bot.message_handler(commands=['elite'])
 def elite_handler(message):
+    log.log_print(f"{__name__} invoked")
     if message.chat.type == 'private':  # Тест на элитность можно провести только в личке у бота
         elite(message)
     else:
@@ -69,6 +72,7 @@ def chat_search_handler(message):
 @bot.message_handler(commands=['warn'])
 def warn_handler(message):
     """Даёт участнику предупреждение"""
+    log.log_print(f"{__name__} invoked")
     person = person_analyze(message)
     if in_mf(message, False) and rank_required(message, "Админ") and person and rank_superiority(message):
         if message.reply_to_message:
@@ -80,6 +84,7 @@ def warn_handler(message):
 @bot.message_handler(commands=['unwarn'])
 def unwarn_handler(message):
     """Снимает с участника предупреждение"""
+    log.log_print(f"{__name__} invoked")
     person = person_analyze(message)
     if in_mf(message, False) and rank_required(message, "Админ") and person:
         unwarn(message, person)
@@ -87,6 +92,7 @@ def unwarn_handler(message):
 
 @bot.message_handler(commands=['ban'])
 def ban_handler(message):
+    log.log_print(f"{__name__} invoked")
     person = person_analyze(message)
     if in_mf(message, False) and rank_required(message, "Админ") and person and rank_superiority(message):
         ban(message, person)
@@ -94,6 +100,7 @@ def ban_handler(message):
 
 @bot.message_handler(commands=['pay'])
 def money_pay_handler(message):
+    log.log_print(f"{__name__} invoked")
     person = person_analyze(message, to_self_leader=True)
     if in_mf(message, False) and rank_required(message, "Админ") and person:
         money_pay(message, person)
@@ -101,6 +108,7 @@ def money_pay_handler(message):
 
 @bot.message_handler(commands=['delete_mode'])
 def deleter_mode_handler(message):
+    log.log_print(f"{__name__} invoked")
     if in_mf(message, False) and rank_required(message, "Админ"):
         deleter_mode(message)
 
@@ -108,6 +116,7 @@ def deleter_mode_handler(message):
 @bot.message_handler(commands=['admin'])
 def promotion_handler(message):
     """Назначает человека админом"""
+    log.log_print(f"{__name__} invoked")
     person = person_analyze(message)
     if in_mf(message, False) and rank_required(message, "Член Комитета") and person and rank_superiority(message):
         promotion(message, person)
@@ -116,6 +125,7 @@ def promotion_handler(message):
 @bot.message_handler(commands=['guest'])
 def demotion_handler(message):
     """Забирает у человека админку"""
+    log.log_print(f"{__name__} invoked")
     person = person_analyze(message)
     if in_mf(message, False) and rank_required(message, "Член Комитета") and person and rank_superiority(message):
         demotion(message, person)
@@ -124,6 +134,7 @@ def demotion_handler(message):
 @bot.message_handler(commands=['messages'])
 def messages_change_handler(message):
     """Меняет запись в БД о количестве сообщений чела"""
+    log.log_print(f"{__name__} invoked")
     person = person_analyze(message)
     if in_mf(message, False) and rank_required(message, "Член Комитета") and person:
         if (len(message.text.split()) == 2 and message.reply_to_message) or len(message.text.split()) == 3:
@@ -135,6 +146,7 @@ def messages_change_handler(message):
 @bot.message_handler(commands=['add_chat'])
 def add_chat_handler(message):
     """Добавляет чат в базу данных чатов, входящих в систему МФ2"""
+    log.log_print(f"{__name__} invoked")
     if rank_required(message, "Заместитель"):
         add_chat(message)
 
@@ -145,24 +157,28 @@ def add_chat_handler(message):
 @bot.callback_query_handler(func=lambda call: 'adequate' in call.data and call.data != 'inadequate')
 def adequate_handler(call):
     """Вариант адекватен"""
+    log.log_print(f"{__name__} invoked")
     adequate(call)
 
 
 @bot.callback_query_handler(func=lambda call: call.data == 'inadequate')
 def inadequate_handler(call):
     """Вариант неадекватен"""
+    log.log_print(f"{__name__} invoked")
     inadequate(call)
 
 
 @bot.inline_handler(lambda query: query.query == 'test')
 def response_handler(inline_query):
     """Тестовая инлайновая команда, бесполезная"""
+    log.log_print(f"{__name__} invoked")
     response(inline_query)
 
 
 @bot.message_handler(regexp='Признаю оскорблением')
 def insult_handler(message):
     """Спращивает, иронично ли признание оскорблением"""
+    log.log_print(f"{__name__} invoked")
     if in_mf(message, False):
         insult(message)
 
@@ -170,6 +186,7 @@ def insult_handler(message):
 @bot.callback_query_handler(func=lambda call: call.data == 'non_ironic')  # триггерится, когда нажата кнопка "Нет"
 def non_ironic_handler(call):
     """Реакция, если обвинение было неироничным"""
+    log.log_print(f"{__name__} invoked")
     # Проверка, нажал ли на кнопку не тот, кто нужен
     if call.message.reply_to_message.from_user.id == call.from_user.id:
         non_ironic(call)
@@ -180,6 +197,7 @@ def non_ironic_handler(call):
 @bot.callback_query_handler(func=lambda call: call.data == 'ironic')  # триггерится, когда нажата кнопка "Да"
 def ironic_handler(call):
     """Реакция, если обвинение было ироничным"""
+    log.log_print(f"{__name__} invoked")
     # Проверка, нажал ли на кнопку не тот, кто нужен
     if call.message.reply_to_message.from_user.id == call.from_user.id:
         ironic(call)
@@ -190,6 +208,7 @@ def ironic_handler(call):
 @bot.message_handler(commands=['vote', 'multi_vote', 'adapt_vote'])
 def vote_handler(message):
     """Генерирует голосовашку"""
+    log.log_print(f"{__name__} invoked")
     if in_mf(message, False) and rank_required(message, "Админ"):
         vote(message)
 
@@ -197,6 +216,7 @@ def vote_handler(message):
 @bot.callback_query_handler(func=lambda call: 'here' in call.data)
 def place_here_handler(call):
     """Выбирает, куда прислать голосовашку"""
+    log.log_print(f"{__name__} invoked")
     # Проверка, нажал ли на кнопку не тот, кто нужен
     if call.message.reply_to_message.from_user.id == call.from_user.id:
         place_here(call)
@@ -207,18 +227,21 @@ def place_here_handler(call):
 @bot.callback_query_handler(func=lambda call: 'mv_' in call.data)
 def mv_handler(call):
     """Обновляет мульти-голосовашку"""
+    log.log_print(f"{__name__} invoked")
     mv(call)
 
 
 @bot.callback_query_handler(func=lambda call: 'av_' in call.data)
 def av_handler(call):
     """Обновляет адапт-голосовашку"""
+    log.log_print(f"{__name__} invoked")
     av(call)
 
 
 @bot.callback_query_handler(func=lambda call: call.data == 'favor' or call.data == 'against' or call.data == 'abstain')
 def add_vote_handler(call):
     """Вставляет голос в голосоовашку"""
+    log.log_print(f"{__name__} invoked")
     add_vote(call)
 
 
@@ -228,6 +251,7 @@ def add_vote_handler(call):
 @bot.message_handler(commands=['start'])
 def starter_handler(message):
     """Запуск бота в личке, в чате просто реагирует"""
+    log.log_print(f"{__name__} invoked")
     lang = language(message)
     if in_mf(message, lang):
         starter(message, lang)
@@ -236,6 +260,7 @@ def starter_handler(message):
 @bot.message_handler(commands=['help'])
 def helper_handler(message):
     """Предоставляет человеку список команд"""
+    log.log_print(f"{__name__} invoked")
     lang = language(message)
     if in_mf(message, lang):
         helper(message)
@@ -244,6 +269,7 @@ def helper_handler(message):
 @bot.message_handler(commands=['id'])
 def show_id_handler(message):
     """Присылает различные ID'шники, зачастую бесполезные"""
+    log.log_print(f"{__name__} invoked")
     lang = language(message)
     if in_mf(message, lang):
         show_id(message)
@@ -252,6 +278,7 @@ def show_id_handler(message):
 @bot.message_handler(commands=['minet'])
 def minet_handler(message):
     """Приносит удовольствие"""
+    log.log_print(f"{__name__} invoked")
     lang = language(message)
     if in_mf(message, lang) and cooldown(message):
         minet(message)
@@ -260,6 +287,7 @@ def minet_handler(message):
 @bot.message_handler(commands=['drakken'])
 def send_drakken_handler(message):
     """Присылает арт с Доктором Драккеном"""
+    log.log_print(f"{__name__} invoked")
     lang = language(message)
     if in_mf(message, lang) and cooldown(message):
         send_drakken(message)
@@ -269,6 +297,7 @@ def send_drakken_handler(message):
 @bot.message_handler(commands=['meme'])
 def send_meme_handler(message):
     """Присылает мем"""
+    log.log_print(f"{__name__} invoked")
     lang = language(message)
     if in_mf(message, lang) and cooldown(message):
         send_meme(message)
@@ -277,6 +306,7 @@ def send_meme_handler(message):
 @bot.message_handler(commands=['me', 'check', 'check_me', 'check_ebalo'])
 def send_me_handler(message):
     """Присылает человеку его запись в БД"""
+    log.log_print(f"{__name__} invoked")
     person = person_analyze(message, to_self=True)
     lang = language(message)
     if in_mf(message, lang):
@@ -286,6 +316,7 @@ def send_me_handler(message):
 @bot.message_handler(commands=['members', 'database'])
 def all_members_handler(message):
     """Присылает человеку все записи в БД"""
+    log.log_print(f"{__name__} invoked")
     lang = language(message)
     if in_mf(message, lang):
         all_members(message)
@@ -294,6 +325,7 @@ def all_members_handler(message):
 @bot.message_handler(commands=['give'])
 def money_give_handler(message):
     """Обмен денег между пользователями"""
+    log.log_print(f"{__name__} invoked")
     person = person_analyze(message, to_bot=True)
     lang = language(message)
     if in_mf(message, lang) and person:
@@ -303,6 +335,7 @@ def money_give_handler(message):
 @bot.message_handler(commands=['top'])
 def money_top_handler(message):
     """Топ ЯМ"""
+    log.log_print(f"{__name__} invoked")
     lang = language(message)
     if in_mf(message, lang):
         money_top(message)
@@ -314,4 +347,5 @@ def money_top_handler(message):
 @bot.message_handler(func=lambda message: True, content_types=None)
 def counter_handler(message):
     """Подсчитывает сообщения"""
+    log.log_print(f"{__name__} invoked")
     counter(message)
