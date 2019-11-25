@@ -72,3 +72,7 @@ class Database:
         except Exception as e:
             print(e)
         self.connection.commit()  # Сохраняем изменения
+
+# TODO Добавление колонки
+# TODO Удаление колонки
+# TODO Удаление одной записи

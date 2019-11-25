@@ -152,7 +152,7 @@ def promotion(message, person):
     """Назначает человека админом"""
     log.log_print("promotion invoked")
     database = Database()
-    database.change("Админ", person.id, 'members', 'rank', 'id')
+    database.append((person.id, "Админ"), table='appointments')
     # TODO пусть бот шлёт админу ссылку на чат админосостава и меняет её при входе
     # Дать челу админку во всех чатах, кроме Комитета и Админосостава
     for chat in chat_list:

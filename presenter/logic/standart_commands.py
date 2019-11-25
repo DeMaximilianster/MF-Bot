@@ -121,15 +121,19 @@ def send_me(message, person):
     if person:  # TODO Перенести проверку на person_analyze в input.py
         database.change(person.username, person.id, set_column='username')
         database.change(person.first_name, person.id, set_column='nickname')
-        person = database.get('members', ('id', person.id))
+        p = database.get('members', ('id', person.id))
+        appointments = [x[1] for x in database.get_many(person.id, 'appointments', 'id')]
+        print(appointments)
+        print(', '.join(appointments))
         if person:
-            msg = 'ID: {}\n'.format(person[0])
-            msg += 'Юзернейм: {}\n'.format(person[1])
-            msg += 'Никнейм: {}\n'.format(person[2])
-            msg += 'Ранг: {}\n'.format(person[3])
-            msg += 'Кол-во сообщений: {}\n'.format(person[4])
-            msg += 'Кол-во предупреждений: {}\n'.format(person[5])
-            msg += 'Количество ябломилианов: {}\n'.format(person[6])
+            msg = 'ID: {}\n'.format(p[0])
+            msg += 'Юзернейм: {}\n'.format(p[1])
+            msg += 'Никнейм: {}\n'.format(p[2])
+            msg += 'Ранг: {}\n'.format(p[3])
+            msg += 'Кол-во сообщений: {}\n'.format(p[4])
+            msg += 'Кол-во предупреждений: {}\n'.format(p[5])
+            msg += 'Количество ябломилианов: {}\n'.format(p[6])
+            msg += 'Должности: ' + ', '.join(appointments)
         else:
             msg = "Не знаю, чё это такое тут сидит"
         reply(message, msg)

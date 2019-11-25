@@ -5,5 +5,6 @@ full_rules = 'model/texts/full_rules.txt'
 etiquette = 'model/texts/etiquette.txt'
 elitocracy = 'model/texts/elitocracy.txt'
 ranks = 'model/texts/ranks.txt'
+appointments = 'model/texts/appointments.txt'
 database_file = 'model/MF.db'
 log_files = ["model/log.txt"]

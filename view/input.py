@@ -1,7 +1,7 @@
 from presenter.config.token import bot
 from view.output import reply, answer_callback
 from presenter.config.config_func import in_mf, counter, cooldown, person_analyze, rank_required, rank_superiority,\
-    language
+    language, appointment_required
 from presenter.logic.elite import elite
 from presenter.logic.boss_commands import ban, deleter_mode, promotion, demotion, add_chat, warn, unwarn,\
     message_change, money_pay
@@ -74,7 +74,7 @@ def warn_handler(message):
     """Даёт участнику предупреждение"""
     log.log_print(f"{__name__} invoked")
     person = person_analyze(message)
-    if in_mf(message, False) and rank_required(message, "Админ") and person and rank_superiority(message):
+    if in_mf(message, False) and appointment_required(message, "Админ") and person and rank_superiority(message):
         if message.reply_to_message:
             warn(message, person)
         else:
@@ -86,7 +86,7 @@ def unwarn_handler(message):
     """Снимает с участника предупреждение"""
     log.log_print(f"{__name__} invoked")
     person = person_analyze(message)
-    if in_mf(message, False) and rank_required(message, "Админ") and person:
+    if in_mf(message, False) and appointment_required(message, "Админ") and person:
         unwarn(message, person)
 
 
@@ -94,7 +94,7 @@ def unwarn_handler(message):
 def ban_handler(message):
     log.log_print(f"{__name__} invoked")
     person = person_analyze(message)
-    if in_mf(message, False) and rank_required(message, "Админ") and person and rank_superiority(message):
+    if in_mf(message, False) and appointment_required(message, "Админ") and person and rank_superiority(message):
         ban(message, person)
 
 
@@ -102,14 +102,14 @@ def ban_handler(message):
 def money_pay_handler(message):
     log.log_print(f"{__name__} invoked")
     person = person_analyze(message, to_self_leader=True)
-    if in_mf(message, False) and rank_required(message, "Админ") and person:
+    if in_mf(message, False) and appointment_required(message, "Админ") and person:
         money_pay(message, person)
 
 
 @bot.message_handler(commands=['delete_mode'])
 def deleter_mode_handler(message):
     log.log_print(f"{__name__} invoked")
-    if in_mf(message, False) and rank_required(message, "Админ"):
+    if in_mf(message, False) and appointment_required(message, "Админ"):
         deleter_mode(message)
 
 

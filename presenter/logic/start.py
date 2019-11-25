@@ -36,6 +36,8 @@ def starter(message, lang):
         reply(message, open(etiquette).read(), parse_mode="Markdown")
     elif "ranks" in message.text:
         reply(message, open(ranks).read(), parse_mode="Markdown")
+    elif "appointments" in message.text:
+        reply(message, open(appointments).read(), parse_mode="Markdown")
     elif "new_option" in message.text:
         vote_id = int(message.text.split('new_option')[1])
         sent = reply(message, "Введите ваш вариант ответа на голосовании")

@@ -113,6 +113,16 @@ def rank_required(message, min_rank, loud=True):
     return your_rank_n >= min_rank_n
 
 
+def appointment_required(message, appointment):
+    log.log_print(f"{__name__} invoked")
+    database = Database()
+    true_false = database.get("appointments", ('id', message.from_user.id), ('appointment', appointment))
+    if not true_false:
+        reply(message, "Вам для этого нужна должность Админ")
+    del database
+    return true_false
+
+
 def cooldown(message):
     log.log_print("cooldown invoked")
     database = Database()
