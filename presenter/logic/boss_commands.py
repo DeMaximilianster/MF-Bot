@@ -1,8 +1,9 @@
 # -*- coding: utf-8 -*-
 from presenter.config.database_lib import Database
-from presenter.config.config_var import full_chat_list, chat_list, channel_list, bot_id, admin_place
+from presenter.config.config_var import full_chat_list, channel_list, bot_id, admin_place, chat_list
 from presenter.config.log import Loger, log_to
 from view.output import kick, reply, promote, send, forward
+
 work = True
 log = Loger(log_to)
 
@@ -85,9 +86,9 @@ def ban(message, person):
         forward(blowout, message.chat.id, msg_id)
     send(message.chat.id, "Ну всё, этому челику жопа")
     database.change("Нарушитель", person.id, 'members', 'rank', 'id')
-    for chat in full_chat_list:
+    for chat in full_chat_list(database):
         kick(chat[0], person.id)
-    for channel in channel_list:
+    for channel in channel_list(database):
         kick(channel[0], person.id)
     del database
 
@@ -118,9 +119,9 @@ def money_pay(message, person):
             reply(message, f"#Финансы #Бюджет #Ф{p_id}\n\n"
                            f"Бюджет [{bot_money-money} --> {bot_money}]\n"
                            f"ID {p_id} [{value+money} --> {value}] {sent}")
-            send(admin_place, f"#Финансы #Бюджет #Ф{p_id}\n\n"
-                              f"Бюджет [{bot_money-money} --> {bot_money}]\n"
-                              f"ID {p_id} [{value+money} --> {value}] {sent}")
+            send(admin_place(database), f"#Финансы #Бюджет #Ф{p_id}\n\n"
+                                        f"Бюджет [{bot_money-money} --> {bot_money}]\n"
+                                        f"ID {p_id} [{value+money} --> {value}] {sent}")
         else:
             reply(message, "Часто у людей видишь отрицательное количество денег?")
     else:
@@ -140,9 +141,9 @@ def money_pay(message, person):
                            f"Бюджет [{bot_money+money} --> {bot_money}]\n"
                            f"ID {p_id} [{value-money} --> {value}] {sent}")
 
-            send(admin_place, f"#Финансы #Бюджет #Ф{p_id}\n\n"
-                              f"Бюджет [{bot_money+money} --> {bot_money}]\n"
-                              f"ID {p_id} [{value-money} --> {value}] {sent}")
+            send(admin_place(database), f"#Финансы #Бюджет #Ф{p_id}\n\n"
+                                        f"Бюджет [{bot_money+money} --> {bot_money}]\n"
+                                        f"ID {p_id} [{value-money} --> {value}] {sent}")
     database.change(value, p_id, 'members', 'money', 'id')
     database.change(bot_money, bot_id, 'members', 'money', 'id')
     del database
@@ -155,11 +156,11 @@ def promotion(message, person):
     database.append((person.id, "Админ"), table='appointments')
     # TODO пусть бот шлёт админу ссылку на чат админосостава и меняет её при входе
     # Дать челу админку во всех чатах, кроме Комитета и Админосостава
-    for chat in chat_list:
+    for chat in chat_list(database):
         promote(chat[0], person.id,
                 can_change_info=False, can_delete_messages=True, can_invite_users=True,
                 can_restrict_members=True, can_pin_messages=True, can_promote_members=False)
-    for channel in channel_list:
+    for channel in channel_list(database):
         promote(channel[0], person.id, can_post_messages=True, can_invite_users=True)
     reply(message, "Теперь это админ!")
     del database
@@ -172,11 +173,11 @@ def demotion(message, person):
     database.change("Гость", person.id, 'members', 'rank', 'id')
     # TODO забирать админку, не пингуя
     # Забрать у чела админку во всех чатах, кроме Комитета и Админосостава
-    for chat in chat_list:
+    for chat in chat_list(database):
         promote(chat[0], person.id,
                 can_change_info=False, can_delete_messages=False, can_invite_users=False,
                 can_restrict_members=False, can_pin_messages=False, can_promote_members=False)
-    for channel in channel_list:
+    for channel in channel_list(database):
         promote(channel[0], person.id, can_post_messages=False, can_invite_users=False)
     reply(message, "Теперь это гость!")
     del database
@@ -232,8 +233,7 @@ def add_chat(message):
     database = Database()
     chat = (message.chat.id, message.chat.title, message.text[10:])
     database.append(chat, "chats")
-    # TODO Пофиксить необходимость перезагрузки
-    reply(message, "Теперь это часть МФ2. Учтите, что для корректного бана и админок, необходимо перезагрузить меня")
+    reply(message, "Теперь это часть МФ2. Как и:\n" + '\n'.join(map(str, full_chat_list(database))))
     del database
 
 
