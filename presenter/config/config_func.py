@@ -123,26 +123,22 @@ def appointment_required(message, appointment):
     return true_false
 
 
-def cooldown(message):
+def cooldown(message, command, timeout=3600):
     log.log_print("cooldown invoked")
+    if message.chat.id > 0:  # Command is used in PM's
+        return True
     database = Database()
     # Получаем наименование необходимой команды
-    if 'есть один мем' in message.text.lower():
-        analyze = '/meme'
-    else:
-        analyze = message.text.split()[0]  # Первое слово в строке
-        if '@' in analyze:
-            analyze = analyze.split('@')[0]  # Убираем собачку и то, что после неё
-    cooldown_id = '{} {}'.format(message.from_user.id, analyze)
-    command = database.get('cooldown', ('id', cooldown_id))
-    if not command:  # Чел впервые пользуется коммандой
-        database.append((cooldown_id, message.date), 'cooldown')
+    entry = database.get('cooldown', ('person_id', message.from_user.id), ('command', command),
+                         ('chat_id', message.chat.id))
+    if not entry:  # Чел впервые пользуется коммандой
+        database.append((message.from_user.id, command, message.chat.id, message.date), 'cooldown')
         del database
         return True
     # Чел уже пользовался командой
-    time_passed = message.date - command[1]
-    if time_passed < 3600:  # Кулдаун не прошёл
-        seconds = 3600 - time_passed
+    time_passed = message.date - entry[3]
+    if time_passed < timeout:  # Кулдаун не прошёл
+        seconds = timeout - time_passed
         minutes = seconds//60
         seconds %= 60
         answer = "Воу, придержи коней, ковбой. Ты сможешь воспользоваться этой командой только "
@@ -151,7 +147,8 @@ def cooldown(message):
         del database
         return False
     else:  # Кулдаун прошёл
-        database.change(message.date, cooldown_id, 'cooldown', 'time')
+        database.change(message.date, 'time', 'cooldown', ('person_id', message.from_user.id), ('command', command),
+                                      ('chat_id', message.chat.id))
         del database
         return True
 
@@ -211,7 +208,7 @@ def counter(message):
         database.append(person)
     elif message.chat.id in [x[0] for x in database.get_many('Главный чат') + database.get_many('Подчат')]:
         value = database.get('members', ('id', person.id))[4] + 1
-        database.change(value, person.id, 'members', 'messages', 'id')
+        database.change(value, 'messages', 'members', ('id', person.id))
         # TODO Добавить время последнего сообщения и элитократические взаимодействия с ним
     del database
 

@@ -61,7 +61,7 @@ def check(message):
         if person[i] == "None":
             answer = i - 6
             break
-    database.change(message.text, message.from_user.id, 'basic_logic_tested', 'answer_{}'.format(answer))
+    database.change(message.text, f'answer_{answer}', 'basic_logic_tested', ('id', 'message.from_user.id'))
     del database
     if answer != 6:
         elite(message)
@@ -83,7 +83,7 @@ def elite(message):  # TODO Привести эти команды в поряд
             question = choice(all_questions)
             value = database.get('basic_logic', ('id', question))[1]
             print(value)
-            database.change(value, message.from_user.id, 'basic_logic_tested', 'question_{}'.format(i+1))
+            database.change(value, f'question_{i+1}', 'basic_logic_tested', ('id', message.from_user.id))
             all_questions.remove(question)
     for i in range(7, 13):
         if database.get('basic_logic_tested', ('id', message.from_user.id))[i] == "None":

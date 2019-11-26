@@ -30,14 +30,14 @@ class Database:
         self.cursor.execute(sql)
         return self.cursor.fetchone()
 
-    def get_many(self, value, table='chats', column='purpose'):
+    def get_many(self, value, table='chats', column='purpose'):  # TODO Добавить поиск по нескольким ключам
         """Читает несколько записей в базе данных"""
         sql = "SELECT * FROM {} WHERE {}='{}'".format(table, column, value)
         log.log_print("[SQL]: "+sql)
         self.cursor.execute(sql)
         return self.cursor.fetchall()
 
-    def get_all(self, table, order_by='id', how_sort='DESC'):
+    def get_all(self, table, order_by='id', how_sort='DESC'):  # TODO Добавить поиск по нескольким ключам
         """Читает все записи в одной таблице базы данных"""
         sql = "SELECT rowid, * FROM {} ORDER BY {} {}".format(table, order_by, how_sort)
         log.log_print("[SQL]: "+sql)
@@ -46,16 +46,15 @@ class Database:
             all_list.append(element[1:])  # Первый элемент это бесполезный номер
         return all_list
 
-    def change(self, set_value, where_value, table='members', set_column='messages', where_column='id'):
+    def change(self, set_what, set_where, table, *column_value):
         """Меняет что-то в базе данных"""
-        set_value = str(set_value).replace("'", "").replace('"', '')
-        where_value = str(where_value).replace("'", "").replace('"', '')
+        reqs = []
+        for value in column_value:
+            reqs.append(f"{value[0]}='{value[1]}'")
         # Одинарные кавычки в sql очень важны
-        sql = """
-        UPDATE {}
-        SET {} = '{}'
-        WHERE {} = '{}'
-        """.format(table, set_column, set_value, where_column, where_value)
+        sql = f"UPDATE {table}\n"
+        sql += f"SET {set_where} = '{set_what}'\n"
+        sql += "WHERE " + " AND ".join(reqs)
         log.log_print("[SQL]: "+sql)
         self.cursor.execute(sql)
         self.connection.commit()  # Сохраняем изменения

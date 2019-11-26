@@ -281,7 +281,7 @@ def minet_handler(message):
     """Приносит удовольствие"""
     log.log_print(f"{__name__} invoked")
     lang = language(message)
-    if in_mf(message, lang) and cooldown(message):
+    if in_mf(message, lang) and cooldown(message, 'minet'):
         minet(message)
 
 
@@ -290,7 +290,7 @@ def send_drakken_handler(message):
     """Присылает арт с Доктором Драккеном"""
     log.log_print(f"{__name__} invoked")
     lang = language(message)
-    if in_mf(message, lang) and cooldown(message):
+    if in_mf(message, lang) and cooldown(message, 'drakken'):
         send_drakken(message)
 
 
@@ -300,7 +300,7 @@ def send_meme_handler(message):
     """Присылает мем"""
     log.log_print(f"{__name__} invoked")
     lang = language(message)
-    if in_mf(message, lang) and cooldown(message):
+    if in_mf(message, lang) and cooldown(message, 'meme'):
         send_meme(message)
 
 

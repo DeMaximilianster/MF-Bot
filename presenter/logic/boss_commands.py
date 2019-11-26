@@ -43,7 +43,7 @@ def warn(message, person):
         print(e)
         warns = 1
     value = database.get('members', ('id', person.id))[5] + warns
-    database.change(value, person.id, table='members', set_column='warns', where_column='id')
+    database.change(value, 'warns', 'members', ('id', person.id))
     reply(message, "Варн(ы) выдан(ы). Теперь их {}".format(value))
     blowout = database.get('channels', ('name', 'Проколы'))[0]
     how_many = 20  # Сколько пересылает сообщений
@@ -64,7 +64,7 @@ def unwarn(message, person):
     database = Database()
     value = database.get('members', ('id', person.id))[5] - 1  # TODO Возможность снимать несколько варнов за раз
     # TODO Предохранитель от отрицательного числа варнов
-    database.change(value, person.id, table='members', set_column='warns', where_column='id')
+    database.change(value, 'warns', 'members', ('id', person.id))
     reply(message, "Варн снят. Теперь их {}".format(value))
     if value < 3:
         pass  # TODO команда /unban
@@ -85,7 +85,7 @@ def ban(message, person):
     for msg_id in range(start_forwarding, end_forwarding + 1):
         forward(blowout, message.chat.id, msg_id)
     send(message.chat.id, "Ну всё, этому челику жопа")
-    database.change("Нарушитель", person.id, 'members', 'rank', 'id')
+    database.change('Нарушитель', 'rank', 'members', ('id', person.id))
     for chat in full_chat_list(database):
         kick(chat[0], person.id)
     for channel in channel_list(database):
@@ -144,8 +144,8 @@ def money_pay(message, person):
             send(admin_place(database), f"#Финансы #Бюджет #Ф{p_id}\n\n"
                                         f"Бюджет [{bot_money+money} --> {bot_money}]\n"
                                         f"ID {p_id} [{value-money} --> {value}] {sent}")
-    database.change(value, p_id, 'members', 'money', 'id')
-    database.change(bot_money, bot_id, 'members', 'money', 'id')
+    database.change(value, 'money', 'members', ('id', p_id))
+    database.change(bot_money, 'money', 'members', ('id', bot_id))
     del database
 
 
@@ -170,7 +170,7 @@ def demotion(message, person):
     """Забирает у человека админку"""
     log.log_print("demotion invoked")
     database = Database()
-    database.change("Гость", person.id, 'members', 'rank', 'id')
+    database.change("Гость", "rank", 'members', ('id', person.id))
     # TODO забирать админку, не пингуя
     # Забрать у чела админку во всех чатах, кроме Комитета и Админосостава
     for chat in chat_list(database):
@@ -207,7 +207,7 @@ def message_change(message, person):
     else:
         value = int(messages)
         reply(message, "Ставлю человеку с ID {} количество сообщений равное {}".format(p_id, value))
-    database.change(value, p_id, 'members', 'messages', 'id')
+    database.change(value, 'messages', 'members', ('id', p_id))
     del database
 
 
@@ -217,7 +217,7 @@ def deleter_mode(message):
     database = Database()
     delete = int(database.get('config', ('var', 'delete'))[1])
     delete = (delete + 1) % 2  # Переводит 0 в 1, а 1 в 0
-    database.change(delete, 'delete', 'config', 'value', 'var')
+    database.change(delete, 'value', 'config', ('var', 'delete'))
     del database
     if delete:
         reply(message, 'Окей, господин, теперь я буду удалять медиа, которые присланы гостями')

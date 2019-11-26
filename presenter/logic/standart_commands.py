@@ -100,6 +100,7 @@ def send_drakken(message):
                       'AgADAgAD36oxG0ImAUvzgBI4oR5C9J_RuQ8ABAEAAwIAA20AA9FGAQABFgQ',
                       'AgADAgADRKoxG1QCQUmlG28vrK8o_avCtw8ABAEAAwIAA20AA8v1AAIWBA'))
     send_photo(message.chat.id, drakken, reply_to_message_id=message.message_id)
+    # TODO Функция добавления большего количества Докторов Драккенов
 
 
 def send_meme(message):
@@ -119,8 +120,8 @@ def send_me(message, person):
     log.log_print(str(message.from_user.id)+": send_me invoked")
     database = Database()
     if person:  # TODO Перенести проверку на person_analyze в input.py
-        database.change(person.username, person.id, set_column='username')
-        database.change(person.first_name, person.id, set_column='nickname')
+        database.change(person.username, 'username', 'members', ('id', person.id))
+        database.change(person.first_name, 'nickname', 'members', ('id', person.id))
         p = database.get('members', ('id', person.id))
         appointments = [x[1] for x in database.get_many(person.id, 'appointments', 'id')]
         print(appointments)
@@ -203,8 +204,8 @@ def money_give(message, person):
             send(admin_place, f"#Финансы #Ф{getter} #Ф{giver}\n\n"
                               f"ID {getter} [{value_getter-money} --> {value_getter}] {get_m}\n"
                               f"ID {giver} [{value_giver+money} --> {value_giver}] {giv_m}\n")
-    database.change(value_getter, getter, 'members', 'money', 'id')
-    database.change(value_giver, giver, 'members', 'money', 'id')
+    database.change(value_getter, 'money', 'members', ('id', getter))
+    database.change(value_giver, 'money', 'members', ('id', giver))
     del database
 
 
