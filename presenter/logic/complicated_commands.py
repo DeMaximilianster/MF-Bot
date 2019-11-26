@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 from presenter.config.config_func import update_adapt_vote, update_multi_vote, create_adapt_vote, create_vote, \
     create_multi_vote
-from presenter.config.config_var import test_keyboard, ironic_keyboard, m_where_keyboard, where_keyboard, \
-    a_where_keyboard, vote_keyboard, admin_place
+from presenter.config.config_var import test_keyboard, ironic_keyboard,  \
+     vote_keyboard, admin_place
 from presenter.config.files_paths import multi_votes_file, adapt_votes_file, votes_file
 from view.output import edit_markup, answer_inline, reply, answer_callback, edit_text, delete, send
 from presenter.config.log import Loger, log_to
@@ -85,19 +85,6 @@ def ironic(call):
     answer_callback(call.id)
 
 
-def vote(message):
-    """Генерирует голосовашку"""
-    log.log_print("vote invoked")
-    reply_markup = None
-    if '/vote' in message.text:
-        reply_markup = where_keyboard
-    elif '/multi_vote' in message.text:
-        reply_markup = m_where_keyboard
-    elif '/adapt_vote' in message.text:
-        reply_markup = a_where_keyboard
-    reply(message, 'А запостить куда?', reply_markup=reply_markup)
-
-
 def place_here(call):
     """Выбирает, куда прислать голосовашку"""
     log.log_print("place_here invoked")
@@ -107,19 +94,21 @@ def place_here(call):
         where = call.message.chat.id
     elif call.data == 'there' or call.data == 'm_there' or call.data == 'a_there':
         where = -1001260953849  # Канал голосовашек
-    delete(call.message.chat.id, call.message.message_id)
-    if call.data == 'here' or call.data == 'there':
+    elif 'nedostream' in call.data:
+        where = -1001409685984  # Канал недостримов
+    if call.message.reply_to_message.text.split()[0] == '/vote':
         vote_message = send(where, 'Голосование "{}"'
-                                   .format(call.message.reply_to_message.text[6:]), reply_markup=vote_keyboard)
+                            .format(call.message.reply_to_message.text[6:]), reply_markup=vote_keyboard)
         create_vote(vote_message)
-    elif call.data == 'm_here' or call.data == 'm_there':
+    elif call.message.reply_to_message.text.split()[0] == '/multi_vote':
         answer = 'Мульти-голосование (вы можете предлагать варианты и выбирать несколько ответов)\n\n"{}"\n'
         vote_message = send(where, answer.format(call.message.reply_to_message.text[12:]))
         create_multi_vote(vote_message)
-    elif call.data == 'a_here' or call.data == 'a_there':
+    elif call.message.reply_to_message.text.split()[0] == '/adapt_vote':
         answer = 'Адапт-голосование (вы можете предлагать варианты, но выбирать только 1 вариант)\n\n"{}"\n'
         vote_message = send(where, answer.format(call.message.reply_to_message.text[12:]))
         create_adapt_vote(vote_message)
+    delete(call.message.chat.id, call.message.message_id)
 
 
 def mv(call):

@@ -45,19 +45,8 @@ test_keyboard.row_width = 1
 where_keyboard = InlineKeyboardMarkup()
 where_keyboard.add(InlineKeyboardButton("Сюда", callback_data="here"))
 where_keyboard.add(InlineKeyboardButton("В канал голосовашек", callback_data="there"))
+where_keyboard.add(InlineKeyboardButton("В канал недостримов", callback_data="nedostream"))
 where_keyboard.row_width = 1
-
-# Клавиатура для выбора, куда постить мульти-голосовашку
-m_where_keyboard = InlineKeyboardMarkup()
-m_where_keyboard.add(InlineKeyboardButton("Сюда", callback_data="m_here"))
-m_where_keyboard.add(InlineKeyboardButton("В канал голосовашек", callback_data="m_there"))
-m_where_keyboard.row_width = 1
-
-# Клавиатура для выбора, куда постить адапт-голосовашку
-a_where_keyboard = InlineKeyboardMarkup()
-a_where_keyboard.add(InlineKeyboardButton("Сюда", callback_data="a_here"))
-a_where_keyboard.add(InlineKeyboardButton("В канал голосовашек", callback_data="a_there"))
-a_where_keyboard.row_width = 1
 
 # Клавиатура для признания предложения для мульти-голосовашки адекватным/неадекватным
 adequate_keyboard = InlineKeyboardMarkup()

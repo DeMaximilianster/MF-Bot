@@ -190,13 +190,13 @@ def money_give(message, person):
             get_m = send(getter, f"#Финансы\n\n На ваш счёт было {money} ЯМ со счёта {giver}. "
                                  f"Теперь у вас их {value_getter}. А у него/неё {value_giver}")
             if get_m:
-                get_m = "✅ уведомлён(а)"
+                get_m = "🔔 уведомлён(а)"
             else:
-                get_m = "❌ не уведомлён(а)"
+                get_m = "🔕 не уведомлён(а)"
             if giv_m:
-                giv_m = "✅ уведомлён(а)"
+                giv_m = "🔔 уведомлён(а)"
             else:
-                giv_m = "❌ не уведомлён(а)"
+                giv_m = "🔕 не уведомлён(а)"
             reply(message, f"#Финансы #Ф{getter} #Ф{giver}\n\n"
                            f"ID {getter} [{value_getter-money} --> {value_getter}] {get_m}\n"
                            f"ID {giver} [{value_giver+money} --> {value_giver}] {giv_m}\n")

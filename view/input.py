@@ -2,11 +2,12 @@ from presenter.config.token import bot
 from view.output import reply, answer_callback
 from presenter.config.config_func import in_mf, counter, cooldown, person_analyze, rank_required, rank_superiority,\
     language, appointment_required
+from presenter.config.config_var import where_keyboard
 from presenter.logic.elite import elite
 from presenter.logic.boss_commands import ban, deleter_mode, promotion, demotion, add_chat, warn, unwarn,\
     message_change, money_pay
 from presenter.logic.complicated_commands import adequate, inadequate, response, insult, non_ironic, ironic, \
-    vote, place_here, mv, av, add_vote
+    place_here, mv, av, add_vote
 from presenter.logic.reactions import deleter, new_member, left_member
 from presenter.logic.standart_commands import helper, send_drakken, send_me, send_meme, minet, show_id, \
     all_members, money_give, money_top
@@ -209,11 +210,11 @@ def ironic_handler(call):
 def vote_handler(message):
     """Генерирует голосовашку"""
     log.log_print(f"{__name__} invoked")
-    if in_mf(message, False) and rank_required(message, "Админ"):
-        vote(message)
+    if in_mf(message, False) and appointment_required(message, "Админ"):
+        reply(message, 'А запостить куда?', reply_markup=where_keyboard)
 
 
-@bot.callback_query_handler(func=lambda call: 'here' in call.data)
+@bot.callback_query_handler(func=lambda call: 'here' in call.data or 'nedostream' in call.data)
 def place_here_handler(call):
     """Выбирает, куда прислать голосовашку"""
     log.log_print(f"{__name__} invoked")
