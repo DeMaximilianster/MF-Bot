@@ -24,7 +24,8 @@ def language(message):
             text += user.last_name
     else:
         chat = get_chat(message.chat.id)
-        text += chat.title
+        if chat.title:
+            text += chat.title
         if chat.description:
             text += chat.description
     text = set(text)
@@ -164,30 +165,30 @@ def time_replace(seconds):
     return days, hours, minutes, seconds
 
 
-def in_mf(message, lang, or_private=True):
+def in_mf(message, lang, or_private=True, loud=True):
     """Позволяет регулировать использование команл вне чатов и в личке"""
     log.log_print("in_mf invoked")
-    database = Database()
-    if database.get('chats', ('id', message.chat.id)):  # Команда вызвана в системе МФ2
-        counter(message)  # Отправляем сообщение на учёт в БД
-        return True
-    elif message.chat.type == 'private':  # Команда вызвана в личке
-        if or_private:  # Команда одобрена для использования в личке (например /minet)
-            return True
-        else:  # Команда не одобрена для использования в личке (например /ban)
+    if message.chat.id > 0:
+        if loud and not or_private:
             person = message.from_user
             send(381279599, "Некто {} ({}) [{}] попыталcя использовать команду {} в личке"
                             .format(person.first_name, person.username, person.id, message.text))
             reply(message, "Эта команда отключена в ЛС")
-            return False
-    text = "Жалкие завистники из чата с ID {} и названием {}, в частности {} (@{}) [{}] попытались мной воспользоваться"
-    send(381279599, text.format(message.chat.id, message.chat.title, message.from_user.first_name,
-                                message.from_user.username, message.from_user.id))
+        return or_private
+    database = Database()
+    if database.get('chats', ('id', message.chat.id)):  # Команда вызвана в системе МФ2
+        counter(message)  # Отправляем сообщение на учёт в БД
+        return True
+    if loud:
+        text = "Жалкие завистники из чата с ID {} и названием {}, в частности {} (@{}) [{}] "
+        text += "попытались мной воспользоваться"
+        send(381279599, text.format(message.chat.id, message.chat.title, message.from_user.first_name,
+                                    message.from_user.username, message.from_user.id))
     rep_text = ""
     if lang['en']:
-        rep_text += "I don't work here. But I work in @MultiFandomEn\n\n"
+        rep_text += "Hmm, I don't know this chat. Call @DeMaximilianster for help\n\n"
     if lang['ru']:
-        rep_text += "Я тут не работаю. Зато я работаю в @MultiFandomRu\n\n"
+        rep_text += "Хмм, я не знаю этот чат. Обратитесь к @DeMaximilianster за помощью\n\n"
     reply(message, rep_text)
     return False
 
@@ -198,18 +199,15 @@ def counter(message):
     database = Database()
     if message.new_chat_members:
         person = message.new_chat_members[0]
+    elif message.left_chat_member:
+        person = message.left_chat_member
     else:
         person = message.from_user
-    if database.get('members', ('id', person.id)) is None:  # Нет такой записи
-        answer = 'Добро пожаловать в наш чат! Напиши мне в личку и в будущем получишь доступ '
-        answer += 'к различным функциям. Читай закреп, веди себя хорошо, приятного времяпровождения!'
-        reply(message, answer)
-        person = (person.id, str(person.username), person.first_name, 'Гость', 1, 0, 0)
-        database.append(person)
-    elif message.chat.id in [x[0] for x in database.get_many('Главный чат') + database.get_many('Подчат')]:
-        value = database.get('members', ('id', person.id))[4] + 1
-        database.change(value, 'messages', 'members', ('id', person.id))
-        # TODO Добавить время последнего сообщения и элитократические взаимодействия с ним
+    if not database.get('messages', ('person_id', person.id), ('chat_id', message.chat.id)):
+        database.append((person.id, message.chat.id, 0), 'messages')
+    value = database.get('messages', ('person_id', person.id), ('chat_id', message.chat.id))[2] + 1
+    database.change(value, 'messages', 'messages', ('person_id', person.id), ('chat_id', message.chat.id))
+    # TODO Добавить время последнего сообщения и элитократические взаимодействия с ним
     del database
 
 

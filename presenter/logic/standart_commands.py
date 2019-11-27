@@ -13,7 +13,7 @@ log = Loger(log_to)
 def helper(message):
     """Предоставляет человеку список команд"""
     log.log_print(str(message.from_user.id)+": helper invoked")
-    answer = '**Команды:**\n\n'
+    answer = '*Команды:*\n\n'
     answer += '/help - Присылает это сообщение\n'
     answer += "/id - Присылает различные ID'шники, зачастую бесполезные\n"
     answer += '/minet - Делает приятно\n'
@@ -119,25 +119,28 @@ def send_me(message, person):
     """Присылает человеку его запись в БД"""
     log.log_print(str(message.from_user.id)+": send_me invoked")
     database = Database()
-    if person:  # TODO Перенести проверку на person_analyze в input.py
-        database.change(person.username, 'username', 'members', ('id', person.id))
-        database.change(person.first_name, 'nickname', 'members', ('id', person.id))
-        p = database.get('members', ('id', person.id))
-        appointments = [x[1] for x in database.get_many(person.id, 'appointments', 'id')]
-        print(appointments)
-        print(', '.join(appointments))
-        if person:
-            msg = 'ID: {}\n'.format(p[0])
-            msg += 'Юзернейм: {}\n'.format(p[1])
-            msg += 'Никнейм: {}\n'.format(p[2])
-            msg += 'Ранг: {}\n'.format(p[3])
-            msg += 'Кол-во сообщений: {}\n'.format(p[4])
-            msg += 'Кол-во предупреждений: {}\n'.format(p[5])
-            msg += 'Количество ябломилианов: {}\n'.format(p[6])
-            msg += 'Должности: ' + ', '.join(appointments)
-        else:
-            msg = "Не знаю, чё это такое тут сидит"
-        reply(message, msg)
+    chats_ids = [x[0] for x in database.get_many('chats', ('messages_count', 2))]
+    msg_count = 0
+    for chat_id in chats_ids:
+        if database.get('messages', ('person_id', person.id), ('chat_id', chat_id)):
+            msg_count += database.get('messages', ('person_id', person.id), ('chat_id', chat_id))[2]
+    database.change(person.username, 'username', 'members', ('id', person.id))
+    database.change(person.first_name, 'nickname', 'members', ('id', person.id))
+    database.change(msg_count, 'messages', 'members', ('id', person.id))
+    # TODO Вынести всё это дело в функцию member_update()
+    p = database.get('members', ('id', person.id))
+    appointments = [x[1] for x in database.get_many('appointments', ('id', person.id))]
+    messages_here = database.get('messages', ('person_id', person.id), ('chat_id', message.chat.id))[2]
+    msg = 'ID: {}\n'.format(p[0])
+    msg += 'Юзернейм: {}\n'.format(p[1])
+    msg += 'Никнейм: {}\n'.format(p[2])
+    msg += 'Ранг: {}\n'.format(p[3])
+    msg += 'Кол-во сообщений в этом чате: {}\n'.format(messages_here)
+    msg += 'Кол-во сообщений во всём МФ2: {}\n'.format(p[4])
+    msg += 'Кол-во предупреждений: {}\n'.format(p[5])
+    msg += 'Кол-во ябломилианов: {}\n'.format(p[6])
+    msg += 'Должности: ' + ', '.join(appointments)
+    reply(message, msg)
     del database
 
 

@@ -188,26 +188,18 @@ def message_change(message, person):
     log.log_print(f"message_change invoked to person {person.id}")
     database = Database()
     p_id = person.id
+    ch_id = message.chat.id
     messages = message.text.split()[-1]
-    value = database.get('members', ('id', p_id))[4]
-    if not messages.isdigit() and not (messages[1:].isdigit() and messages[0] == '-'):
-        reply(message, "Последнее слово должно быть числом, сколько сообщений ставим, прибавляем или убавляем")
-    elif messages[0] == '+':
-        messages = int(messages)
-        value += messages
-        reply(message, "Прибавляю человеку с ID {} {} сообщений. В итоге получается {}".format(p_id, messages, value))
-    elif messages[0] == '-':
-        messages = -int(messages)  # Делаем из отрицательного числа положительное
-        value -= messages
-        if value >= 0:
-            reply(message, "Отнимаю человеку с ID {} {} сообщений. В итоге получается {}".format(p_id, messages, value))
-        else:
-            reply(message, "Часто у людей видишь отрицательное количество сообщений?")
-
+    if not database.get('messages', ('person_id', p_id), ('chat_id', ch_id)):
+        database.append((p_id, ch_id, 0), 'messages')
+    value = database.get('messages', ('person_id', p_id), ('chat_id', ch_id))[2]
+    if messages.isdigit():
+        value += int(messages)
+        reply(message,
+              "Ставлю человеку с ID {} в чат с ID {} количество сообщений равное {}".format(p_id, ch_id, value))
     else:
-        value = int(messages)
-        reply(message, "Ставлю человеку с ID {} количество сообщений равное {}".format(p_id, value))
-    database.change(value, 'messages', 'members', ('id', p_id))
+        reply(message, "Последнее слово должно быть числом, сколько сообщений ставим")
+    database.change(value, 'messages', 'messages', ('person_id', p_id), ('chat_id', ch_id))
     del database
 
 

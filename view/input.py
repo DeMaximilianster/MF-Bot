@@ -1,6 +1,6 @@
 from presenter.config.token import bot
 from view.output import reply, answer_callback
-from presenter.config.config_func import in_mf, counter, cooldown, person_analyze, rank_required, rank_superiority,\
+from presenter.config.config_func import in_mf, cooldown, person_analyze, rank_required, rank_superiority,\
     language, appointment_required
 from presenter.config.config_var import where_keyboard
 from presenter.logic.elite import elite
@@ -136,7 +136,7 @@ def demotion_handler(message):
 def messages_change_handler(message):
     """Меняет запись в БД о количестве сообщений чела"""
     log.log_print(f"{__name__} invoked")
-    person = person_analyze(message)
+    person = person_analyze(message, to_self=True)
     if in_mf(message, False) and rank_required(message, "Член Комитета") and person:
         if (len(message.text.split()) == 2 and message.reply_to_message) or len(message.text.split()) == 3:
             message_change(message, person)
@@ -349,4 +349,5 @@ def money_top_handler(message):
 def counter_handler(message):
     """Подсчитывает сообщения"""
     log.log_print(f"{__name__} invoked")
-    counter(message)
+    lang = language(message)
+    in_mf(message, lang)

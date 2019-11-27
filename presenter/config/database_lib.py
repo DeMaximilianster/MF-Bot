@@ -24,20 +24,26 @@ class Database:
         sql = f"SELECT * FROM {table} WHERE "
         reqs = []
         for value in column_value:
-            reqs.append(f"{value[0]}='{value[1]}'")
+            val = str(value[1]).replace('"', '').replace("'", "")
+            reqs.append(f"{value[0]}='{val}'")
         sql += " AND ".join(reqs)
         log.log_print("[SQL]: " + sql)
         self.cursor.execute(sql)
         return self.cursor.fetchone()
 
-    def get_many(self, value, table='chats', column='purpose'):  # TODO Добавить поиск по нескольким ключам
+    def get_many(self, table, *column_value):  # TODO Добавить поиск по нескольким ключам
         """Читает несколько записей в базе данных"""
-        sql = "SELECT * FROM {} WHERE {}='{}'".format(table, column, value)
-        log.log_print("[SQL]: "+sql)
+        sql = f"SELECT * FROM {table} WHERE "
+        reqs = []
+        for value in column_value:
+            val = str(value[1]).replace('"', '').replace("'", "")
+            reqs.append(f"{value[0]}='{val}'")
+        sql += " AND ".join(reqs)
+        log.log_print("[SQL]: " + sql)
         self.cursor.execute(sql)
         return self.cursor.fetchall()
 
-    def get_all(self, table, order_by='id', how_sort='DESC'):  # TODO Добавить поиск по нескольким ключам
+    def get_all(self, table, order_by='id', how_sort='DESC'):
         """Читает все записи в одной таблице базы данных"""
         sql = "SELECT rowid, * FROM {} ORDER BY {} {}".format(table, order_by, how_sort)
         log.log_print("[SQL]: "+sql)
@@ -50,7 +56,9 @@ class Database:
         """Меняет что-то в базе данных"""
         reqs = []
         for value in column_value:
-            reqs.append(f"{value[0]}='{value[1]}'")
+            val = str(value[1]).replace('"', '').replace("'", "")
+            reqs.append(f"{value[0]}='{val}'")
+        set_what = str(set_what).replace('"', '').replace("'", "")
         # Одинарные кавычки в sql очень важны
         sql = f"UPDATE {table}\n"
         sql += f"SET {set_where} = '{set_what}'\n"
@@ -72,6 +80,4 @@ class Database:
             print(e)
         self.connection.commit()  # Сохраняем изменения
 
-# TODO Добавление колонки
-# TODO Удаление колонки
 # TODO Удаление одной записи
