@@ -11,27 +11,54 @@ from random import choice
 log = Loger(log_to)
 
 
-def language(message):
-    log.log_print("language invoked")
-    languages = {"ru": False, "en": False}
-    russian = set("ёйцукенгшщзхъфывапролджэячсмитьбюЁЙЦУКЕНГШЩЗХЪФЫВАПРОЛДЖЭЯЧСМИТЬБЮ")
-    english = set("qwertyuiopasdfghjklzxcvbnmQWERTYUIOPASDFGHJKLZXCVBNM")
-    text = ""
-    if message.chat.id > 0:
-        user = message.from_user
-        text += user.first_name
-        if user.last_name:
-            text += user.last_name
+def language_analyzer(message, only_one):
+    log.log_print(f"{__name__} invoked")
+    database = Database()
+    entry = database.get('languages', ('id', message.chat.id))
+    languages = {"Russian": False, "English": False}
+    del database
+    if entry:
+        if only_one:
+            return entry[1]
+        else:
+            languages[entry[1]] = True
+            return languages
     else:
-        chat = get_chat(message.chat.id)
-        if chat.title:
-            text += chat.title
-        if chat.description:
-            text += chat.description
+        russian = set("ёйцукенгшщзхъфывапролджэячсмитьбюЁЙЦУКЕНГШЩЗХЪФЫВАПРОЛДЖЭЯЧСМИТЬБЮ")
+        english = set("qwertyuiopasdfghjklzxcvbnmQWERTYUIOPASDFGHJKLZXCVBNM")
+        text = message.text
+        if message.chat.id > 0:
+            user = message.from_user
+            text += user.first_name
+            if user.last_name:
+                text += user.last_name
+        else:
+            chat = get_chat(message.chat.id)
+            if chat.title:
+                text += chat.title
+            if chat.description:
+                text += chat.description
     text = set(text)
-    languages['ru'] = bool(russian & text) | (message.from_user.language_code == 'ru')
-    languages['en'] = bool(english & text) | (message.from_user.language_code == 'en')
-    return languages
+    languages['Russian'] = bool(russian & text) | (message.from_user.language_code == 'ru')
+    languages['English'] = bool(english & text) | (message.from_user.language_code == 'en')
+    count = 0
+    language_answer = None
+    for language in languages.keys():
+        if languages[language]:
+            count += 1
+            language_answer = languages[language]
+    if only_one and count == 1:
+        return language_answer
+    elif only_one:
+        answer = ''
+        if languages['Russian']:
+            answer += "Если вы говорите на русском, напишите '/lang Русский'\n\n"
+        if languages['English']:
+            answer += "If you speak English, type '/lang English'\n\n"
+        reply(message, answer)
+        return None
+    else:
+        return languages
 
 
 def shuffle(old_list):
@@ -165,7 +192,7 @@ def time_replace(seconds):
     return days, hours, minutes, seconds
 
 
-def in_mf(message, lang, or_private=True, loud=True):
+def in_mf(message, or_private=True, loud=True):
     """Позволяет регулировать использование команл вне чатов и в личке"""
     log.log_print("in_mf invoked")
     if message.chat.id > 0:
@@ -185,10 +212,8 @@ def in_mf(message, lang, or_private=True, loud=True):
         send(381279599, text.format(message.chat.id, message.chat.title, message.from_user.first_name,
                                     message.from_user.username, message.from_user.id))
     rep_text = ""
-    if lang['en']:
-        rep_text += "Hmm, I don't know this chat. Call @DeMaximilianster for help\n\n"
-    if lang['ru']:
-        rep_text += "Хмм, я не знаю этот чат. Обратитесь к @DeMaximilianster за помощью\n\n"
+    rep_text += "Hmm, I don't know this chat. Call @DeMaximilianster for help\n\n"
+    rep_text += "Хмм, я не знаю этот чат. Обратитесь к @DeMaximilianster за помощью\n\n"
     reply(message, rep_text)
     return False
 
@@ -203,6 +228,8 @@ def counter(message):
         person = message.left_chat_member
     else:
         person = message.from_user
+    if not database.get('members', ('id', person.id)):
+        database.append((person.id, person.username, person.first_name, 'Guest', 0, 0, 0), 'members')
     if not database.get('messages', ('person_id', person.id), ('chat_id', message.chat.id)):
         database.append((person.id, message.chat.id, 0), 'messages')
     value = database.get('messages', ('person_id', person.id), ('chat_id', message.chat.id))[2] + 1

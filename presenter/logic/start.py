@@ -3,6 +3,7 @@ from view.output import send, reply, register_handler
 from presenter.config.log import Loger, log_to
 from presenter.config.files_paths import *
 from presenter.config.config_var import adequate_keyboard, a_adequate_keyboard
+from presenter.config.config_func import language_analyzer
 
 start_work = True
 
@@ -21,7 +22,7 @@ def new_adapt_option(message, vote_id):
     reply(message, "Ваше мнение выслано на проверку")
 
 
-def starter(message, lang):
+def starter(message):
     """Запуск бота в личке, в чате просто реагирует"""
     log.log_print(str(message.from_user.id) + ": starter invoked")
     if "full_rules" in message.text:
@@ -43,9 +44,10 @@ def starter(message, lang):
         sent = reply(message, "Введите ваш вариант ответа на голосовании")
         register_handler(sent, new_adapt_option, vote_id)
     else:
+        languages = language_analyzer(message, only_one=False)
         text = ''
-        if lang['en']:
+        if languages['English']:
             text += "Hello. To get all existing functions click /help\n\n"
-        if lang['ru']:
+        if languages['Russian']:
             text += "Здравствуй. Для получения всех существующих функций нажми /help\n\n"
         reply(message, text)

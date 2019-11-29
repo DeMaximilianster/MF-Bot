@@ -6,6 +6,9 @@ log = Loger(log_to)
 
 bot_id = 575704111
 
+original_to_english = {'Русский': 'Russian', 'English': 'English'}
+english_to_original = {'Russian': 'Русский', 'English': 'English'}
+
 
 def admin_place(database):
     log.log_print(f"{__name__} invoked")

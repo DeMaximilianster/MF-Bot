@@ -1,7 +1,7 @@
 from presenter.config.token import bot
 from view.output import reply, answer_callback
 from presenter.config.config_func import in_mf, cooldown, person_analyze, rank_required, rank_superiority,\
-    language, appointment_required
+     appointment_required
 from presenter.config.config_var import where_keyboard
 from presenter.logic.elite import elite
 from presenter.logic.boss_commands import ban, deleter_mode, promotion, demotion, add_chat, warn, unwarn,\
@@ -10,7 +10,7 @@ from presenter.logic.complicated_commands import adequate, inadequate, response,
     place_here, mv, av, add_vote
 from presenter.logic.reactions import deleter, new_member, left_member
 from presenter.logic.standart_commands import helper, send_drakken, send_me, send_meme, minet, show_id, \
-    all_members, money_give, money_top
+    all_members, money_give, money_top, language_getter
 from presenter.logic.start import starter
 from presenter.config.log import Loger, log_to
 
@@ -24,8 +24,7 @@ log = Loger(log_to)
 def deleter_handler(message):
     """Удаляет медиа ночью"""
     log.log_print(f"{__name__} invoked")
-    lang = language(message)
-    if in_mf(message, lang):  # Если в МФ2 - то удаляем
+    if in_mf(message):  # Если в МФ2 - то удаляем
         deleter(message)
 
 
@@ -33,8 +32,7 @@ def deleter_handler(message):
 def new_member_handler(message):
     """Реагирует на вход в чат"""
     log.log_print(f"{__name__} invoked")
-    lang = language(message)
-    if in_mf(message, lang):
+    if in_mf(message):
         new_member(message)
 
 
@@ -42,8 +40,7 @@ def new_member_handler(message):
 def left_member_handler(message):
     """Комментирует уход участника и прощается участником"""
     log.log_print(f"{__name__} invoked")
-    lang = language(message)
-    if in_mf(message, lang):
+    if in_mf(message):
         left_member(message)
 
 
@@ -102,7 +99,7 @@ def ban_handler(message):
 @bot.message_handler(commands=['pay'])
 def money_pay_handler(message):
     log.log_print(f"{__name__} invoked")
-    person = person_analyze(message, to_self_leader=True)
+    person = person_analyze(message, to_self=True)
     if in_mf(message, False) and appointment_required(message, "Админ") and person:
         money_pay(message, person)
 
@@ -137,7 +134,7 @@ def messages_change_handler(message):
     """Меняет запись в БД о количестве сообщений чела"""
     log.log_print(f"{__name__} invoked")
     person = person_analyze(message, to_self=True)
-    if in_mf(message, False) and rank_required(message, "Член Комитета") and person:
+    if in_mf(message, False) and appointment_required(message, "Админ") and person:
         if (len(message.text.split()) == 2 and message.reply_to_message) or len(message.text.split()) == 3:
             message_change(message, person)
         else:
@@ -249,21 +246,27 @@ def add_vote_handler(call):
 '''Простые команды и старт'''
 
 
+@bot.message_handler(commands=['lang'])
+def language_getter_handler(message):
+    """Gets the language of the chat"""
+    log.log_print(f"{__name__} invoked")
+    if in_mf(message):
+        language_getter(message)
+
+
 @bot.message_handler(commands=['start'])
 def starter_handler(message):
     """Запуск бота в личке, в чате просто реагирует"""
     log.log_print(f"{__name__} invoked")
-    lang = language(message)
-    if in_mf(message, lang):
-        starter(message, lang)
+    if in_mf(message):
+        starter(message)
 
 
 @bot.message_handler(commands=['help'])
 def helper_handler(message):
     """Предоставляет человеку список команд"""
     log.log_print(f"{__name__} invoked")
-    lang = language(message)
-    if in_mf(message, lang):
+    if in_mf(message):
         helper(message)
 
 
@@ -271,8 +274,7 @@ def helper_handler(message):
 def show_id_handler(message):
     """Присылает различные ID'шники, зачастую бесполезные"""
     log.log_print(f"{__name__} invoked")
-    lang = language(message)
-    if in_mf(message, lang):
+    if in_mf(message):
         show_id(message)
 
 
@@ -280,8 +282,7 @@ def show_id_handler(message):
 def minet_handler(message):
     """Приносит удовольствие"""
     log.log_print(f"{__name__} invoked")
-    lang = language(message)
-    if in_mf(message, lang) and cooldown(message, 'minet'):
+    if in_mf(message) and cooldown(message, 'minet'):
         minet(message)
 
 
@@ -289,8 +290,7 @@ def minet_handler(message):
 def send_drakken_handler(message):
     """Присылает арт с Доктором Драккеном"""
     log.log_print(f"{__name__} invoked")
-    lang = language(message)
-    if in_mf(message, lang) and cooldown(message, 'drakken'):
+    if in_mf(message) and cooldown(message, 'drakken'):
         send_drakken(message)
 
 
@@ -299,8 +299,7 @@ def send_drakken_handler(message):
 def send_meme_handler(message):
     """Присылает мем"""
     log.log_print(f"{__name__} invoked")
-    lang = language(message)
-    if in_mf(message, lang) and cooldown(message, 'meme'):
+    if in_mf(message) and cooldown(message, 'meme'):
         send_meme(message)
 
 
@@ -309,8 +308,7 @@ def send_me_handler(message):
     """Присылает человеку его запись в БД"""
     log.log_print(f"{__name__} invoked")
     person = person_analyze(message, to_self=True)
-    lang = language(message)
-    if in_mf(message, lang):
+    if in_mf(message):
         send_me(message, person)
 
 
@@ -318,8 +316,7 @@ def send_me_handler(message):
 def all_members_handler(message):
     """Присылает человеку все записи в БД"""
     log.log_print(f"{__name__} invoked")
-    lang = language(message)
-    if in_mf(message, lang):
+    if in_mf(message):
         all_members(message)
 
 
@@ -328,8 +325,7 @@ def money_give_handler(message):
     """Обмен денег между пользователями"""
     log.log_print(f"{__name__} invoked")
     person = person_analyze(message, to_bot=True)
-    lang = language(message)
-    if in_mf(message, lang) and person:
+    if in_mf(message) and person:
         money_give(message, person)
 
 
@@ -337,8 +333,7 @@ def money_give_handler(message):
 def money_top_handler(message):
     """Топ ЯМ"""
     log.log_print(f"{__name__} invoked")
-    lang = language(message)
-    if in_mf(message, lang):
+    if in_mf(message):
         money_top(message)
 
 
@@ -349,5 +344,4 @@ def money_top_handler(message):
 def counter_handler(message):
     """Подсчитывает сообщения"""
     log.log_print(f"{__name__} invoked")
-    lang = language(message)
-    in_mf(message, lang)
+    in_mf(message)

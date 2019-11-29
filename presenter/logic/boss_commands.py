@@ -194,7 +194,7 @@ def message_change(message, person):
         database.append((p_id, ch_id, 0), 'messages')
     value = database.get('messages', ('person_id', p_id), ('chat_id', ch_id))[2]
     if messages.isdigit():
-        value += int(messages)
+        value = int(messages)
         reply(message,
               "Ставлю человеку с ID {} в чат с ID {} количество сообщений равное {}".format(p_id, ch_id, value))
     else:

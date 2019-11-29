@@ -1,13 +1,41 @@
 # -*- coding: utf-8 -*-
 from view.output import reply, send_photo, send_sticker, send
-from presenter.config.config_func import time_replace
+from presenter.config.config_func import time_replace, language_analyzer
 from presenter.config.database_lib import Database
-from presenter.config.config_var import bot_id, admin_place
+from presenter.config.config_var import bot_id, admin_place, original_to_english, english_to_original
 from random import choice
 from time import ctime, time
 from presenter.config.log import Loger, log_to
 
 log = Loger(log_to)
+
+
+def language_getter(message):
+    """Gets the language of the chat"""
+    log.log_print(f"{__name__} invoked")
+    original_languages = ['Русский', 'English']
+    english_languages = ['Russian', 'English']
+    language = message.text[6:].title()
+    if language in original_languages:
+        language = (language, original_to_english[language])
+    elif language in english_languages:
+        language = (english_to_original[language], language)
+    else:
+        answer = ''
+        answer += "Если вы говорите на русском, напишите '/lang Русский'\n\n"
+        answer += "If you speak English, type '/lang English'\n\n"
+        reply(message, answer)
+        return None
+    database = Database()
+    if database.get('languages', ('id', message.chat.id)):
+        database.change(language[1], 'language', 'languages', ('id', message.chat.id))
+    else:
+        database.append((message.chat.id, language[1]), 'languages')
+    if language[0] == language[1]:
+        reply(message, f"✅ {language[0]} ✅")
+    else:
+        reply(message, f"✅ {language[0]} | {language[1]} ✅")
+    del database
 
 
 def helper(message):
@@ -65,7 +93,8 @@ def show_id(message):
 def minet(message):
     """Приносит удовольствие"""
     log.log_print(str(message.from_user.id)+": minet invoked")
-    minets = {'text':
+    minets = dict()
+    minets['Russian'] = {'text':
               ('оаоаоаоаооа мммммм)))))', 'Э, нет, эта кнопка не для тебя', 'Попа чистая?', 'Кусь :3',
                'Открывай рот тогда)', 'О, да, эта кнопка для тебя', '😏🤤', 'Одна фелляция\nНикакой фрустрации'),
               'sticker':
@@ -79,15 +108,19 @@ def minet(message):
                    'CAADAgADTwEAAqfkvganUQktSzVbkRYE'  # Инангай
                    )
               }
-    choices = []
-    for i in minets.keys():
-        choices.append(i)
-    way = choice(choices)
-    rep = choice(minets[way])
-    if way == 'text':
-        reply(message, rep)
-    else:
-        send_sticker(message.chat.id, rep, reply_to_message_id=message.message_id)
+    minets['English'] = {'text': ('oaoaoaoaooa mmmmmm)))))', 'No, this button is not for you',
+                                  'So open your mouth)', 'One fellation\nNo frustration')}
+    language = language_analyzer(message, only_one=True)
+    if language:
+        choices = []
+        for i in minets[language].keys():
+            choices.append(i)
+        way = choice(choices)
+        rep = choice(minets[language][way])
+        if way == 'text':
+            reply(message, rep)
+        else:
+            send_sticker(message.chat.id, rep, reply_to_message_id=message.message_id)
 
 
 def send_drakken(message):
@@ -130,7 +163,10 @@ def send_me(message, person):
     # TODO Вынести всё это дело в функцию member_update()
     p = database.get('members', ('id', person.id))
     appointments = [x[1] for x in database.get_many('appointments', ('id', person.id))]
-    messages_here = database.get('messages', ('person_id', person.id), ('chat_id', message.chat.id))[2]
+    if database.get('messages', ('person_id', person.id), ('chat_id', message.chat.id)):
+        messages_here = database.get('messages', ('person_id', person.id), ('chat_id', message.chat.id))[2]
+    else:
+        messages_here = 0
     msg = 'ID: {}\n'.format(p[0])
     msg += 'Юзернейм: {}\n'.format(p[1])
     msg += 'Никнейм: {}\n'.format(p[2])
