@@ -72,7 +72,7 @@ def warn_handler(message):
     """Даёт участнику предупреждение"""
     log.log_print(f"{__name__} invoked")
     person = person_analyze(message)
-    if in_mf(message, False) and appointment_required(message, "Админ") and person and rank_superiority(message):
+    if in_mf(message, False) and appointment_required(message, "Admin") and person and rank_superiority(message):
         if message.reply_to_message:
             warn(message, person)
         else:
@@ -84,7 +84,7 @@ def unwarn_handler(message):
     """Снимает с участника предупреждение"""
     log.log_print(f"{__name__} invoked")
     person = person_analyze(message)
-    if in_mf(message, False) and appointment_required(message, "Админ") and person:
+    if in_mf(message, False) and appointment_required(message, "Admin") and person:
         unwarn(message, person)
 
 
@@ -92,7 +92,7 @@ def unwarn_handler(message):
 def ban_handler(message):
     log.log_print(f"{__name__} invoked")
     person = person_analyze(message)
-    if in_mf(message, False) and appointment_required(message, "Админ") and person and rank_superiority(message):
+    if in_mf(message, False) and appointment_required(message, "Admin") and person and rank_superiority(message):
         ban(message, person)
 
 
@@ -100,14 +100,14 @@ def ban_handler(message):
 def money_pay_handler(message):
     log.log_print(f"{__name__} invoked")
     person = person_analyze(message, to_self=True)
-    if in_mf(message, False) and appointment_required(message, "Админ") and person:
+    if in_mf(message, False) and appointment_required(message, "Admin") and person:
         money_pay(message, person)
 
 
 @bot.message_handler(commands=['delete_mode'])
 def deleter_mode_handler(message):
     log.log_print(f"{__name__} invoked")
-    if in_mf(message, False) and appointment_required(message, "Админ"):
+    if in_mf(message, False) and appointment_required(message, "Admin"):
         deleter_mode(message)
 
 
@@ -116,7 +116,8 @@ def promotion_handler(message):
     """Назначает человека админом"""
     log.log_print(f"{__name__} invoked")
     person = person_analyze(message)
-    if in_mf(message, False) and rank_required(message, "Член Комитета") and person and rank_superiority(message):
+    if in_mf(message, False) and rank_required(message, "The Committee Member")\
+            and person and rank_superiority(message):
         promotion(message, person)
 
 
@@ -125,7 +126,8 @@ def demotion_handler(message):
     """Забирает у человека админку"""
     log.log_print(f"{__name__} invoked")
     person = person_analyze(message)
-    if in_mf(message, False) and rank_required(message, "Член Комитета") and person and rank_superiority(message):
+    if in_mf(message, False) and rank_required(message, "The Committee Member")\
+            and person and rank_superiority(message):
         demotion(message, person)
 
 
@@ -134,7 +136,7 @@ def messages_change_handler(message):
     """Меняет запись в БД о количестве сообщений чела"""
     log.log_print(f"{__name__} invoked")
     person = person_analyze(message, to_self=True)
-    if in_mf(message, False) and appointment_required(message, "Админ") and person:
+    if in_mf(message, False) and appointment_required(message, "Admin") and person:
         if (len(message.text.split()) == 2 and message.reply_to_message) or len(message.text.split()) == 3:
             message_change(message, person)
         else:
@@ -145,9 +147,18 @@ def messages_change_handler(message):
 def add_chat_handler(message):
     """Добавляет чат в базу данных чатов, входящих в систему МФ2"""
     log.log_print(f"{__name__} invoked")
-    if rank_required(message, "Заместитель"):
+    if rank_required(message, "Deputy"):
         add_chat(message)
 
+
+'''
+@bot.message_handler(commands=['change_database'])
+def database_changer_handler(message):
+    """Добавляет чат в базу данных чатов, входящих в систему МФ2"""
+    log.log_print(f"{__name__} invoked")
+    if rank_required(message, "Deputy"):
+        database_changer()
+'''
 
 '''Составные команды'''
 

@@ -85,7 +85,7 @@ def ban(message, person):
     for msg_id in range(start_forwarding, end_forwarding + 1):
         forward(blowout, message.chat.id, msg_id)
     send(message.chat.id, "Ну всё, этому челику жопа")
-    database.change('Нарушитель', 'rank', 'members', ('id', person.id))
+    database.change('Violator', 'rank', 'members', ('id', person.id))
     for chat in full_chat_list(database):
         kick(chat[0], person.id)
     for channel in channel_list(database):
@@ -170,7 +170,7 @@ def demotion(message, person):
     """Забирает у человека админку"""
     log.log_print("demotion invoked")
     database = Database()
-    database.change("Гость", "rank", 'members', ('id', person.id))
+    database.change("Guest", "rank", 'members', ('id', person.id))
     # TODO забирать админку, не пингуя
     # Забрать у чела админку во всех чатах, кроме Комитета и Админосостава
     for chat in chat_list(database):
@@ -228,6 +228,25 @@ def add_chat(message):
     reply(message, "Теперь это часть МФ2. Как и:\n" + '\n'.join(map(str, full_chat_list(database))))
     del database
 
+
+'''
+def database_changer():
+    database = Database()
+    rank_shifter = {"Нарушитель": 'Violator',
+                    "Гость": 'Guest',
+                    "Гражданин": 'Citizen',
+                    "Высший Гражданин": 'Senior Citizen',
+                    "Член Комитета": 'The Committee Member',
+                    "Заместитель": 'Deputy',
+                    "Лидер": 'Leader'}
+    members = database.get_all('members')
+    for member in members:
+        rank = member[3]
+        if rank not in rank_shifter.values():
+            rank = rank_shifter[rank]
+            database.change(rank, 'rank', 'members', ('id', member[0]))
+    del database
+'''
 
 # TODO Команда /add_channel
 # TODO Команда /del_chat

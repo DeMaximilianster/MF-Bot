@@ -73,7 +73,7 @@ def shuffle(old_list):
     return new_list
 
 
-def person_analyze(message, to_self=False, to_self_leader=False, to_bot=False):
+def person_analyze(message, to_self=False, to_bot=False):
     log.log_print("person_analyze invoked")
     if message.reply_to_message:  # Сообщение является ответом
         if message.reply_to_message.new_chat_members:
@@ -98,14 +98,8 @@ def person_analyze(message, to_self=False, to_self_leader=False, to_bot=False):
         reply(message, "Ответьте на сообщение необходимого человека или напишите после команды его ID")
         return None
     if person.id == message.from_user.id and not to_self:
-        if to_self_leader and rank_required(message, "Лидер", False):
-            return person
-        elif to_self_leader:
-            reply(message, "Я вам запрещаю пользоваться этой командой на самом себе (если вы не Лидер, конечно)")
-            return None
-        else:
-            reply(message, "Я вам запрещаю пользоваться этой командой на самом себе (даже если вы Лидер)")
-            return None
+        reply(message, "Я вам запрещаю пользоваться этой командой на самом себе")
+        return None
     elif person.id == bot_id and not to_bot:
         reply(message, "Я вам запрещаю пользоваться этой командой на мне")
         return None

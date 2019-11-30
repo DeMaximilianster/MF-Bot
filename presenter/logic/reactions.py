@@ -18,7 +18,7 @@ def deleter(message):
     if time_replace(message.date)[1] >= 22 or time_replace(message.date)[1] < 8:  # Время, когда надо удалять
         database = Database()
         rank = database.get('messages', ('id', message.from_user.id))[3]
-        if rank == 'Гость' or rank == 'Кто-то':
+        if rank == 'Guest':
             # TODO бот делает это предупреждение не чаще раза в 24 часа на человека
 
             #  ans = "Э, нет, в такое время медиа нельзя присылать гостям чата. "
@@ -36,14 +36,15 @@ def new_member(message):
     rank = database.get('members', ('id', member.id))[3]  # Получаем его звание
     if member.is_bot:
         send(message.chat.id, "Ещё один бот, вряд-ли более умный, чем я")
-    if rank == "Нарушитель":
+    if rank == "Violator":
         kick(message.chat.id, member.id)
+    # TODO Тут должна быть должность Админ, а не эти звания
     elif rank == "Админ" or rank == "Член Комитета":
         promote(message.chat.id, member.id,
                 can_change_info=False, can_delete_messages=True, can_invite_users=True,
                 can_restrict_members=True, can_pin_messages=True, can_promote_members=False)
         answer += "О, добро пожаловать, держи админку"
-    elif rank == "Заместитель":
+    elif rank == "Deputy":
         promote(message.chat.id, member.id,
                 can_change_info=True, can_delete_messages=True, can_invite_users=True,
                 can_restrict_members=True, can_pin_messages=True, can_promote_members=True)
