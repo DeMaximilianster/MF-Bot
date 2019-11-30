@@ -1,7 +1,7 @@
 from presenter.config.token import bot
 from view.output import reply, answer_callback
 from presenter.config.config_func import in_mf, cooldown, person_analyze, rank_required, rank_superiority,\
-     appointment_required
+     appointment_required, int_check
 from presenter.config.config_var import where_keyboard
 from presenter.logic.elite import elite
 from presenter.logic.boss_commands import ban, deleter_mode, promotion, demotion, add_chat, warn, unwarn,\
@@ -72,7 +72,9 @@ def warn_handler(message):
     """Даёт участнику предупреждение"""
     log.log_print(f"{__name__} invoked")
     person = person_analyze(message)
-    if in_mf(message, False) and appointment_required(message, "Admin") and person and rank_superiority(message):
+    if not int_check(message.text.split()[-1], positive=True) and len(message.text.split()) > 1:
+        reply(message, "Последнее слово должно быть положительным числом, сколько варнов даём")
+    elif in_mf(message, False) and appointment_required(message, "Admin") and person and rank_superiority(message):
         if message.reply_to_message:
             warn(message, person)
         else:
@@ -84,7 +86,9 @@ def unwarn_handler(message):
     """Снимает с участника предупреждение"""
     log.log_print(f"{__name__} invoked")
     person = person_analyze(message)
-    if in_mf(message, False) and appointment_required(message, "Admin") and person:
+    if not int_check(message.text.split()[-1], positive=True) and len(message.text.split()) > 1:
+        reply(message, "Последнее слово должно быть положительным числом, сколько варнов снимаем")
+    elif in_mf(message, False) and appointment_required(message, "Admin") and person:
         unwarn(message, person)
 
 
@@ -100,7 +104,9 @@ def ban_handler(message):
 def money_pay_handler(message):
     log.log_print(f"{__name__} invoked")
     person = person_analyze(message, to_self=True)
-    if in_mf(message, False) and appointment_required(message, "Admin") and person:
+    if not int_check(message.text.split()[-1], positive=False):
+        reply(message, "Последнее слово должно быть числом, сколько ябломилианов прибавляем или убавляем")
+    elif in_mf(message) and appointment_required(message, "Admin") and person:
         money_pay(message, person)
 
 
@@ -136,7 +142,9 @@ def messages_change_handler(message):
     """Меняет запись в БД о количестве сообщений чела"""
     log.log_print(f"{__name__} invoked")
     person = person_analyze(message, to_self=True)
-    if in_mf(message, False) and appointment_required(message, "Admin") and person:
+    if not int_check(message.text.split()[-1], positive=True):
+        reply(message, "Последнее слово должно быть положительным числом, сколько сообщений ставим")
+    elif in_mf(message, False) and appointment_required(message, "Admin") and person:
         if (len(message.text.split()) == 2 and message.reply_to_message) or len(message.text.split()) == 3:
             message_change(message, person)
         else:
@@ -218,7 +226,7 @@ def ironic_handler(call):
 def vote_handler(message):
     """Генерирует голосовашку"""
     log.log_print(f"{__name__} invoked")
-    if in_mf(message, False) and appointment_required(message, "Админ"):
+    if in_mf(message, False) and appointment_required(message, "Admin"):
         reply(message, 'А запостить куда?', reply_markup=where_keyboard)
 
 
@@ -336,7 +344,9 @@ def money_give_handler(message):
     """Обмен денег между пользователями"""
     log.log_print(f"{__name__} invoked")
     person = person_analyze(message, to_bot=True)
-    if in_mf(message) and person:
+    if not int_check(message.text.split()[-1], positive=False):
+        reply(message, "Последнее слово должно быть числом, сколько денег даём")
+    elif in_mf(message) and person:
         money_give(message, person)
 
 

@@ -11,6 +11,18 @@ from random import choice
 log = Loger(log_to)
 
 
+def int_check(string, positive):
+    if positive:
+        if set(string) & set('0123456789') == set(string):
+            return True
+        else:
+            return False
+    elif set(string[1:]) & set('0123456789') == set(string[1:]) and string[0] in '-0123456789':
+        return True
+    else:
+        return False
+
+
 def language_analyzer(message, only_one):
     log.log_print(f"{__name__} invoked")
     database = Database()
@@ -82,7 +94,7 @@ def person_analyze(message, to_self=False, to_bot=False):
             person = message.reply_to_message.from_user
     elif len(message.text.split()) > 1:
         par = message.text.split()[1]
-        if par.isdigit() and 7 <= len(par) <= 9:
+        if par.isdigit() and 7 <= len(par) <= 10:
             person = get_member(-1001408293838, par)
             if person:
                 person = person.user
@@ -90,7 +102,7 @@ def person_analyze(message, to_self=False, to_bot=False):
                 reply(message, "Не вижу такого ID")
                 return None
         else:
-            reply(message, "Некорректный ID. ID это число, которое содержит в себе от 7 до 9 цифр")
+            reply(message, "Некорректный ID. ID это число, которое содержит в себе от 7 до 10 цифр")
             return None
     elif to_self:
         return message.from_user

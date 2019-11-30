@@ -212,9 +212,7 @@ def money_give(message, person):
     money = message.text.split()[-1]
     value_getter = database.get('members', ('id', getter))[6]
     value_giver = database.get('members', ('id', giver))[6]
-    if not money.isdigit() and not (money[1:].isdigit() and money[0] == '-'):
-        reply(message, "Последнее слово должно быть числом, сколько ябломилианов даёте")
-    elif money[0] == '-':
+    if money[0] == '-':
         reply(message, "Я вам запрещаю воровать")
     elif money == "0":
         reply(message, "Я вам запрещаю делать подобные бессмысленные запросы")

@@ -37,11 +37,13 @@ def warn(message, person):
     """Даёт участнику предупреждение"""
     log.log_print("warn invoked")
     database = Database()
-    try:  # TODO поменять на if-else
-        warns = int(message.text.split()[1])
-    except Exception as e:
-        print(e)
+    if len(message.text.split()) > 1:
+        warns = int(message.text.split()[-1])  # TODO Эта проверка происходит дважды
+    else:
         warns = 1
+    if warns == 0:
+        reply(message, "Я вам запрещаю делать подобные бессмысленные запросы")
+        return None
     value = database.get('members', ('id', person.id))[5] + warns
     database.change(value, 'warns', 'members', ('id', person.id))
     reply(message, "Варн(ы) выдан(ы). Теперь их {}".format(value))
@@ -62,10 +64,16 @@ def unwarn(message, person):
     """Снимает с участника предупреждение"""
     log.log_print("unwarn invoked")
     database = Database()
-    value = database.get('members', ('id', person.id))[5] - 1  # TODO Возможность снимать несколько варнов за раз
-    # TODO Предохранитель от отрицательного числа варнов
+    if len(message.text.split()) > 1:
+        unwarns = int(message.text.split()[-1])  # TODO Эта проверка происходит дважды
+    else:
+        unwarns = 1
+    if unwarns == 0:
+        reply(message, "Я вам запрещаю делать подобные бессмысленные запросы")
+        return None
+    value = database.get('members', ('id', person.id))[5] - unwarns
     database.change(value, 'warns', 'members', ('id', person.id))
-    reply(message, "Варн снят. Теперь их {}".format(value))
+    reply(message, "Варн(ы) снят(ы). Теперь их {}".format(value))
     if value < 3:
         pass  # TODO команда /unban
     del database
@@ -101,9 +109,7 @@ def money_pay(message, person):
     p_id = person.id
     money = message.text.split()[-1]
     value = database.get('members', ('id', p_id))[6]
-    if not money.isdigit() and not (money[1:].isdigit() and money[0] == '-'):
-        reply(message, "Последнее слово должно быть числом, сколько ябломилианов прибавляем или убавляем")
-    elif money == "0":
+    if money == "0":
         reply(message, "Я вам запрещаю делать подобные бессмысленные запросы")
     elif money[0] == '-':
         money = -int(money)  # Делаем из отрицательного числа положительное
@@ -171,7 +177,6 @@ def demotion(message, person):
     log.log_print("demotion invoked")
     database = Database()
     database.change("Guest", "rank", 'members', ('id', person.id))
-    # TODO забирать админку, не пингуя
     # Забрать у чела админку во всех чатах, кроме Комитета и Админосостава
     for chat in chat_list(database):
         promote(chat[0], person.id,
@@ -190,16 +195,12 @@ def message_change(message, person):
     p_id = person.id
     ch_id = message.chat.id
     messages = message.text.split()[-1]
+    value = int(messages)
+    reply(message, "Ставлю человеку с ID {} в чат с ID {} количество сообщений равное {}".format(p_id, ch_id, value))
     if not database.get('messages', ('person_id', p_id), ('chat_id', ch_id)):
-        database.append((p_id, ch_id, 0), 'messages')
-    value = database.get('messages', ('person_id', p_id), ('chat_id', ch_id))[2]
-    if messages.isdigit():
-        value = int(messages)
-        reply(message,
-              "Ставлю человеку с ID {} в чат с ID {} количество сообщений равное {}".format(p_id, ch_id, value))
+        database.append((p_id, ch_id, value), 'messages')
     else:
-        reply(message, "Последнее слово должно быть числом, сколько сообщений ставим")
-    database.change(value, 'messages', 'messages', ('person_id', p_id), ('chat_id', ch_id))
+        database.change(value, 'messages', 'messages', ('person_id', p_id), ('chat_id', ch_id))
     del database
 
 
