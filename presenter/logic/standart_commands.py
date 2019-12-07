@@ -1,11 +1,12 @@
 # -*- coding: utf-8 -*-
 from view.output import reply, send_photo, send_sticker, send
-from presenter.config.config_func import time_replace, language_analyzer
+from presenter.config.config_func import time_replace, language_analyzer, case_analyzer
 from presenter.config.database_lib import Database
-from presenter.config.config_var import bot_id, admin_place, original_to_english, english_to_original
+from presenter.config.config_var import bot_id, admin_place, original_to_english, english_to_original, months
 from random import choice
 from time import ctime, time
 from presenter.config.log import Loger, log_to
+from presenter.config.texts import minets
 
 log = Loger(log_to)
 
@@ -93,23 +94,6 @@ def show_id(message):
 def minet(message):
     """Приносит удовольствие"""
     log.log_print(str(message.from_user.id)+": minet invoked")
-    minets = dict()
-    minets['Russian'] = {'text':
-              ('оаоаоаоаооа мммммм)))))', 'Э, нет, эта кнопка не для тебя', 'Попа чистая?', 'Кусь :3',
-               'Открывай рот тогда)', 'О, да, эта кнопка для тебя', '😏🤤', 'Одна фелляция\nНикакой фрустрации'),
-              'sticker':
-                  ('CAADAgADWAADBoAqF4oogkZzHIvuFgQ',  # УНО-карточка
-                   'CAADBAADqlUAAuOnXQVKqOJLAf4RYBYE',  # ОК
-                   'CAADAgADewAD6J0qFmJL_8KisLg8FgQ',  # Гамлет
-                   'CAADAgADfAADq1fEC779DZWncMB2FgQ',  # Хонка
-                   'CAADAgADLQADb925FmFcbIKhK_3CFgQ',  # Что-то нет настроения
-                   'CAADAgADOAADb925FlKHKgxtlre-FgQ',  # Я с йогуртом
-                   'CAADAgADGAADobczCKi7TanwsWyoFgQ',  # хоошо
-                   'CAADAgADTwEAAqfkvganUQktSzVbkRYE'  # Инангай
-                   )
-              }
-    minets['English'] = {'text': ('oaoaoaoaooa mmmmmm)))))', 'No, this button is not for you',
-                                  'So open your mouth)', 'One fellation\nNo frustration')}
     language = language_analyzer(message, only_one=True)
     if language:
         choices = []
@@ -162,6 +146,7 @@ def send_me(message, person):
     database.change(msg_count, 'messages', 'members', ('id', person.id))
     # TODO Вынести всё это дело в функцию member_update()
     p = database.get('members', ('id', person.id))
+    print(p)
     appointments = [x[1] for x in database.get_many('appointments', ('id', person.id))]
     if database.get('messages', ('person_id', person.id), ('chat_id', message.chat.id)):
         messages_here = database.get('messages', ('person_id', person.id), ('chat_id', message.chat.id))[2]
@@ -238,27 +223,68 @@ def money_give(message, person):
             reply(message, f"#Финансы #Ф{getter} #Ф{giver}\n\n"
                            f"ID {getter} [{value_getter-money} --> {value_getter}] {get_m}\n"
                            f"ID {giver} [{value_giver+money} --> {value_giver}] {giv_m}\n")
-            send(admin_place, f"#Финансы #Ф{getter} #Ф{giver}\n\n"
-                              f"ID {getter} [{value_getter-money} --> {value_getter}] {get_m}\n"
-                              f"ID {giver} [{value_giver+money} --> {value_giver}] {giv_m}\n")
+            send(admin_place(database), f"#Финансы #Ф{getter} #Ф{giver}\n\n"
+                                        f"ID {getter} [{value_getter-money} --> {value_getter}] {get_m}\n"
+                                        f"ID {giver} [{value_giver+money} --> {value_giver}] {giv_m}\n")
     database.change(value_getter, 'money', 'members', ('id', getter))
     database.change(value_giver, 'money', 'members', ('id', giver))
     del database
 
 
 def money_top(message):
-    log.log_print("money_top invoked")
+    log.log_print(f"{__name__} invoked")
     database = Database()
     bot_money = database.get('members', ('id', bot_id))[6]
     people = list(database.get_all("members", 'money'))
-    not_poor_people = []
-    for person in people:
-        if person[6] != 0 and person[0] != bot_id:
-            not_poor_people.append(person)
+    people = filter(lambda x: x[6] != 0 and x[0] != bot_id, people)
     i = 1
     text = "Бюджет: {} 🍎\n".format(bot_money)
-    for person in not_poor_people:
+    for person in people:
         text += "\n{}. {} -- {} 🍎".format(i, person[2], person[6])  # TODO Добавить сюда красивые ссылки на чела
+        i += 1
+    reply(message, text)
+    del database
+
+
+# TODO More comfortable way to insert birthday
+def month_set(message, month):
+    log.log_print(f"{__name__} invoked")
+    database = Database()
+    reply(message, "Ставлю человеку с ID {} месяц рождения {}".format(message.from_user.id, month))
+    database.change(month, 'month_birthday', 'members', ('id', message.from_user.id))
+    del database
+
+
+def day_set(message, day):
+    log.log_print(f"{__name__} invoked")
+    days = (31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31)
+    database = Database()
+    month = database.get('members', ('id', message.from_user.id))[7]
+    lang = language_analyzer(message, only_one=True)
+    if not month:
+        reply(message, "Сначала поставь месяц рождения")
+    elif day > days[month - 1]:
+        month = months[month][lang]
+        month = case_analyzer(month, 'Russian')
+        reply(message, "В {} нет столько дней".format(month.lower()))
+    else:
+        reply(message, "Ставлю человеку с ID {} день рождения {}".format(message.from_user.id, day))
+        database.change(day, 'day_birthday', 'members', ('id', message.from_user.id))
+    del database
+
+
+def birthday(message):
+    log.log_print(f"{__name__} invoked")
+    database = Database()
+    people = list(database.get_all("members", "month_birthday", how_sort='ASC'))
+    # TODO Better sorting algorithm
+    people = filter(lambda x: x[7] and x[8], people)
+    lang = language_analyzer(message, only_one=True)
+    i = 1
+    text = ""
+    for person in people:
+        text += "\n{}. {} -- {} {} ".format(i, person[2], months[person[7]][lang], person[8])
+        # TODO Добавить сюда красивые ссылки на чела
         i += 1
     reply(message, text)
     del database

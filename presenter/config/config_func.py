@@ -14,13 +14,13 @@ log = Loger(log_to)
 def int_check(string, positive):
     if positive:
         if set(string) & set('0123456789') == set(string):
-            return True
+            return int(string)
         else:
-            return False
+            return None
     elif set(string[1:]) & set('0123456789') == set(string[1:]) and string[0] in '-0123456789':
-        return True
+        return int(string)
     else:
-        return False
+        return None
 
 
 def language_analyzer(message, only_one):
@@ -71,6 +71,16 @@ def language_analyzer(message, only_one):
         return None
     else:
         return languages
+
+
+def case_analyzer(word, language):
+    if language == 'Russian':
+        if word[-1] == 'ь':
+            return word[:-1] + 'е'
+        else:
+            return word + 'е'
+    else:
+        return word
 
 
 def shuffle(old_list):
@@ -235,7 +245,7 @@ def counter(message):
     else:
         person = message.from_user
     if not database.get('members', ('id', person.id)):
-        database.append((person.id, person.username, person.first_name, 'Guest', 0, 0, 0), 'members')
+        database.append((person.id, person.username, person.first_name, 'Guest', 0, 0, 0, None, None), 'members')
     if not database.get('messages', ('person_id', person.id), ('chat_id', message.chat.id)):
         database.append((person.id, message.chat.id, 0), 'messages')
     value = database.get('messages', ('person_id', person.id), ('chat_id', message.chat.id))[2] + 1

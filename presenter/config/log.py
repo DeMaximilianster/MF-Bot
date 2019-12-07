@@ -16,7 +16,7 @@ class Loger:
         self.method = default_log_method
 
     def log_print(self, *args):
-        time_now = time.gmtime(int(time.time()))  # Время записи лога
+        time_now = time.gmtime(int(time.time())+10800)  # Время записи лога
         if self.method % 2 == 0:  # Запись в консоль
             for arg in args:
                 print("[{}] {}".format("{}.{}.{}|{}:{}:{}".format(time_now[2],

@@ -10,7 +10,7 @@ from presenter.logic.complicated_commands import adequate, inadequate, response,
     place_here, mv, av, add_vote
 from presenter.logic.reactions import deleter, new_member, left_member
 from presenter.logic.standart_commands import helper, send_drakken, send_me, send_meme, minet, show_id, \
-    all_members, money_give, money_top, language_getter
+    all_members, money_give, money_top, language_getter, month_set, day_set, birthday
 from presenter.logic.start import starter
 from presenter.config.log import Loger, log_to
 
@@ -297,7 +297,7 @@ def show_id_handler(message):
         show_id(message)
 
 
-@bot.message_handler(commands=['minet'])
+@bot.message_handler(commands=['minet', 'french_style_sex'])
 def minet_handler(message):
     """Приносит удовольствие"""
     log.log_print(f"{__name__} invoked")
@@ -356,6 +356,39 @@ def money_top_handler(message):
     log.log_print(f"{__name__} invoked")
     if in_mf(message):
         money_top(message)
+
+
+@bot.message_handler(commands=['month'])
+def month_set_handler(message):
+    """Set month of person's birthday"""
+    log.log_print(f"{__name__} invoked")
+    month = int_check(message.text.split()[-1], positive=True)
+    if month is None:
+        reply(message, "Последнее слово должно быть положительным числом -- номером месяца")
+    elif not 1 <= month <= 12:
+        reply(message, "Если ты вдруг не знаешь, то месяца имеют номера от 1 до 12")
+    elif in_mf(message):
+        month_set(message, month)
+
+
+@bot.message_handler(commands=['day'])
+def day_set_handler(message):
+    """Set day of person's birthday"""
+    log.log_print(f"{__name__} invoked")
+    day = int_check(message.text.split()[-1], positive=True)
+    if day is None:
+        reply(message, "Последнее слово должно быть положительным числом -- номером дня")
+    elif not 1 <= day <= 31:
+        reply(message, "Если ты вдруг не знаешь, то дни имеют номера от 1 до 31")
+    elif in_mf(message):
+        day_set(message, day)
+
+
+@bot.message_handler(commands=['bdays', 'birthdays'])
+def birthday_handler(message):
+    """Show the nearest birthdays"""
+    log.log_print(f"{__name__} invoked")
+    birthday(message)
 
 
 '''Последний хэндлер. Просто считает сообщения, что не попали в другие хэндлеры'''

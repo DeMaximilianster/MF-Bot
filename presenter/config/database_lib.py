@@ -43,7 +43,7 @@ class Database:
         self.cursor.execute(sql)
         return self.cursor.fetchall()
 
-    def get_all(self, table, order_by='id', how_sort='DESC'):
+    def get_all(self, table, order_by='id', how_sort='DESC'):  # how_sort can be equal to ASC
         """Читает все записи в одной таблице базы данных"""
         sql = "SELECT rowid, * FROM {} ORDER BY {} {}".format(table, order_by, how_sort)
         log.log_print("[SQL]: "+sql)

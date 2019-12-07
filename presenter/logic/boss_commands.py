@@ -103,6 +103,7 @@ def ban(message, person):
 
 def money_pay(message, person):
     """Платит человеку деньги из бюджета чата"""
+    # TODO Добавить уведомление о человеке, совершившем перевод
     log.log_print(f"money pay invoked to person {person.id}")
     database = Database()
     bot_money = database.get('members', ('id', bot_id))[6]
@@ -224,7 +225,7 @@ def add_chat(message):
     # TODO Предохранитель на уникальность некоторых чатов
     log.log_print("add_chat invoked")
     database = Database()
-    chat = (message.chat.id, message.chat.title, message.text[10:])
+    chat = (message.chat.id, message.chat.title, message.text[10:], 2, 2, 2, 2, 2, 2, 2, 2, 2)
     database.append(chat, "chats")
     reply(message, "Теперь это часть МФ2. Как и:\n" + '\n'.join(map(str, full_chat_list(database))))
     del database

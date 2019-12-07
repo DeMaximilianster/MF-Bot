@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 from presenter.config.log import Loger, log_to
 from telebot.types import InlineKeyboardButton, InlineKeyboardMarkup
+from presenter.config.texts import january, february, march, april, may, june, july, august, september, october,\
+    november, december
 
 log = Loger(log_to)
 
@@ -8,6 +10,7 @@ bot_id = 575704111
 
 original_to_english = {'Русский': 'Russian', 'English': 'English'}
 english_to_original = {'Russian': 'Русский', 'English': 'English'}
+months = ['No Month', january, february, march, april, may, june, july, august, september, october, november, december]
 
 
 def admin_place(database):
