@@ -297,7 +297,7 @@ def show_id_handler(message):
         show_id(message)
 
 
-@bot.message_handler(commands=['minet', 'french_style_sex'])
+@bot.message_handler(commands=['minet', 'french_style_sex', 'blowjob'])
 def minet_handler(message):
     """Приносит удовольствие"""
     log.log_print(f"{__name__} invoked")
