@@ -162,7 +162,6 @@ def send_me(message, person):
     msg += 'Кол-во ябломилианов: {}\n'.format(p[6])
     msg += 'Должности: ' + ', '.join(appointments)
     reply(message, msg)
-    del database
 
 
 def all_members(message):
@@ -228,7 +227,6 @@ def money_give(message, person):
                                         f"ID {giver} [{value_giver+money} --> {value_giver}] {giv_m}\n")
     database.change(value_getter, 'money', 'members', ('id', getter))
     database.change(value_giver, 'money', 'members', ('id', giver))
-    del database
 
 
 def money_top(message):
@@ -243,7 +241,6 @@ def money_top(message):
         text += "\n{}. {} -- {} 🍎".format(i, person[2], person[6])  # TODO Добавить сюда красивые ссылки на чела
         i += 1
     reply(message, text)
-    del database
 
 
 # TODO More comfortable way to insert birthday
@@ -252,7 +249,6 @@ def month_set(message, month):
     database = Database()
     reply(message, "Ставлю человеку с ID {} месяц рождения {}".format(message.from_user.id, month))
     database.change(month, 'month_birthday', 'members', ('id', message.from_user.id))
-    del database
 
 
 def day_set(message, day):
@@ -270,7 +266,6 @@ def day_set(message, day):
     else:
         reply(message, "Ставлю человеку с ID {} день рождения {}".format(message.from_user.id, day))
         database.change(day, 'day_birthday', 'members', ('id', message.from_user.id))
-    del database
 
 
 def birthday(message):
@@ -287,10 +282,35 @@ def birthday(message):
         # TODO Добавить сюда красивые ссылки на чела
         i += 1
     reply(message, text)
-    del database
+
 
 def admins(message):
     database = Database()
     admins_id = [admin[0] for admin in database.get_many('appointments', ('appointment', 'Admin'))]
     admins_username = ['@'+database.get('members', ('id', admin))[1] for admin in admins_id]
-    reply(message, 'Вызываю сюда админов:\n ' + ' '.join(admins_username))
+    reply(message, 'Вызываю сюда админов: ' + ', '.join(admins_username))
+
+
+def chat_check(message):
+    database = Database()
+    database.change(message.chat.title, 'name', 'chats', ('id', message.chat.id))
+    if message.chat.username:
+        database.change('public', 'type', 'chats', ('id', message.chat.id))
+        database.change(message.chat.username, 'link', 'chats', ('id', message.chat.id))
+    else:
+        database.change('private', 'type', 'chats', ('id', message.chat.id))
+        database.change('None', 'link', 'chats', ('id', message.chat.id))
+    chat = database.get('chats', ('id', message.chat.id))
+    properties = ['id', 'name', 'purpose', 'type', 'link', 'standart_commands', 'boss_commands', 'financial_commands']
+    properties += ['mutual_invites', 'messages_count', 'violators_ban', 'admins_promoted']
+    props = ['Стандартные команды', 'Админские команды', 'Денежные команды', 'Ссылка учитывается']
+    props += ['Сообщения считаются', 'Нарушители банятся', 'Админы получают админку']
+    text = ''
+    for i in zip(props, chat[5:]):
+        print(chat[5:])
+        if i[1]:
+            mark = '❌'
+            if i[1] == 2:
+                mark = '✅'
+            text += f'{i[0]}:  {mark}\n\n'
+    reply(message, text)

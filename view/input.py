@@ -10,7 +10,7 @@ from presenter.logic.complicated_commands import adequate, inadequate, response,
     place_here, mv, av, add_vote
 from presenter.logic.reactions import deleter, new_member, left_member
 from presenter.logic.standart_commands import helper, send_drakken, send_me, send_meme, minet, show_id, \
-    all_members, money_give, money_top, language_getter, month_set, day_set, birthday, admins
+    all_members, money_give, money_top, language_getter, month_set, day_set, birthday, admins, chat_check
 from presenter.logic.start import starter
 from presenter.config.log import Loger, log_to
 
@@ -390,10 +390,18 @@ def birthday_handler(message):
     log.log_print(f"{__name__} invoked")
     birthday(message)
 
+
 @bot.message_handler(commands=['admins', 'report'])
 def admins_handler(message):
     if in_mf(message) and cooldown(message, 'admins', 300):
         admins(message)
+
+
+@bot.message_handler(commands=['chat'])
+def chat_check_handler(message):
+    if in_mf(message, or_private=False):
+        chat_check(message)
+
 
 '''Последний хэндлер. Просто считает сообщения, что не попали в другие хэндлеры'''
 

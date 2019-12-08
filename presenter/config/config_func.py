@@ -219,6 +219,14 @@ def in_mf(message, or_private=True, loud=True):
             reply(message, "Эта команда отключена в ЛС")
         return or_private
     database = Database()
+    if get_member(message.chat.id, database.get('members', ('rank', 'Leader'))).status in ['member', 'administrator',
+                                                                                           'creator']:
+        typee = 'private'
+        link = 'None'
+        if message.chat.username:
+            typee = 'public'
+            link = message.chat.username
+        database.append((message.chat.id, message.chat.title, 'None', typee, link, 2, 0, 0, 0, 0, 0, 0), 'chats')
     if database.get('chats', ('id', message.chat.id)):  # Команда вызвана в системе МФ2
         counter(message)  # Отправляем сообщение на учёт в БД
         return True

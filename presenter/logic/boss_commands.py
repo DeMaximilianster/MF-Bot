@@ -225,8 +225,12 @@ def add_chat(message):
     # TODO Предохранитель на уникальность некоторых чатов
     log.log_print("add_chat invoked")
     database = Database()
-    chat = (message.chat.id, message.chat.title, message.text[10:], 2, 2, 2, 2, 2, 2, 2, 2, 2)
-    database.append(chat, "chats")
+    typee = 'private'
+    link = 'None'
+    if message.chat.username:
+        typee = 'public'
+        link = message.chat.username
+    database.append((message.chat.id, message.chat.title, message.text[10:], typee, link, 2, 0, 0, 0, 0, 0, 0), 'chats')
     reply(message, "Теперь это часть МФ2. Как и:\n" + '\n'.join(map(str, full_chat_list(database))))
     del database
 
