@@ -288,3 +288,9 @@ def birthday(message):
         i += 1
     reply(message, text)
     del database
+
+def admins(message):
+    database = Database()
+    admins_id = [admin[0] for admin in database.get_many('appointments', ('appointment', 'Admin'))]
+    admins_username = ['@'+database.get('members', ('id', admin))[1] for admin in admins_id]
+    reply(message, 'Вызываю сюда админов:\n ' + ' '.join(admins_username))
