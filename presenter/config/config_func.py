@@ -208,7 +208,7 @@ def time_replace(seconds):
     return days, hours, minutes, seconds
 
 
-def in_mf(message, or_private=True, loud=True):
+def in_mf(message, command_type, or_private=True, loud=True):
     """Позволяет регулировать использование команл вне чатов и в личке"""
     log.log_print("in_mf invoked")
     if message.chat.id > 0:
@@ -227,7 +227,11 @@ def in_mf(message, or_private=True, loud=True):
             typee = 'public'
             link = message.chat.username
         database.append((message.chat.id, message.chat.title, 'None', typee, link, 2, 0, 0, 0, 0, 0, 0), 'chats')
-    if database.get('chats', ('id', message.chat.id)):  # Команда вызвана в системе МФ2
+    if command_type:
+        chat = database.get('chats', ('id', message.chat.id), (command_type, 2))
+    else:
+        chat = database.get('chats', ('id', message.chat.id))
+    if chat:  # Команда вызвана в системе МФ2
         counter(message)  # Отправляем сообщение на учёт в БД
         return True
     if loud:
@@ -235,10 +239,16 @@ def in_mf(message, or_private=True, loud=True):
         text += "попытались мной воспользоваться"
         send(381279599, text.format(message.chat.id, message.chat.title, message.from_user.first_name,
                                     message.from_user.username, message.from_user.id))
-    rep_text = ""
-    rep_text += "Hmm, I don't know this chat. Call @DeMaximilianster for help\n\n"
-    rep_text += "Хмм, я не знаю этот чат. Обратитесь к @DeMaximilianster за помощью\n\n"
-    reply(message, rep_text)
+        rep_text = ""
+        if command_type:
+            rep_text += "I'm sorry, but I don't support here types like {}. ".format(command_type)
+            rep_text += "Call @DeMaximilianster for help\n\n"
+            rep_text += "Прошу прощения, но я не здесь не поддерживаю команды вида {}. ".format(command_type)
+            rep_text += "Обратитесь к @DeMaximilianster за помощью\n\n"
+        else:
+            rep_text += "Hmm, I don't know this chat. Call @DeMaximilianster for help\n\n"
+            rep_text += "Хмм, я не знаю этот чат. Обратитесь к @DeMaximilianster за помощью\n\n"
+        reply(message, rep_text)
     return False
 
 

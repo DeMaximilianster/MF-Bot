@@ -24,7 +24,7 @@ log = Loger(log_to)
 def deleter_handler(message):
     """Удаляет медиа ночью"""
     log.log_print(f"{__name__} invoked")
-    if in_mf(message):  # Если в МФ2 - то удаляем
+    if in_mf(message, command_type=None, or_private=False, loud=False):
         deleter(message)
 
 
@@ -32,7 +32,7 @@ def deleter_handler(message):
 def new_member_handler(message):
     """Реагирует на вход в чат"""
     log.log_print(f"{__name__} invoked")
-    if in_mf(message):
+    if in_mf(message, command_type=None, or_private=False):
         new_member(message)
 
 
@@ -40,7 +40,7 @@ def new_member_handler(message):
 def left_member_handler(message):
     """Комментирует уход участника и прощается участником"""
     log.log_print(f"{__name__} invoked")
-    if in_mf(message):
+    if in_mf(message, command_type=None, or_private=False, loud=False):
         left_member(message)
 
 
@@ -71,14 +71,14 @@ def chat_search_handler(message):
 def warn_handler(message):
     """Даёт участнику предупреждение"""
     log.log_print(f"{__name__} invoked")
-    person = person_analyze(message)
-    if not int_check(message.text.split()[-1], positive=True) and len(message.text.split()) > 1:
+    rep = message.reply_to_message
+    if not rep:
+        reply(message, "Надо ответить на сообщение с актом преступления, чтобы переслать контекст в хранилище")
+    elif not int_check(message.text.split()[-1], positive=True) and len(message.text.split()) > 1:
         reply(message, "Последнее слово должно быть положительным числом, сколько варнов даём")
-    elif in_mf(message, False) and appointment_required(message, "Admin") and person and rank_superiority(message):
-        if message.reply_to_message:
-            warn(message, person)
-        else:
-            reply(message, "Надо ответить на сообщение с актом преступления, чтобы переслать контекст в хранилище")
+    elif in_mf(message, 'boss_commands', False) and appointment_required(message, "Admin")\
+            and rank_superiority(message):
+        warn(message, rep.from_user.id)
 
 
 @bot.message_handler(commands=['unwarn'])
@@ -88,7 +88,7 @@ def unwarn_handler(message):
     person = person_analyze(message)
     if not int_check(message.text.split()[-1], positive=True) and len(message.text.split()) > 1:
         reply(message, "Последнее слово должно быть положительным числом, сколько варнов снимаем")
-    elif in_mf(message, False) and appointment_required(message, "Admin") and person:
+    elif in_mf(message, 'boss_commands', False) and appointment_required(message, "Admin") and person:
         unwarn(message, person)
 
 
@@ -96,7 +96,8 @@ def unwarn_handler(message):
 def ban_handler(message):
     log.log_print(f"{__name__} invoked")
     person = person_analyze(message)
-    if in_mf(message, False) and appointment_required(message, "Admin") and person and rank_superiority(message):
+    if in_mf(message, 'boss_commands', False) and appointment_required(message, "Admin") and person \
+            and rank_superiority(message):
         ban(message, person)
 
 
@@ -106,14 +107,14 @@ def money_pay_handler(message):
     person = person_analyze(message, to_self=True)
     if not int_check(message.text.split()[-1], positive=False):
         reply(message, "Последнее слово должно быть числом, сколько ябломилианов прибавляем или убавляем")
-    elif in_mf(message) and appointment_required(message, "Admin") and person:
+    elif in_mf(message, 'financial_commands') and appointment_required(message, "Admin") and person:
         money_pay(message, person)
 
 
 @bot.message_handler(commands=['delete_mode'])
 def deleter_mode_handler(message):
     log.log_print(f"{__name__} invoked")
-    if in_mf(message, False) and appointment_required(message, "Admin"):
+    if in_mf(message, 'boss_commands', False) and appointment_required(message, "Admin"):
         deleter_mode(message)
 
 
@@ -122,7 +123,7 @@ def promotion_handler(message):
     """Назначает человека админом"""
     log.log_print(f"{__name__} invoked")
     person = person_analyze(message)
-    if in_mf(message, False) and rank_required(message, "The Committee Member")\
+    if in_mf(message, 'boss_commands', False) and rank_required(message, "The Committee Member")\
             and person and rank_superiority(message):
         promotion(message, person)
 
@@ -132,7 +133,7 @@ def demotion_handler(message):
     """Забирает у человека админку"""
     log.log_print(f"{__name__} invoked")
     person = person_analyze(message)
-    if in_mf(message, False) and rank_required(message, "The Committee Member")\
+    if in_mf(message, 'boss_commands', False) and rank_required(message, "The Committee Member")\
             and person and rank_superiority(message):
         demotion(message, person)
 
@@ -144,7 +145,7 @@ def messages_change_handler(message):
     person = person_analyze(message, to_self=True)
     if not int_check(message.text.split()[-1], positive=True):
         reply(message, "Последнее слово должно быть положительным числом, сколько сообщений ставим")
-    elif in_mf(message, False) and appointment_required(message, "Admin") and person:
+    elif in_mf(message, 'boss_commands', False) and appointment_required(message, "Admin") and person:
         if (len(message.text.split()) == 2 and message.reply_to_message) or len(message.text.split()) == 3:
             message_change(message, person)
         else:
@@ -226,7 +227,7 @@ def ironic_handler(call):
 def vote_handler(message):
     """Генерирует голосовашку"""
     log.log_print(f"{__name__} invoked")
-    if in_mf(message, False) and appointment_required(message, "Admin"):
+    if in_mf(message, 'boss_commands', False) and appointment_required(message, "Admin"):
         reply(message, 'А запостить куда?', reply_markup=where_keyboard)
 
 
@@ -269,7 +270,7 @@ def add_vote_handler(call):
 def language_getter_handler(message):
     """Gets the language of the chat"""
     log.log_print(f"{__name__} invoked")
-    if in_mf(message):
+    if in_mf(message, command_type=None):
         language_getter(message)
 
 
@@ -277,7 +278,7 @@ def language_getter_handler(message):
 def starter_handler(message):
     """Запуск бота в личке, в чате просто реагирует"""
     log.log_print(f"{__name__} invoked")
-    if in_mf(message):
+    if in_mf(message, command_type=None):
         starter(message)
 
 
@@ -285,7 +286,7 @@ def starter_handler(message):
 def helper_handler(message):
     """Предоставляет человеку список команд"""
     log.log_print(f"{__name__} invoked")
-    if in_mf(message):
+    if in_mf(message, command_type=None):
         helper(message)
 
 
@@ -293,7 +294,7 @@ def helper_handler(message):
 def show_id_handler(message):
     """Присылает различные ID'шники, зачастую бесполезные"""
     log.log_print(f"{__name__} invoked")
-    if in_mf(message):
+    if in_mf(message, command_type=None):
         show_id(message)
 
 
@@ -301,7 +302,7 @@ def show_id_handler(message):
 def minet_handler(message):
     """Приносит удовольствие"""
     log.log_print(f"{__name__} invoked")
-    if in_mf(message) and cooldown(message, 'minet'):
+    if in_mf(message, 'standart_commands') and cooldown(message, 'minet'):
         minet(message)
 
 
@@ -309,7 +310,7 @@ def minet_handler(message):
 def send_drakken_handler(message):
     """Присылает арт с Доктором Драккеном"""
     log.log_print(f"{__name__} invoked")
-    if in_mf(message) and cooldown(message, 'drakken'):
+    if in_mf(message, 'standart_commands') and cooldown(message, 'drakken'):
         send_drakken(message)
 
 
@@ -318,7 +319,7 @@ def send_drakken_handler(message):
 def send_meme_handler(message):
     """Присылает мем"""
     log.log_print(f"{__name__} invoked")
-    if in_mf(message) and cooldown(message, 'meme'):
+    if in_mf(message, 'standart_commands') and cooldown(message, 'meme'):
         send_meme(message)
 
 
@@ -327,7 +328,7 @@ def send_me_handler(message):
     """Присылает человеку его запись в БД"""
     log.log_print(f"{__name__} invoked")
     person = person_analyze(message, to_self=True)
-    if in_mf(message):
+    if in_mf(message, command_type=None):
         send_me(message, person)
 
 
@@ -335,7 +336,7 @@ def send_me_handler(message):
 def all_members_handler(message):
     """Присылает человеку все записи в БД"""
     log.log_print(f"{__name__} invoked")
-    if in_mf(message):
+    if in_mf(message, command_type=None):
         all_members(message)
 
 
@@ -346,7 +347,7 @@ def money_give_handler(message):
     person = person_analyze(message, to_bot=True)
     if not int_check(message.text.split()[-1], positive=False):
         reply(message, "Последнее слово должно быть числом, сколько денег даём")
-    elif in_mf(message) and person:
+    elif in_mf(message, 'financial_commands') and person:
         money_give(message, person)
 
 
@@ -354,7 +355,7 @@ def money_give_handler(message):
 def money_top_handler(message):
     """Топ ЯМ"""
     log.log_print(f"{__name__} invoked")
-    if in_mf(message):
+    if in_mf(message, 'financial_commands'):
         money_top(message)
 
 
@@ -367,7 +368,7 @@ def month_set_handler(message):
         reply(message, "Последнее слово должно быть положительным числом -- номером месяца")
     elif not 1 <= month <= 12:
         reply(message, "Если ты вдруг не знаешь, то месяца имеют номера от 1 до 12")
-    elif in_mf(message):
+    elif in_mf(message, command_type=None):
         month_set(message, month)
 
 
@@ -380,7 +381,7 @@ def day_set_handler(message):
         reply(message, "Последнее слово должно быть положительным числом -- номером дня")
     elif not 1 <= day <= 31:
         reply(message, "Если ты вдруг не знаешь, то дни имеют номера от 1 до 31")
-    elif in_mf(message):
+    elif in_mf(message, command_type=None):
         day_set(message, day)
 
 
@@ -388,18 +389,19 @@ def day_set_handler(message):
 def birthday_handler(message):
     """Show the nearest birthdays"""
     log.log_print(f"{__name__} invoked")
-    birthday(message)
+    if in_mf(message, command_type=None):
+        birthday(message)
 
 
 @bot.message_handler(commands=['admins', 'report'])
 def admins_handler(message):
-    if in_mf(message) and cooldown(message, 'admins', 300):
+    if in_mf(message, 'standart_commands') and cooldown(message, 'admins', 300):
         admins(message)
 
 
 @bot.message_handler(commands=['chat'])
 def chat_check_handler(message):
-    if in_mf(message, or_private=False):
+    if in_mf(message, command_type=None, or_private=False):
         chat_check(message)
 
 
@@ -410,4 +412,4 @@ def chat_check_handler(message):
 def counter_handler(message):
     """Подсчитывает сообщения"""
     log.log_print(f"{__name__} invoked")
-    in_mf(message)
+    in_mf(message, command_type=None, loud=False)

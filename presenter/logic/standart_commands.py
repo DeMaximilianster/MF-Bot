@@ -294,6 +294,7 @@ def admins(message):
 def chat_check(message):
     database = Database()
     database.change(message.chat.title, 'name', 'chats', ('id', message.chat.id))
+    lang = language_analyzer(message, only_one=True)
     if message.chat.username:
         database.change('public', 'type', 'chats', ('id', message.chat.id))
         database.change(message.chat.username, 'link', 'chats', ('id', message.chat.id))
@@ -303,11 +304,14 @@ def chat_check(message):
     chat = database.get('chats', ('id', message.chat.id))
     properties = ['id', 'name', 'purpose', 'type', 'link', 'standart_commands', 'boss_commands', 'financial_commands']
     properties += ['mutual_invites', 'messages_count', 'violators_ban', 'admins_promoted']
-    props = ['Стандартные команды', 'Админские команды', 'Денежные команды', 'Ссылка учитывается']
-    props += ['Сообщения считаются', 'Нарушители банятся', 'Админы получают админку']
+    props = dict()
+    props['Russian'] = ['Стандартные команды', 'Админские команды', 'Денежные команды', 'Ссылка учитывается',
+                        'Сообщения считаются', 'Нарушители банятся', 'Админы получают админку']
+    props['English'] = ['Standart commands', 'Admin commands', 'Financial commands',
+                        'Invites links', 'Messages are count for citizenship',
+                        'MF2 violators are automatically banned', 'MF2 admins are automatically promoted']
     text = ''
-    for i in zip(props, chat[5:]):
-        print(chat[5:])
+    for i in zip(props[lang], chat[5:]):
         if i[1]:
             mark = '❌'
             if i[1] == 2:
