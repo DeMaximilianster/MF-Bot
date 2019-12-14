@@ -77,4 +77,4 @@ a_adequate_keyboard.row_width = 1
 
 
 # Список всех ролей и их подтипы
-roles = ['Violator', 'Guest', 'Citizen', 'Senior Citizen', 'The Committee Member', 'Deputy', 'Leader']
+roles = [None, 'Violator', 'Guest', 'Citizen', 'Senior Citizen', 'The Committee Member', 'Deputy', 'Leader']

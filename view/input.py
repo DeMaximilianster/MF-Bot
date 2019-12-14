@@ -77,7 +77,7 @@ def warn_handler(message):
     elif not int_check(message.text.split()[-1], positive=True) and len(message.text.split()) > 1:
         reply(message, "Последнее слово должно быть положительным числом, сколько варнов даём")
     elif in_mf(message, 'boss_commands', False) and appointment_required(message, "Admin")\
-            and rank_superiority(message):
+            and rank_superiority(message, rep.from_user.id):
         warn(message, rep.from_user.id)
 
 
@@ -97,7 +97,7 @@ def ban_handler(message):
     log.log_print(f"{__name__} invoked")
     person = person_analyze(message)
     if in_mf(message, 'boss_commands', False) and appointment_required(message, "Admin") and person \
-            and rank_superiority(message):
+            and rank_superiority(message, person):
         ban(message, person)
 
 
@@ -124,7 +124,7 @@ def promotion_handler(message):
     log.log_print(f"{__name__} invoked")
     person = person_analyze(message)
     if in_mf(message, 'boss_commands', False) and rank_required(message, "The Committee Member")\
-            and person and rank_superiority(message):
+            and person and rank_superiority(message, person):
         promotion(message, person)
 
 
@@ -134,7 +134,7 @@ def demotion_handler(message):
     log.log_print(f"{__name__} invoked")
     person = person_analyze(message)
     if in_mf(message, 'boss_commands', False) and rank_required(message, "The Committee Member")\
-            and person and rank_superiority(message):
+            and person and rank_superiority(message, person):
         demotion(message, person)
 
 
@@ -395,7 +395,7 @@ def birthday_handler(message):
 
 @bot.message_handler(commands=['admins', 'report'])
 def admins_handler(message):
-    if in_mf(message, 'standart_commands') and cooldown(message, 'admins', 300):
+    if in_mf(message, 'standart_commands') and rank_required(message, 'Citizen') and cooldown(message, 'admins', 300):
         admins(message)
 
 

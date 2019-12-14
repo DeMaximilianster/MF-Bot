@@ -129,11 +129,11 @@ def person_analyze(message, to_self=False, to_bot=False):
         return person
 
 
-def rank_superiority(message):
+def rank_superiority(message, person):
     log.log_print("rank superiority invoked")
     database = Database()
     your_rank = database.get('members', ('id', message.from_user.id))[3]
-    their_rank = database.get('members', ('id', person_analyze(message).id))[3]
+    their_rank = database.get('members', ('id', person.id))[3]
     del database
     your_rank_n = roles.index(your_rank)
     their_rank_n = roles.index(their_rank)
@@ -211,6 +211,15 @@ def time_replace(seconds):
 def in_mf(message, command_type, or_private=True, loud=True):
     """Позволяет регулировать использование команл вне чатов и в личке"""
     log.log_print("in_mf invoked")
+    database = Database()
+    if message.new_chat_members:
+        person = message.new_chat_members[0]
+    elif message.left_chat_member:
+        person = message.left_chat_member
+    else:
+        person = message.from_user
+    if not database.get('members', ('id', person.id)):
+        database.append((person.id, person.username, person.first_name, 'Guest', 0, 0, 0, None, None), 'members')
     if message.chat.id > 0:
         if loud and not or_private:
             person = message.from_user
@@ -218,9 +227,10 @@ def in_mf(message, command_type, or_private=True, loud=True):
                             .format(person.first_name, person.username, person.id, message.text))
             reply(message, "Эта команда отключена в ЛС")
         return or_private
-    database = Database()
-    if get_member(message.chat.id, database.get('members', ('rank', 'Leader'))).status in ['member', 'administrator',
-                                                                                           'creator']:
+    if not database.get('chats', ('id', message.chat.id)) and \
+            get_member(message.chat.id, database.get('members', ('rank', 'Leader'))).status in ['member',
+                                                                                                'administrator',
+                                                                                                'creator']:
         typee = 'private'
         link = 'None'
         if message.chat.username:
@@ -262,8 +272,6 @@ def counter(message):
         person = message.left_chat_member
     else:
         person = message.from_user
-    if not database.get('members', ('id', person.id)):
-        database.append((person.id, person.username, person.first_name, 'Guest', 0, 0, 0, None, None), 'members')
     if not database.get('messages', ('person_id', person.id), ('chat_id', message.chat.id)):
         database.append((person.id, message.chat.id, 0), 'messages')
     value = database.get('messages', ('person_id', person.id), ('chat_id', message.chat.id))[2] + 1

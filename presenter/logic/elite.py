@@ -20,8 +20,7 @@ def ask_question(message, question):
     for i in answers:  # Заполняем клавиатуру кнопками
         markup.add(i)
     sent = send(message.from_user.id, note[1], reply_markup=markup)  # Отправляем сообщение
-    del database
-    register_handler(sent, check)  # Следующее сообщение будет проверяться, как ответ на вопрос
+    register_handler(sent, check, question)  # Следующее сообщение будет проверяться, как ответ на вопрос
 
 
 def submit(message):  # TODO возможность отменить свои ответы
@@ -50,21 +49,15 @@ def submit(message):  # TODO возможность отменить свои о
                              .format(person.first_name, person.username, person.id, success))
 
 
-def check(message):
+def check(message, ques):
     """Запись ответа"""
     log.log_print("check invoked")
     database = Database()
     # TODO Пусть бот ставит тест на паузу, когда видит, что в сообщений есть "/"
-    answer = 0
     person = database.get('basic_logic_tested', ('id', message.from_user.id))  # Запись чела в списке проходящих тест
-    for i in range(7, 13):
-        if person[i] == "None":
-            answer = i - 6
-            break
-    database.change(message.text, f'answer_{answer}', 'basic_logic_tested', ('id', 'message.from_user.id'))
-    del database
-    if answer != 6:
-        elite(message)
+    database.change(message.text, f'answer_{ques}', 'basic_logic_tested', ('id', message.from_user.id))
+    if ques != 6:
+        ask_question(message, ques+1)
     else:
         submit(message)
 

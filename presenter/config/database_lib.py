@@ -31,7 +31,7 @@ class Database:
         self.cursor.execute(sql)
         return self.cursor.fetchone()
 
-    def get_many(self, table, *column_value):  # TODO Добавить поиск по нескольким ключам
+    def get_many(self, table, *column_value):
         """Читает несколько записей в базе данных"""
         sql = f"SELECT * FROM {table} WHERE "
         reqs = []
@@ -81,3 +81,4 @@ class Database:
         self.connection.commit()  # Сохраняем изменения
 
 # TODO Удаление одной записи
+# TODO Getters return as dictionary
