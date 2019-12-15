@@ -1,21 +1,21 @@
 from presenter.config.token import bot
 from view.output import reply, answer_callback
-from presenter.config.config_func import in_mf, cooldown, person_analyze, rank_required, rank_superiority,\
-     appointment_required, int_check
+from presenter.config.config_func import in_mf, cooldown, person_analyze, rank_required, rank_superiority, \
+    appointment_required, int_check
 from presenter.config.config_var import where_keyboard
 from presenter.logic.elite import elite
-from presenter.logic.boss_commands import ban, deleter_mode, promotion, demotion, add_chat, warn, unwarn,\
+from presenter.logic.boss_commands import ban, deleter_mode, promotion, demotion, add_chat, warn, unwarn, \
     message_change, money_pay
 from presenter.logic.complicated_commands import adequate, inadequate, response, insult, non_ironic, ironic, \
     place_here, mv, av, add_vote
 from presenter.logic.reactions import deleter, new_member, left_member
 from presenter.logic.standart_commands import helper, send_drakken, send_me, send_meme, minet, show_id, \
-    all_members, money_give, money_top, language_getter, month_set, day_set, birthday, admins, chat_check
+    all_members, money_give, money_top, language_getter, month_set, day_set, birthday, admins, chat_check, \
+    chats
 from presenter.logic.start import starter
 from presenter.config.log import Loger, log_to
 
 log = Loger(log_to)
-
 
 '''Реакции на медиа, новых участников и выход участников'''
 
@@ -76,7 +76,7 @@ def warn_handler(message):
         reply(message, "Надо ответить на сообщение с актом преступления, чтобы переслать контекст в хранилище")
     elif not int_check(message.text.split()[-1], positive=True) and len(message.text.split()) > 1:
         reply(message, "Последнее слово должно быть положительным числом, сколько варнов даём")
-    elif in_mf(message, 'boss_commands', False) and appointment_required(message, "Admin")\
+    elif in_mf(message, 'boss_commands', False) and appointment_required(message, "Admin") \
             and rank_superiority(message, rep.from_user.id):
         warn(message, rep.from_user.id)
 
@@ -123,7 +123,7 @@ def promotion_handler(message):
     """Назначает человека админом"""
     log.log_print(f"{__name__} invoked")
     person = person_analyze(message)
-    if in_mf(message, 'boss_commands', False) and rank_required(message, "The Committee Member")\
+    if in_mf(message, 'boss_commands', False) and rank_required(message, "The Committee Member") \
             and person and rank_superiority(message, person):
         promotion(message, person)
 
@@ -133,7 +133,7 @@ def demotion_handler(message):
     """Забирает у человека админку"""
     log.log_print(f"{__name__} invoked")
     person = person_analyze(message)
-    if in_mf(message, 'boss_commands', False) and rank_required(message, "The Committee Member")\
+    if in_mf(message, 'boss_commands', False) and rank_required(message, "The Committee Member") \
             and person and rank_superiority(message, person):
         demotion(message, person)
 
@@ -403,6 +403,12 @@ def admins_handler(message):
 def chat_check_handler(message):
     if in_mf(message, command_type=None, or_private=False):
         chat_check(message)
+
+
+@bot.message_handler(commands=['chats'])
+def chats_handler(message):
+    if in_mf(message, 'standart_commands'):
+        chats(message)
 
 
 '''Последний хэндлер. Просто считает сообщения, что не попали в другие хэндлеры'''

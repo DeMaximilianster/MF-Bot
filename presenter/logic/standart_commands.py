@@ -41,7 +41,7 @@ def language_getter(message):
 
 def helper(message):
     """Предоставляет человеку список команд"""
-    log.log_print(str(message.from_user.id)+": helper invoked")
+    log.log_print(str(message.from_user.id) + ": helper invoked")
     answer = '*Команды:*\n\n'
     answer += '/help - Присылает это сообщение\n'
     answer += "/id - Присылает различные ID'шники, зачастую бесполезные\n"
@@ -57,7 +57,7 @@ def helper(message):
 
 def show_id(message):
     """Присылает различные ID'шники, зачастую бесполезные"""
-    log.log_print(str(message.from_user.id)+": show_id invoked")
+    log.log_print(str(message.from_user.id) + ": show_id invoked")
     answer = 'Время отправки вашего сообщения: ` ' + ctime(message.date) + '`\n\n'
     answer += 'Переводя, выходит: ` ' + str(time_replace(message.date)) + '`\n\n'
     answer += 'Время отправки моего сообщения: ` ' + ctime(time()) + '`\n\n'
@@ -93,7 +93,7 @@ def show_id(message):
 
 def minet(message):
     """Приносит удовольствие"""
-    log.log_print(str(message.from_user.id)+": minet invoked")
+    log.log_print(str(message.from_user.id) + ": minet invoked")
     language = language_analyzer(message, only_one=True)
     if language:
         choices = []
@@ -109,7 +109,7 @@ def minet(message):
 
 def send_drakken(message):
     """Присылает арт с Доктором Драккеном"""
-    log.log_print(str(message.from_user.id)+": send_drakken invoked")
+    log.log_print(str(message.from_user.id) + ": send_drakken invoked")
     drakken = choice(('AgADAgADpqsxG3J5-Urrn-mZkdvjs1SnhQ8ABAEAAwIAA20AA9QNBAABFgQ',
                       'AgADAgADtaoxG3L2eUns8mJ7X9gm893qtw8ABAEAAwIAA20AA-gnAQABFgQ',
                       'AgADAgAD8asxG4SzgUm_RXHcgE4jd26xUQ8ABAEAAwIAA20AAzHIBQABFgQ',
@@ -122,7 +122,7 @@ def send_drakken(message):
 
 def send_meme(message):
     """Присылает мем"""
-    log.log_print(str(message.from_user.id)+": send_meme invoked")
+    log.log_print(str(message.from_user.id) + ": send_meme invoked")
     meme = choice(('AgADAgADx60xG2S_oUmVz41Dk8a4AkRNUw8ABAEAAwIAA20AAzj4BQABFgQ',
                    'AgADAgADdKsxG7PUsEmfWmu7wYQaSlHNuQ8ABAEAAwIAA20AA2gAAxYE',
                    'AgADAgAD-aoxG0EnIUqnHKx1l-EFFajiug8ABAEAAwIAA20AA3VUAAIWBA',
@@ -134,7 +134,7 @@ def send_meme(message):
 
 def send_me(message, person):
     """Присылает человеку его запись в БД"""
-    log.log_print(str(message.from_user.id)+": send_me invoked")
+    log.log_print(str(message.from_user.id) + ": send_me invoked")
     database = Database()
     chats_ids = [x[0] for x in database.get_many('chats', ('messages_count', 2))]
     msg_count = 0
@@ -175,7 +175,7 @@ def all_members(message):
     else:
         fiftys = len(members) // 50 + 1
     for fifty in range(fiftys):
-        one_message_list = members[50*(fifty-1): 50*fifty]
+        one_message_list = members[50 * (fifty - 1): 50 * fifty]
         answer = ''
         for member in one_message_list:
             username = "[{}](tg://user?id={})".format(member[2].replace('[', '').replace(']', ''), member[0])
@@ -220,11 +220,11 @@ def money_give(message, person):
             else:
                 giv_m = "🔕 не уведомлён(а)"
             reply(message, f"#Финансы #Ф{getter} #Ф{giver}\n\n"
-                           f"ID {getter} [{value_getter-money} --> {value_getter}] {get_m}\n"
-                           f"ID {giver} [{value_giver+money} --> {value_giver}] {giv_m}\n")
+                           f"ID {getter} [{value_getter - money} --> {value_getter}] {get_m}\n"
+                           f"ID {giver} [{value_giver + money} --> {value_giver}] {giv_m}\n")
             send(admin_place(database), f"#Финансы #Ф{getter} #Ф{giver}\n\n"
-                                        f"ID {getter} [{value_getter-money} --> {value_getter}] {get_m}\n"
-                                        f"ID {giver} [{value_giver+money} --> {value_giver}] {giv_m}\n")
+                                        f"ID {getter} [{value_getter - money} --> {value_getter}] {get_m}\n"
+                                        f"ID {giver} [{value_giver + money} --> {value_giver}] {giv_m}\n")
     database.change(value_getter, 'money', 'members', ('id', getter))
     database.change(value_giver, 'money', 'members', ('id', giver))
 
@@ -287,8 +287,21 @@ def birthday(message):
 def admins(message):
     database = Database()
     admins_id = [admin[0] for admin in database.get_many('appointments', ('appointment', 'Admin'))]
-    admins_username = ['@'+database.get('members', ('id', admin))[1] for admin in admins_id]
+    admins_username = ['@' + database.get('members', ('id', admin))[1] for admin in admins_id]
     reply(message, 'Вызываю сюда админов: ' + ', '.join(admins_username))
+
+
+def chats(message):
+    database = Database()
+    chats_list = database.get_many('chats', ('type', 'public'))
+
+    # Получаем имена и ссылки нужных нам чатиков
+    chats_names = [chat_name[1] for chat_name in chats_list]
+    chats_links = ['@' + chat_link[4] for chat_link in chats_list]
+
+    # Генерируем текст для отображение имен и ссылок вместе
+    text = '\n'.join([f'{key}: {value}' for key, value in zip(chats_names, chats_links)])
+    reply(message, text)
 
 
 def chat_check(message):
