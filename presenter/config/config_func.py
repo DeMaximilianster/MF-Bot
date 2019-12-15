@@ -280,6 +280,18 @@ def counter(message):
     del database
 
 
+def member_update(person):
+    database = Database()
+    chats_ids = [x[0] for x in database.get_many('chats', ('messages_count', 2))]
+    msg_count = 0
+    for chat_id in chats_ids:
+        if database.get('messages', ('person_id', person.id), ('chat_id', chat_id)):
+            msg_count += database.get('messages', ('person_id', person.id), ('chat_id', chat_id))[2]
+    database.change(person.username, 'username', 'members', ('id', person.id))
+    database.change(person.first_name, 'nickname', 'members', ('id', person.id))
+    database.change(msg_count, 'messages', 'members', ('id', person.id))
+
+
 # TODO перенести все голосовашки в базу данных или ещё куда-то (JSON)
 def create_vote(vote_message):
     """Создаёт голосовашку"""

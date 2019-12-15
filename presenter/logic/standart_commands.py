@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 from view.output import reply, send_photo, send_sticker, send
-from presenter.config.config_func import time_replace, language_analyzer, case_analyzer
+from presenter.config.config_func import time_replace, language_analyzer, case_analyzer, member_update
 from presenter.config.database_lib import Database
 from presenter.config.config_var import bot_id, admin_place, original_to_english, english_to_original, months
 from random import choice
@@ -136,17 +136,8 @@ def send_me(message, person):
     """Присылает человеку его запись в БД"""
     log.log_print(str(message.from_user.id) + ": send_me invoked")
     database = Database()
-    chats_ids = [x[0] for x in database.get_many('chats', ('messages_count', 2))]
-    msg_count = 0
-    for chat_id in chats_ids:
-        if database.get('messages', ('person_id', person.id), ('chat_id', chat_id)):
-            msg_count += database.get('messages', ('person_id', person.id), ('chat_id', chat_id))[2]
-    database.change(person.username, 'username', 'members', ('id', person.id))
-    database.change(person.first_name, 'nickname', 'members', ('id', person.id))
-    database.change(msg_count, 'messages', 'members', ('id', person.id))
-    # TODO Вынести всё это дело в функцию member_update()
+    member_update(person)  # Update person's messages, nickname and username
     p = database.get('members', ('id', person.id))
-    print(p)
     appointments = [x[1] for x in database.get_many('appointments', ('id', person.id))]
     if database.get('messages', ('person_id', person.id), ('chat_id', message.chat.id)):
         messages_here = database.get('messages', ('person_id', person.id), ('chat_id', message.chat.id))[2]
