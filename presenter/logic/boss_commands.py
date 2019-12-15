@@ -104,6 +104,7 @@ def ban(message, person):
 def money_pay(message, person):
     """Платит человеку деньги из бюджета чата"""
     # TODO Добавить уведомление о человеке, совершившем перевод
+    # TODO add nice link's to people instead of id's
     log.log_print(f"money pay invoked to person {person.id}")
     database = Database()
     bot_money = database.get('members', ('id', bot_id))[6]

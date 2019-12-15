@@ -180,6 +180,7 @@ def all_members(message):
 
 def money_give(message, person):
     """Функция обмена деньгами между людьми"""
+    # TODO add nice link's to people instead of id's
     log.log_print(f"money_give invoked to person {person.id}")
     database = Database()
     getter = person.id
@@ -229,9 +230,9 @@ def money_top(message):
     i = 1
     text = "Бюджет: {} 🍎\n".format(bot_money)
     for person in people:
-        text += "\n{}. {} -- {} 🍎".format(i, person[2], person[6])  # TODO Добавить сюда красивые ссылки на чела
+        text += "\n{}. <a href='t.me/{}'>{}</a> — {} 🍎".format(i, person[1], person[2], person[6])
         i += 1
-    reply(message, text)
+    reply(message, text, parse_mode='HTML', disable_web_page_preview=True)
 
 
 # TODO More comfortable way to insert birthday
@@ -269,10 +270,10 @@ def birthday(message):
     i = 1
     text = ""
     for person in people:
-        text += "\n{}. {} -- {} {} ".format(i, person[2], months[person[7]][lang], person[8])
-        # TODO Добавить сюда красивые ссылки на чела
+        text += "\n{}. <a href='t.me/{}'>{}</a> — {} {} ".format(i, person[1], person[2], months[person[7]][lang],
+                                                                 person[8])
         i += 1
-    reply(message, text)
+    reply(message, text, parse_mode='HTML', disable_web_page_preview=True)
 
 
 def admins(message):
