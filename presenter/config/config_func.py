@@ -219,7 +219,7 @@ def in_mf(message, command_type, or_private=True, loud=True):
     else:
         person = message.from_user
     if not database.get('members', ('id', person.id)):
-        database.append((person.id, person.username, person.first_name, 'Guest', 0, 0, 0, None, None), 'members')
+        database.append((person.id, person.username, person.first_name, 'Guest', 0, 0, 0, 0, 0), 'members')
     if message.chat.id > 0:
         if loud and not or_private:
             person = message.from_user

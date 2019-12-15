@@ -1,6 +1,6 @@
 from presenter.config.config_func import Database, shuffle
 from telebot.types import ReplyKeyboardMarkup, ReplyKeyboardRemove
-from view.output import send, register_handler
+from view.output import send, register_handler, reply
 from random import choice
 from presenter.config.log import Loger, log_to
 
@@ -52,9 +52,11 @@ def submit(message):  # TODO возможность отменить свои о
 def check(message, ques):
     """Запись ответа"""
     log.log_print("check invoked")
+    if message.text[0] == '/':
+        reply(message, "Тест приостановлен, введите вашу команду ещё раз",
+              reply_markup=ReplyKeyboardRemove(selective=False))
+        return None
     database = Database()
-    # TODO Пусть бот ставит тест на паузу, когда видит, что в сообщений есть "/"
-    person = database.get('basic_logic_tested', ('id', message.from_user.id))  # Запись чела в списке проходящих тест
     database.change(message.text, f'answer_{ques}', 'basic_logic_tested', ('id', message.from_user.id))
     if ques != 6:
         ask_question(message, ques+1)

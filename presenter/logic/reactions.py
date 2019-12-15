@@ -51,7 +51,6 @@ def new_member(message):
         answer += "О, добро пожаловать, держи полную админку"
     else:  # У нового участника нет особенностей
         answer = 'Добро пожаловать, {}'.format(member.first_name)
-    del database
     if answer:  # Если ответ не пустой
         reply(message, answer)  # То отправляем ответ
     # Держим Дэ'Макса в курсе происходящего
