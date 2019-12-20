@@ -56,13 +56,6 @@ test_keyboard.add(InlineKeyboardButton("Тестовая кнопка 2", callba
 test_keyboard.add(InlineKeyboardButton("Тестовая кнопка 3", callback_data="3"))
 test_keyboard.row_width = 1
 
-# Клавиатура для выбора, куда постить голосовашку
-where_keyboard = InlineKeyboardMarkup()
-where_keyboard.add(InlineKeyboardButton("Сюда", callback_data="here"))
-where_keyboard.add(InlineKeyboardButton("На канал голосовашек", callback_data="there"))
-where_keyboard.add(InlineKeyboardButton("На канал недостримов", callback_data="nedostream"))
-where_keyboard.row_width = 1
-
 # Клавиатура для признания предложения для мульти-голосовашки адекватным/неадекватным
 adequate_keyboard = InlineKeyboardMarkup()
 adequate_keyboard.add(InlineKeyboardButton("Адекватно", callback_data="adequate"))

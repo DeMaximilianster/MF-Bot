@@ -2,12 +2,11 @@ from presenter.config.token import bot
 from view.output import reply, answer_callback
 from presenter.config.config_func import in_mf, cooldown, person_analyze, rank_required, rank_superiority, \
     appointment_required, int_check
-from presenter.config.config_var import where_keyboard
 from presenter.logic.elite import elite
 from presenter.logic.boss_commands import ban, deleter_mode, promotion, demotion, add_chat, warn, unwarn, \
     message_change, money_pay
 from presenter.logic.complicated_commands import adequate, inadequate, response, insult, non_ironic, ironic, \
-    place_here, mv, av, add_vote
+    place_here, mv, av, add_vote, vote
 from presenter.logic.reactions import deleter, new_member, left_member
 from presenter.logic.standart_commands import helper, send_drakken, send_me, send_meme, minet, show_id, \
     all_members, money_give, money_top, language_getter, month_set, day_set, birthday, admins, chat_check, \
@@ -77,7 +76,7 @@ def warn_handler(message):
     elif not int_check(message.text.split()[-1], positive=True) and len(message.text.split()) > 1:
         reply(message, "Последнее слово должно быть положительным числом, сколько варнов даём")
     elif in_mf(message, 'boss_commands', False) and appointment_required(message, "Admin") \
-            and rank_superiority(message, rep.from_user.id):
+            and rank_superiority(message, rep.from_user):
         warn(message, rep.from_user.id)
 
 
@@ -227,8 +226,8 @@ def ironic_handler(call):
 def vote_handler(message):
     """Генерирует голосовашку"""
     log.log_print(f"{__name__} invoked")
-    if in_mf(message, 'boss_commands', False) and appointment_required(message, "Admin"):
-        reply(message, 'А запостить куда?', reply_markup=where_keyboard)
+    if in_mf(message, 'standart_commands'):
+        vote(message)
 
 
 @bot.callback_query_handler(func=lambda call: 'here' in call.data or 'nedostream' in call.data)

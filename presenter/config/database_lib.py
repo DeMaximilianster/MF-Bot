@@ -73,7 +73,7 @@ class Database:
             sql = """
             INSERT INTO {}
             VALUES {}
-            """.format(table, values)
+            """.format(table, tuple(map(str, values)))
             log.log_print("[SQL]: "+sql)
             self.cursor.execute(sql)
         except Exception as e:

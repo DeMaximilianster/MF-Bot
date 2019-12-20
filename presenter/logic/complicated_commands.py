@@ -1,13 +1,14 @@
 # -*- coding: utf-8 -*-
 from presenter.config.config_func import update_adapt_vote, update_multi_vote, create_adapt_vote, create_vote, \
-    create_multi_vote
+    create_multi_vote, appointment_required
 from presenter.config.config_var import test_keyboard, ironic_keyboard,  \
      vote_keyboard, admin_place
+from presenter.config.database_lib import Database
 from presenter.config.files_paths import multi_votes_file, adapt_votes_file, votes_file
 from view.output import edit_markup, answer_inline, reply, answer_callback, edit_text, delete, send
 from presenter.config.log import Loger, log_to
 
-from telebot.types import InlineQueryResultArticle, InputTextMessageContent
+from telebot.types import InlineQueryResultArticle, InputTextMessageContent, InlineKeyboardButton, InlineKeyboardMarkup
 from time import time
 
 log = Loger(log_to)
@@ -68,7 +69,7 @@ def non_ironic(call):
     # Проверка, нажал ли на кнопку не тот, кто нужен
     edit_text("Неиронично!", call.message.chat.id, call.message.message_id)
     # TODO добавить сюда голосовашку
-    send(admin_place, "Если вы это читаете, то разработка авто-признавалки оскорблений проходит хорошо " +
+    send(admin_place(Database()), "Если вы это читаете, то разработка авто-признавалки оскорблений проходит хорошо " +
          "[Ссылка на инцидент](t.me/{}/{})".format(call.message.reply_to_message.chat.username,
                                                    call.message.reply_to_message.message_id),
          parse_mode="Markdown", disable_web_page_preview=True)
@@ -210,6 +211,18 @@ def add_vote(call):
     edit_text(text=text, chat_id=call.message.chat.id, message_id=call.message.message_id,
               reply_markup=reply_markup, parse_mode="Markdown")
     answer_callback(call.id, text="Жмак учтён!")
+
+
+def vote(message):
+    log.log_print(f'{__name__} invoked')
+    where_keyboard = InlineKeyboardMarkup()
+    where_keyboard.row_width = 1
+    where_keyboard.add(InlineKeyboardButton("Сюда", callback_data="here"))
+    if appointment_required(message, 'Admin', loud=False):
+        where_keyboard.add(InlineKeyboardButton("На канал голосовашек", callback_data="there"))
+    if appointment_required(message, 'Content-maker', loud=False):
+        where_keyboard.add(InlineKeyboardButton("На канал недостримов", callback_data="nedostream"))
+    reply(message, "А запостить куда?", reply_markup=where_keyboard)
 
 
 # TODO Голосовашки только для граждан
