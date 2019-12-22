@@ -98,6 +98,14 @@ def kick(chat_id, user_id, until_date=None):
         log.log_print(e)
 
 
+def unban(chat_id, user_id):
+    """Unban member"""
+    log.log_print(f"{__name__} invoked")
+    try:
+        return bot.unban_chat_member(chat_id, user_id)
+    except Exception as e:
+        log.log_print(e)
+
 def promote(chat_id, user_id, can_change_info=False, can_post_messages=False, can_edit_messages=False,
             can_delete_messages=False, can_invite_users=False, can_restrict_members=False, can_pin_messages=False,
             can_promote_members=False):

@@ -407,3 +407,13 @@ def update_adapt_vote(vote_id):
         edit_text(text=text, chat_id=votey['chat'], message_id=vote_id, reply_markup=keyboard, parse_mode="Markdown")
     except Exception as e:
         print(e)
+
+
+def unban_user(person):
+    """Remove ban from user"""
+    log.log_print(f"{__name__} invoked")
+    database = Database()
+    chats_to_unban = database.get_many('chats', ('violators_ban', 2))
+    for chat in chats_to_unban:
+        unban(chat[0], person.id)
+

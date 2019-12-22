@@ -21,7 +21,7 @@ def admin_place(database):
 def chat_list(database):  # TODO Сделать приличную чатоискалку
     """Список всех МФ2-чатов, кроме Админосостава и Комитета"""
     log.log_print(f"{__name__} invoked")
-    ch_list = database.get_many('chats', ('boss_commands', 2), ('violators_ban', 2), ('admins_promoted', 2))
+    ch_list = database.get_many('chats', ('boss_commands', 2), ('violators_ban', 2), ('admins_promote', 2))
     return ch_list
 
 

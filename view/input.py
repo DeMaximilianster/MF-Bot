@@ -3,7 +3,7 @@ from view.output import reply, answer_callback
 from presenter.config.config_func import in_mf, cooldown, person_analyze, rank_required, rank_superiority, \
     appointment_required, int_check
 from presenter.logic.elite import elite
-from presenter.logic.boss_commands import ban, deleter_mode, promotion, demotion, add_chat, warn, unwarn, \
+from presenter.logic.boss_commands import ban, deleter_mode, promotion, set_guest, add_chat, warn, unwarn, \
     message_change, money_pay
 from presenter.logic.complicated_commands import adequate, inadequate, response, insult, non_ironic, ironic, \
     place_here, mv, av, add_vote, vote
@@ -128,13 +128,13 @@ def promotion_handler(message):
 
 
 @bot.message_handler(commands=['guest'])
-def demotion_handler(message):
-    """Забирает у человека админку"""
+def set_guest_handler(message):
+    """Sets person's rank to guest"""
     log.log_print(f"{__name__} invoked")
     person = person_analyze(message)
     if in_mf(message, 'boss_commands', False) and rank_required(message, "The Committee Member") \
             and person and rank_superiority(message, person):
-        demotion(message, person)
+        set_guest(message, person)
 
 
 @bot.message_handler(commands=['messages'])
@@ -327,7 +327,7 @@ def send_me_handler(message):
     """Присылает человеку его запись в БД"""
     log.log_print(f"{__name__} invoked")
     person = person_analyze(message, to_self=True)
-    if in_mf(message, command_type=None):
+    if in_mf(message, command_type=None) and person:
         send_me(message, person)
 
 

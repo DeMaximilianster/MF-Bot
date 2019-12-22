@@ -2,12 +2,12 @@
 from presenter.config.database_lib import Database
 from presenter.config.config_var import full_chat_list, channel_list, bot_id, admin_place, chat_list
 from presenter.config.log import Loger, log_to
+from presenter.config.config_func import unban_user
 from view.output import kick, reply, promote, send, forward
 
 work = True
 log = Loger(log_to)
 
-# TODO функция unwarn
 # TODO команда /kick, кикает и сразу разбанивает
 
 # TODO команда для делания гражданином, высшим гражданином
@@ -75,11 +75,10 @@ def unwarn(message, person):
     database.change(value, 'warns', 'members', ('id', person.id))
     reply(message, "Варн(ы) снят(ы). Теперь их {}".format(value))
     if value < 3:
-        pass  # TODO команда /unban
+        set_guest(message, person)
     del database
 
 
-# TODO команда /kick, которая даёт бан и сразу его снимает
 def ban(message, person):
     """Даёт участнику бан"""
     log.log_print("ban invoked")
@@ -174,8 +173,8 @@ def promotion(message, person):
     del database
 
 
-def demotion(message, person):
-    """Забирает у человека админку"""
+def set_guest(message, person):
+    """Sets person's rank to guest"""
     log.log_print("demotion invoked")
     database = Database()
     database.change("Guest", "rank", 'members', ('id', person.id))
@@ -186,6 +185,7 @@ def demotion(message, person):
                 can_restrict_members=False, can_pin_messages=False, can_promote_members=False)
     for channel in channel_list(database):
         promote(channel[0], person.id, can_post_messages=False, can_invite_users=False)
+    unban_user(person)
     reply(message, "Теперь это гость!")
     del database
 
