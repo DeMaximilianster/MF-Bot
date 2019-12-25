@@ -11,19 +11,18 @@ def deleter(message):
     log.log_print("deleter invoked")
     database = Database()
     # Получаем из БД переменную, отвечающую за работу это функции
-    delete_mode = database.get('config', ('var', 'delete'))[1]
+    delete_mode = database.get('config', ('var', 'delete'))['value']
     del database
     if not delete_mode:
         return None
     if time_replace(message.date)[1] >= 22 or time_replace(message.date)[1] < 8:  # Время, когда надо удалять
         database = Database()
-        rank = database.get('messages', ('id', message.from_user.id))[3]
+        rank = database.get('members', ('id', message.from_user.id))['rank']
         if rank == 'Guest':
             # TODO бот делает это предупреждение не чаще раза в 24 часа на человека
-
-            #  ans = "Э, нет, в такое время медиа нельзя присылать гостям чата. "
-            #  ans += "Если вы не гость, то обратитесь к Дэ'Максу"
-            #  bot.send_message(message.chat.id, ans)
+            ans = "Э, нет, в такое время медиа нельзя присылать гостям чата. "
+            ans += "Если вы не гость, то обратитесь к Дэ'Максу"
+            send(message.chat.id, ans)
             delete(message.chat.id, message.message_id)
 
 
@@ -33,18 +32,17 @@ def new_member(message):
     database = Database()
     member = message.new_chat_members[0]
     answer = ''
-    rank = database.get('members', ('id', member.id))[3]  # Получаем его звание
+
     if member.is_bot:
         send(message.chat.id, "Ещё один бот, вряд-ли более умный, чем я")
-    if rank == "Violator":
+    if database.get('members', ('id', member.id), ('rank', 'Violator')):
         kick(message.chat.id, member.id)
-    # TODO Тут должна быть должность Админ, а не эти звания
-    elif rank == "Админ" or rank == "Член Комитета":
+    elif database.get('appointments', ('id', member.id), ('appointment', 'Admin')):
         promote(message.chat.id, member.id,
                 can_change_info=False, can_delete_messages=True, can_invite_users=True,
                 can_restrict_members=True, can_pin_messages=True, can_promote_members=False)
         answer += "О, добро пожаловать, держи админку"
-    elif rank == "Deputy":
+    elif database.get('members', ('id', member.id), ('rank', 'Deputy')):
         promote(message.chat.id, member.id,
                 can_change_info=True, can_delete_messages=True, can_invite_users=True,
                 can_restrict_members=True, can_pin_messages=True, can_promote_members=True)
@@ -57,7 +55,6 @@ def new_member(message):
     person = message.new_chat_members[0]
     send(381279599, '{} (@{}) [{}] теперь в {}'.format(person.first_name, person.username, person.id,
                                                        message.chat.title))
-    print('{} ({}) [{}] теперь в {}'.format(person.first_name, person.username, person.id, message.chat.title))
 
 
 def left_member(message):
@@ -72,4 +69,3 @@ def left_member(message):
     # Держим Дэ'Макса в курсе происходящего
     send(381279599, '{} (@{}) [{}] теперь не в {}'.format(person.first_name, person.username, person.id,
                                                           message.chat.title))
-    print('{} ({}) [{}] теперь не в {}'.format(person.first_name, person.username, person.id, message.chat.title))

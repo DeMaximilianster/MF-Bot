@@ -13,16 +13,23 @@ def analyze(event=None):
     print(event)
     search = entry.get()
     text.delete(1.0, END)
+    counter = 0
     for FILE in files_list:
-        print('Анализирую {}'.format(FILE))
+        print(f'Analyzing {FILE}')
         with open(FILE, encoding='utf-8') as f:
             string = 1
             for line in f:
                 if search in line:
-                    text.insert(END, 'Файл: {}\n'.format(FILE))
+                    counter += 1
+                    text.insert(END, 'File: {}\n'.format(FILE))
                     text.insert(END, 'Строка: {}\n'.format(string))
-                    text.insert(END, line+'\n')
-                string += 1
+                    try:
+                        text.insert(END, line+'\n')
+                    except Exception as e:
+                        print(e)
+                        text.insert(END, 'This line is not available')
+                string += 1         
+    label['text'] = "{} items are found".format(counter)            
 
 
 files_list = []
@@ -43,6 +50,7 @@ root = Tk()
 
 entry = Entry(root)
 button = Button(root, text='Анализировать', command=analyze)
+label = Label(root)
 frame = Frame()
 text = Text(frame, wrap=WORD)
 scrollbar = Scrollbar(frame, command=text.yview)
@@ -51,6 +59,7 @@ entry.bind('<Return>', analyze)
 
 entry.pack()
 button.pack()
+label.pack()
 frame.pack()
 text.pack(side=LEFT)
 scrollbar.pack(side=RIGHT, fill=Y)

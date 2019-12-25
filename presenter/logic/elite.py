@@ -12,14 +12,15 @@ def ask_question(message, question):
     """Задаём вопрос"""
     log.log_print("ask_question invoked")
     database = Database()
-    ask = database.get('basic_logic_tested', ('id', message.from_user.id))[question]  # Получаем вопрос
+    ask = database.get('basic_logic_tested', ('id', message.from_user.id))[f'question_{question}']  # Получаем вопрос
     note = database.get('basic_logic', ('text', ask))  # Получаем полную инфу о вопросе
-    answers = note[2:]  # Получаем варианты ответов на вопрос
+    # Получаем варианты ответов на вопрос
+    answers = [note['right'], note['wrong_1'], note['wrong_2']]
     answers = shuffle(answers)  # Перемешиваем ответы
     markup = ReplyKeyboardMarkup(row_width=3)  # Создаём клавиатуру для ответов
     for i in answers:  # Заполняем клавиатуру кнопками
         markup.add(i)
-    sent = send(message.from_user.id, note[1], reply_markup=markup)  # Отправляем сообщение
+    sent = send(message.from_user.id, note['text'], reply_markup=markup)  # Отправляем сообщение
     register_handler(sent, check, question)  # Следующее сообщение будет проверяться, как ответ на вопрос
 
 
@@ -29,10 +30,10 @@ def submit(message):  # TODO возможность отменить свои о
     database = Database()
     markup = ReplyKeyboardRemove(selective=False)  # убираем клаву
     success = 0  # Переменная для подсчёта правильных ответов
-    answers = database.get('basic_logic_tested', ('id', message.from_user.id))[7:13]
     person = message.from_user
-    for i in range(6):
-        if database.get('basic_logic', ('right', answers[i])):
+    for i in range(1, 7):
+        if database.get('basic_logic', ('right', database.get('basic_logic_tested',
+                                                              ('id', message.from_user.id))[f'answer_{i}'])):
             success += 1
     # TODO записывать время прохождения
     # TODO В некоторые вопросы и ответы теста добавить капс лок
@@ -76,13 +77,13 @@ def elite(message):  # TODO Привести эти команды в поряд
         all_questions = list(range(1, 31))
         for i in range(6):
             question = choice(all_questions)
-            value = database.get('basic_logic', ('id', question))[1]
+            value = database.get('basic_logic', ('id', question))['text']
             print(value)
             database.change(value, f'question_{i+1}', 'basic_logic_tested', ('id', message.from_user.id))
             all_questions.remove(question)
-    for i in range(7, 13):
-        if database.get('basic_logic_tested', ('id', message.from_user.id))[i] == "None":
-            ask_question(message, i - 6)
+    for i in range(1, 7):
+        if database.get('basic_logic_tested', ('id', message.from_user.id))[f'answer_{i}'] == "None":
+            ask_question(message, i)
             del database
             break
     else:

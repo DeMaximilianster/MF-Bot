@@ -138,20 +138,22 @@ def send_me(message, person):
     database = Database()
     member_update(person)  # Update person's messages, nickname and username
     p = database.get('members', ('id', person.id))
-    appointments = [x[1] for x in database.get_many('appointments', ('id', person.id))]
+    print(p)
+    appointments = [x['appointment'] for x in database.get_many('appointments', ('id', person.id))]
     if database.get('messages', ('person_id', person.id), ('chat_id', message.chat.id)):
-        messages_here = database.get('messages', ('person_id', person.id), ('chat_id', message.chat.id))[2]
+        messages_here = database.get('messages', ('person_id', person.id), ('chat_id', message.chat.id))['messages']
     else:
         messages_here = 0
-    msg = 'ID: {}\n'.format(p[0])
-    msg += 'Юзернейм: {}\n'.format(p[1])
-    msg += 'Никнейм: {}\n'.format(p[2])
-    msg += 'Ранг: {}\n'.format(p[3])
+    msg = 'ID: {}\n'.format(p['id'])
+    msg += 'Юзернейм: {}\n'.format(p['username'])
+    msg += 'Никнейм: {}\n'.format(p['nickname'])
+    msg += 'Ранг: {}\n'.format(p['rank'])
     msg += 'Кол-во сообщений в этом чате: {}\n'.format(messages_here)
-    msg += 'Кол-во сообщений во всём МФ2: {}\n'.format(p[4])
-    msg += 'Кол-во предупреждений: {}\n'.format(p[5])
-    msg += 'Кол-во ябломилианов: {}\n'.format(p[6])
-    msg += 'Должности: ' + ', '.join(appointments)
+    msg += 'Кол-во сообщений во всём МФ2: {}\n'.format(p['messages'])
+    msg += 'Кол-во предупреждений: {}\n'.format(p['warns'])
+    msg += 'Кол-во ябломилианов: {}\n'.format(p['money'])
+    if appointments:
+        msg += 'Должности: ' + ', '.join(appointments)
     reply(message, msg)
 
 
@@ -169,8 +171,9 @@ def all_members(message):
         one_message_list = members[50 * (fifty - 1): 50 * fifty]
         answer = ''
         for member in one_message_list:
-            username = "[{}](tg://user?id={})".format(member[2].replace('[', '').replace(']', ''), member[0])
-            answer += '`' + str(member[0]) + '` ' + username + '\n'
+            username = "[{}](tg://user?id={})".format(member['nickname'].replace('[', '').replace(']', ''),
+                                                      member['id'])
+            answer += '`' + str(member['id']) + '` ' + username + '\n'
         sent = send(message.from_user.id, answer, parse_mode='Markdown')
     if sent:
         reply(message, "Выслал БД в личку")
@@ -186,8 +189,8 @@ def money_give(message, person):
     getter = person.id
     giver = message.from_user.id
     money = message.text.split()[-1]
-    value_getter = database.get('members', ('id', getter))[6]
-    value_giver = database.get('members', ('id', giver))[6]
+    value_getter = database.get('members', ('id', getter))['money']
+    value_giver = database.get('members', ('id', giver))['money']
     if money[0] == '-':
         reply(message, "Я вам запрещаю воровать")
     elif money == "0":
@@ -224,13 +227,14 @@ def money_give(message, person):
 def money_top(message):
     log.log_print(f"{__name__} invoked")
     database = Database()
-    bot_money = database.get('members', ('id', bot_id))[6]
+    bot_money = database.get('members', ('id', bot_id))['money']
     people = list(database.get_all("members", 'money'))
-    people = filter(lambda x: x[6] != 0 and x[0] != bot_id, people)
+    people = filter(lambda x: x['money'] != 0 and x['id'] != bot_id, people)
     i = 1
     text = "Бюджет: {} 🍎\n".format(bot_money)
     for person in people:
-        text += "\n{}. <a href='t.me/{}'>{}</a> — {} 🍎".format(i, person[1], person[2], person[6])
+        print(person)
+        text += "\n{}. <a href='t.me/{}'>{}</a> — {} 🍎".format(i, person['username'], person['nickname'], person['money'])
         i += 1
     reply(message, text, parse_mode='HTML', disable_web_page_preview=True)
 
@@ -247,7 +251,7 @@ def day_set(message, day):
     log.log_print(f"{__name__} invoked")
     days = (31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31)
     database = Database()
-    month = database.get('members', ('id', message.from_user.id))[7]
+    month = database.get('members', ('id', message.from_user.id))['month_birthday']
     lang = language_analyzer(message, only_one=True)
     if not month:
         reply(message, "Сначала поставь месяц рождения")
@@ -265,7 +269,7 @@ def birthday(message):
     database = Database()
     people = list(database.get_all("members", "month_birthday", how_sort='ASC'))
     # TODO Better sorting algorithm
-    people = filter(lambda x: x[7] and x[8], people)
+    people = filter(lambda x: x['month_birthday'] and x['day_birthday'], people)
     lang = language_analyzer(message, only_one=True)
     i = 1
     text = ""
@@ -278,8 +282,8 @@ def birthday(message):
 
 def admins(message):
     database = Database()
-    admins_id = [admin[0] for admin in database.get_many('appointments', ('appointment', 'Admin'))]
-    admins_username = ['@' + database.get('members', ('id', admin))[1] for admin in admins_id]
+    admins_id = [admin['id'] for admin in database.get_many('appointments', ('appointment', 'Admin'))]
+    admins_username = ['@' + database.get('members', ('id', admin))['username'] for admin in admins_id]
     reply(message, 'Вызываю сюда админов: ' + ', '.join(admins_username))
 
 
@@ -288,8 +292,8 @@ def chats(message):
     chats_list = database.get_many('chats', ('type', 'public'))
 
     # Получаем имена и ссылки нужных нам чатиков
-    chats_names = [chat_name[1] for chat_name in chats_list]
-    chats_links = ['@' + chat_link[4] for chat_link in chats_list]
+    chats_names = [chat['name'] for chat in chats_list]
+    chats_links = ['@' + chat['link'] for chat in chats_list]
 
     # Генерируем текст для отображение имен и ссылок вместе
     text = '\n'.join([f'{key}: {value}' for key, value in zip(chats_names, chats_links)])
@@ -308,7 +312,7 @@ def chat_check(message):
         database.change('None', 'link', 'chats', ('id', message.chat.id))
     chat = database.get('chats', ('id', message.chat.id))
     properties = ['id', 'name', 'purpose', 'type', 'link', 'standart_commands', 'boss_commands', 'financial_commands']
-    properties += ['mutual_invites', 'messages_count', 'violators_ban', 'admins_promoted']
+    properties += ['mutual_invites', 'messages_count', 'violators_ban', 'admins_promote']
     props = dict()
     props['Russian'] = ['Стандартные команды', 'Админские команды', 'Денежные команды', 'Ссылка учитывается',
                         'Сообщения считаются', 'Нарушители банятся', 'Админы получают админку']
@@ -316,10 +320,10 @@ def chat_check(message):
                         'Invites links', 'Messages are count for citizenship',
                         'MF2 violators are automatically banned', 'MF2 admins are automatically promoted']
     text = ''
-    for i in zip(props[lang], chat[5:]):
-        if i[1]:
+    for i in properties[5:]:
+        if chat[i]:
             mark = '❌'
-            if i[1] == 2:
+            if chat[i] == 2:
                 mark = '✅'
-            text += f'{i[0]}:  {mark}\n\n'
+            text += f'{i}:  {mark}\n\n'
     reply(message, text)

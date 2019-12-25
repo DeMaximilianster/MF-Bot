@@ -15,7 +15,7 @@ months = ['No Month', january, february, march, april, may, june, july, august, 
 
 def admin_place(database):
     log.log_print(f"{__name__} invoked")
-    return database.get('chats', ('purpose', "Админосостав"))[0]
+    return database.get('chats', ('purpose', "Админосостав"))['id']
 
 
 def chat_list(database):  # TODO Сделать приличную чатоискалку

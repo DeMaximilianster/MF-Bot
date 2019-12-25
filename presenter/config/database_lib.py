@@ -12,6 +12,7 @@ class Database:
         """Подключается к базе данных"""
         log.log_print("Init database")
         self.connection = sqlite3.connect(database_file)
+        self.connection.row_factory = sqlite3.Row
         self.cursor = self.connection.cursor()
 
     def __del__(self):
@@ -20,7 +21,7 @@ class Database:
         self.connection.close()  # Закрываем БД
 
     def get(self, table, *column_value):
-        """Получает запись из БД"""
+        """Read one entry in one table of the database"""
         sql = f"SELECT * FROM {table} WHERE "
         reqs = []
         for value in column_value:
@@ -29,10 +30,12 @@ class Database:
         sql += " AND ".join(reqs)
         log.log_print("[SQL]: " + sql)
         self.cursor.execute(sql)
-        return self.cursor.fetchone()
+        row = self.cursor.fetchone()
+        if row:
+            return dict(zip([c[0] for c in self.cursor.description], row))
 
     def get_many(self, table, *column_value):
-        """Читает несколько записей в базе данных"""
+        """Read several entries in one table of the database"""
         sql = f"SELECT * FROM {table} WHERE "
         reqs = []
         for value in column_value:
@@ -41,15 +44,19 @@ class Database:
         sql += " AND ".join(reqs)
         log.log_print("[SQL]: " + sql)
         self.cursor.execute(sql)
-        return self.cursor.fetchall()
+        rows = self.cursor.fetchall()
+        if rows:
+            return [dict(zip([c[0] for c in self.cursor.description], row)) for row in rows]
+        else:
+            return []
 
     def get_all(self, table, order_by='id', how_sort='DESC'):  # how_sort can be equal to ASC
-        """Читает все записи в одной таблице базы данных"""
+        """Read all entries in one table of the database"""
         sql = "SELECT rowid, * FROM {} ORDER BY {} {}".format(table, order_by, how_sort)
         log.log_print("[SQL]: "+sql)
         all_list = []
         for element in self.cursor.execute(sql):
-            all_list.append(element[1:])  # Первый элемент это бесполезный номер
+            all_list.append(dict(zip([c[0] for c in self.cursor.description], element)))
         return all_list
 
     def change(self, set_what, set_where, table, *column_value):
@@ -81,4 +88,3 @@ class Database:
         self.connection.commit()  # Сохраняем изменения
 
 # TODO Удаление одной записи
-# TODO Getters return as dictionary

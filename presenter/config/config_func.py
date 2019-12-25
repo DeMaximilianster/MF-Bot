@@ -31,9 +31,9 @@ def language_analyzer(message, only_one):
     del database
     if entry:
         if only_one:
-            return entry[1]
+            return entry['language']
         else:
-            languages[entry[1]] = True
+            languages[entry['language']] = True
             return languages
     else:
         russian = set("ёйцукенгшщзхъфывапролджэячсмитьбюЁЙЦУКЕНГШЩЗХЪФЫВАПРОЛДЖЭЯЧСМИТЬБЮ")
@@ -132,8 +132,8 @@ def person_analyze(message, to_self=False, to_bot=False):
 def rank_superiority(message, person):
     log.log_print("rank superiority invoked")
     database = Database()
-    your_rank = database.get('members', ('id', message.from_user.id))[3]
-    their_rank = database.get('members', ('id', person.id))[3]
+    your_rank = database.get('members', ('id', message.from_user.id))['rank']
+    their_rank = database.get('members', ('id', person.id))['rank']
     del database
     your_rank_n = roles.index(your_rank)
     their_rank_n = roles.index(their_rank)
@@ -147,7 +147,7 @@ def rank_superiority(message, person):
 def rank_required(message, min_rank, loud=True):
     log.log_print("rank_required invoked from userID {}".format(message.from_user.id))
     database = Database()
-    your_rank = database.get('members', ('id', message.from_user.id))[3]
+    your_rank = database.get('members', ('id', message.from_user.id))['rank']
     your_rank_n = roles.index(your_rank)
     min_rank_n = roles.index(min_rank)
     if your_rank_n < min_rank_n and loud:
@@ -180,7 +180,7 @@ def cooldown(message, command, timeout=3600):
         del database
         return True
     # Чел уже пользовался командой
-    time_passed = message.date - entry[3]
+    time_passed = message.date - entry['time']
     if time_passed < timeout:  # Кулдаун не прошёл
         seconds = timeout - time_passed
         minutes = seconds//60
@@ -228,9 +228,9 @@ def in_mf(message, command_type, or_private=True, loud=True):
             reply(message, "Эта команда отключена в ЛС")
         return or_private
     if not database.get('chats', ('id', message.chat.id)) and \
-            get_member(message.chat.id, database.get('members', ('rank', 'Leader'))).status in ['member',
-                                                                                                'administrator',
-                                                                                                'creator']:
+            get_member(message.chat.id, database.get('members', ('rank', 'Leader'))['id']).status in ['member',
+                                                                                                      'administrator',
+                                                                                                      'creator']:
         typee = 'private'
         link = 'None'
         if message.chat.username:
@@ -274,7 +274,7 @@ def counter(message):
         person = message.from_user
     if not database.get('messages', ('person_id', person.id), ('chat_id', message.chat.id)):
         database.append((person.id, message.chat.id, 0), 'messages')
-    value = database.get('messages', ('person_id', person.id), ('chat_id', message.chat.id))[2] + 1
+    value = database.get('messages', ('person_id', person.id), ('chat_id', message.chat.id))['messages'] + 1
     database.change(value, 'messages', 'messages', ('person_id', person.id), ('chat_id', message.chat.id))
     # TODO Добавить время последнего сообщения и элитократические взаимодействия с ним
     del database
@@ -282,11 +282,11 @@ def counter(message):
 
 def member_update(person):
     database = Database()
-    chats_ids = [x[0] for x in database.get_many('chats', ('messages_count', 2))]
+    chats_ids = [x['id'] for x in database.get_many('chats', ('messages_count', 2))]
     msg_count = 0
     for chat_id in chats_ids:
         if database.get('messages', ('person_id', person.id), ('chat_id', chat_id)):
-            msg_count += database.get('messages', ('person_id', person.id), ('chat_id', chat_id))[2]
+            msg_count += database.get('messages', ('person_id', person.id), ('chat_id', chat_id))['messages']
     database.change(person.username, 'username', 'members', ('id', person.id))
     database.change(person.first_name, 'nickname', 'members', ('id', person.id))
     database.change(msg_count, 'messages', 'members', ('id', person.id))
@@ -415,5 +415,6 @@ def unban_user(person):
     database = Database()
     chats_to_unban = database.get_many('chats', ('violators_ban', 2))
     for chat in chats_to_unban:
-        unban(chat[0], person.id)
+        if get_member(chat['id'], person.id).status in ('left', 'kicked'):
+            unban(chat['id'], person.id)
 

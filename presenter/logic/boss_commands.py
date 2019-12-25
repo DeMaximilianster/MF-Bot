@@ -44,10 +44,10 @@ def warn(message, person):
     if warns == 0:
         reply(message, "Я вам запрещаю делать подобные бессмысленные запросы")
         return None
-    value = database.get('members', ('id', person.id))[5] + warns
+    value = database.get('members', ('id', person.id))['warns'] + warns
     database.change(value, 'warns', 'members', ('id', person.id))
     reply(message, "Варн(ы) выдан(ы). Теперь их {}".format(value))
-    blowout = database.get('channels', ('name', 'Проколы'))[0]
+    blowout = database.get('channels', ('name', 'Проколы'))['id']
     how_many = 20  # Сколько пересылает сообщений
     end_forwarding = message.reply_to_message.message_id
     start_forwarding = end_forwarding - how_many
@@ -71,7 +71,7 @@ def unwarn(message, person):
     if unwarns == 0:
         reply(message, "Я вам запрещаю делать подобные бессмысленные запросы")
         return None
-    value = database.get('members', ('id', person.id))[5] - unwarns
+    value = database.get('members', ('id', person.id))['warns'] - unwarns
     database.change(value, 'warns', 'members', ('id', person.id))
     reply(message, "Варн(ы) снят(ы). Теперь их {}".format(value))
     if value < 3:
@@ -83,7 +83,7 @@ def ban(message, person):
     """Даёт участнику бан"""
     log.log_print("ban invoked")
     database = Database()
-    blowout = database.get('channels', ('name', 'Проколы'))[0]
+    blowout = database.get('channels', ('name', 'Проколы'))['id']
     how_many = 10  # Сколько пересылает сообщений
     end_forwarding = message.reply_to_message.message_id
     start_forwarding = end_forwarding - how_many
@@ -94,9 +94,9 @@ def ban(message, person):
     send(message.chat.id, "Ну всё, этому челику жопа")
     database.change('Violator', 'rank', 'members', ('id', person.id))
     for chat in full_chat_list(database):
-        kick(chat[0], person.id)
+        kick(chat['id'], person.id)
     for channel in channel_list(database):
-        kick(channel[0], person.id)
+        kick(channel['id'], person.id)
     del database
 
 
@@ -106,10 +106,10 @@ def money_pay(message, person):
     # TODO add nice link's to people instead of id's
     log.log_print(f"money pay invoked to person {person.id}")
     database = Database()
-    bot_money = database.get('members', ('id', bot_id))[6]
+    bot_money = database.get('members', ('id', bot_id))['money']
     p_id = person.id
     money = message.text.split()[-1]
-    value = database.get('members', ('id', p_id))[6]
+    value = database.get('members', ('id', p_id))['money']
     if money == "0":
         reply(message, "Я вам запрещаю делать подобные бессмысленные запросы")
     elif money[0] == '-':
@@ -175,16 +175,16 @@ def promotion(message, person):
 
 def set_guest(message, person):
     """Sets person's rank to guest"""
-    log.log_print("demotion invoked")
+    log.log_print(f"{__name__} invoked")
     database = Database()
     database.change("Guest", "rank", 'members', ('id', person.id))
     # Забрать у чела админку во всех чатах, кроме Комитета и Админосостава
     for chat in chat_list(database):
-        promote(chat[0], person.id,
+        promote(chat['id'], person.id,
                 can_change_info=False, can_delete_messages=False, can_invite_users=False,
                 can_restrict_members=False, can_pin_messages=False, can_promote_members=False)
     for channel in channel_list(database):
-        promote(channel[0], person.id, can_post_messages=False, can_invite_users=False)
+        promote(channel['id'], person.id, can_post_messages=False, can_invite_users=False)
     unban_user(person)
     reply(message, "Теперь это гость!")
     del database
@@ -210,7 +210,7 @@ def deleter_mode(message):
     """Удалять медиа или нет"""
     log.log_print("deleter_mode invoked")
     database = Database()
-    delete = int(database.get('config', ('var', 'delete'))[1])
+    delete = int(database.get('config', ('var', 'delete'))['value'])
     delete = (delete + 1) % 2  # Переводит 0 в 1, а 1 в 0
     database.change(delete, 'value', 'config', ('var', 'delete'))
     del database

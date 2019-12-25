@@ -122,7 +122,7 @@ def promotion_handler(message):
     """Назначает человека админом"""
     log.log_print(f"{__name__} invoked")
     person = person_analyze(message)
-    if in_mf(message, 'boss_commands', False) and rank_required(message, "The Committee Member") \
+    if in_mf(message, 'boss_commands') and rank_required(message, "The Committee Member") \
             and person and rank_superiority(message, person):
         promotion(message, person)
 
@@ -132,7 +132,7 @@ def set_guest_handler(message):
     """Sets person's rank to guest"""
     log.log_print(f"{__name__} invoked")
     person = person_analyze(message)
-    if in_mf(message, 'boss_commands', False) and rank_required(message, "The Committee Member") \
+    if in_mf(message, 'boss_commands') and rank_required(message, "The Committee Member") \
             and person and rank_superiority(message, person):
         set_guest(message, person)
 
