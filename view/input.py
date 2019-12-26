@@ -245,21 +245,24 @@ def place_here_handler(call):
 def mv_handler(call):
     """Обновляет мульти-голосовашку"""
     log.log_print(f"{__name__} invoked")
-    mv(call)
+    if rank_required(call, "Citizen"):
+        mv(call)
 
 
 @bot.callback_query_handler(func=lambda call: 'av_' in call.data)
 def av_handler(call):
     """Обновляет адапт-голосовашку"""
     log.log_print(f"{__name__} invoked")
-    av(call)
+    if rank_required(call, "Citizen"):
+        av(call)
 
 
 @bot.callback_query_handler(func=lambda call: call.data == 'favor' or call.data == 'against' or call.data == 'abstain')
 def add_vote_handler(call):
     """Вставляет голос в голосоовашку"""
     log.log_print(f"{__name__} invoked")
-    add_vote(call)
+    if rank_required(call, "Citizen"):
+        add_vote(call)
 
 
 '''Простые команды и старт'''

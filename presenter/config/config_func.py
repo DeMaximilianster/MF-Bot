@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 from presenter.config.database_lib import Database
-from telebot.types import InlineKeyboardButton, InlineKeyboardMarkup
+from telebot.types import InlineKeyboardButton, InlineKeyboardMarkup, CallbackQuery
 from presenter.config.files_paths import adapt_votes_file, multi_votes_file, votes_file
 from view.output import *
 from presenter.config.log import Loger
@@ -151,9 +151,13 @@ def rank_required(message, min_rank, loud=True):
     your_rank_n = roles.index(your_rank)
     min_rank_n = roles.index(min_rank)
     if your_rank_n < min_rank_n and loud:
-        reply(message, "Ваше звание ({}) не дотягивает до необходимого ({}) для данной команды"
-                       .format(your_rank, min_rank))
-    del database
+        if type(message) == CallbackQuery:
+            answer_callback(message.id,
+                            "Ваше звание ({}) не дотягивает до звания ({}) для голоса"
+                            .format(your_rank, min_rank))
+        else:
+            reply(message, "Ваше звание ({}) не дотягивает до необходимого ({}) для данной команды"
+                  .format(your_rank, min_rank))
     return your_rank_n >= min_rank_n
 
 
@@ -183,7 +187,7 @@ def cooldown(message, command, timeout=3600):
     time_passed = message.date - entry['time']
     if time_passed < timeout:  # Кулдаун не прошёл
         seconds = timeout - time_passed
-        minutes = seconds//60
+        minutes = seconds // 60
         seconds %= 60
         answer = "Воу, придержи коней, ковбой. Ты сможешь воспользоваться этой командой только "
         answer += "через {} минут и {} секунд 🤠".format(minutes, seconds)
@@ -192,18 +196,18 @@ def cooldown(message, command, timeout=3600):
         return False
     else:  # Кулдаун прошёл
         database.change(message.date, 'time', 'cooldown', ('person_id', message.from_user.id), ('command', command),
-                                      ('chat_id', message.chat.id))
+                        ('chat_id', message.chat.id))
         del database
         return True
 
 
 def time_replace(seconds):
-    seconds += 3*60*60
-    minutes = seconds//60
+    seconds += 3 * 60 * 60
+    minutes = seconds // 60
     seconds %= 60
-    hours = minutes//60
+    hours = minutes // 60
     minutes %= 60
-    days = hours//60
+    days = hours // 60
     hours %= 24
     return days, hours, minutes, seconds
 
@@ -224,7 +228,7 @@ def in_mf(message, command_type, or_private=True, loud=True):
         if loud and not or_private:
             person = message.from_user
             send(381279599, "Некто {} ({}) [{}] попыталcя использовать команду {} в личке"
-                            .format(person.first_name, person.username, person.id, message.text))
+                 .format(person.first_name, person.username, person.id, message.text))
             reply(message, "Эта команда отключена в ЛС")
         return or_private
     if not database.get('chats', ('id', message.chat.id)) and \
@@ -371,7 +375,7 @@ def update_multi_vote(vote_id):
     keyboard.row_width = 1
     keyboard.add(InlineKeyboardButton("Предложить вариант", url=url))
     for i in votey['keyboard']:
-        keyboard.add(InlineKeyboardButton(i, callback_data='mv_'+str(votey['keyboard'].index(i))))
+        keyboard.add(InlineKeyboardButton(i, callback_data='mv_' + str(votey['keyboard'].index(i))))
     # Меняем текст голосовашки
     text = votey["text"]
     for i in votey['votes']:
@@ -398,7 +402,7 @@ def update_adapt_vote(vote_id):
     keyboard.row_width = 1
     keyboard.add(InlineKeyboardButton("Предложить вариант", url=url))
     for i in votey['keyboard']:
-        keyboard.add(InlineKeyboardButton(i, callback_data='av_'+str(votey['keyboard'].index(i))))
+        keyboard.add(InlineKeyboardButton(i, callback_data='av_' + str(votey['keyboard'].index(i))))
     # Меняем текст голосовашки
     text = votey["text"]
     for i in votey['votes']:
