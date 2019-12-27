@@ -245,7 +245,7 @@ def place_here_handler(call):
 def mv_handler(call):
     """Обновляет мульти-голосовашку"""
     log.log_print(f"{__name__} invoked")
-    if rank_required(call, "Citizen"):
+    if call.chat_instance != "-8294084429973252853" or rank_required(call, "Citizen"):
         mv(call)
 
 
@@ -253,7 +253,7 @@ def mv_handler(call):
 def av_handler(call):
     """Обновляет адапт-голосовашку"""
     log.log_print(f"{__name__} invoked")
-    if rank_required(call, "Citizen"):
+    if call.chat_instance != "-8294084429973252853" or rank_required(call, "Citizen"):
         av(call)
 
 
@@ -261,7 +261,7 @@ def av_handler(call):
 def add_vote_handler(call):
     """Вставляет голос в голосоовашку"""
     log.log_print(f"{__name__} invoked")
-    if rank_required(call, "Citizen"):
+    if call.chat_instance != "-8294084429973252853" or rank_required(call, "Citizen"):
         add_vote(call)
 
 
