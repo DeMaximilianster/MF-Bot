@@ -13,6 +13,7 @@ from presenter.logic.standart_commands import helper, send_drakken, send_me, sen
     chats
 from presenter.logic.start import starter
 from presenter.config.log import Loger, log_to
+from requests import get
 
 log = Loger(log_to)
 
@@ -32,7 +33,10 @@ def new_member_handler(message):
     """Реагирует на вход в чат"""
     log.log_print(f"{__name__} invoked")
     if in_mf(message, command_type=None, or_private=False):
-        new_member(message)
+        if get(f"https://api.cas.chat/check?user_id={message.from_user.id}").json["ok"]:
+            ban(message)
+        else:
+            new_member(message)
 
 
 @bot.message_handler(content_types=['left_chat_member'])
