@@ -131,11 +131,11 @@ def answer_inline(inline_query_id, results, cache_time=None):
         log.log_print(e)
 
 
-def answer_callback(callback_query_id, text=None):
+def answer_callback(callback_query_id, text=None, show_alert=False):
     """Выдаёт инлайн-результат"""
     log.log_print("answer_callback invoked")
     try:
-        return bot.answer_callback_query(callback_query_id, text)
+        return bot.answer_callback_query(callback_query_id, text, show_alert)
     except Exception as e:
         log.log_print(e)
 

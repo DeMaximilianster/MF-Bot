@@ -150,11 +150,12 @@ def rank_required(message, min_rank, loud=True):
     your_rank = database.get('members', ('id', message.from_user.id))['rank']
     your_rank_n = roles.index(your_rank)
     min_rank_n = roles.index(min_rank)
+
     if your_rank_n < min_rank_n and loud:
         if type(message) == CallbackQuery:
             answer_callback(message.id,
                             "Ваше звание ({}) не дотягивает до звания ({}) для голоса"
-                            .format(your_rank, min_rank))
+                            .format(your_rank, min_rank), show_alert=True)
         else:
             reply(message, "Ваше звание ({}) не дотягивает до необходимого ({}) для данной команды"
                   .format(your_rank, min_rank))
@@ -421,4 +422,3 @@ def unban_user(person):
     for chat in chats_to_unban:
         if get_member(chat['id'], person.id).status in ('left', 'kicked'):
             unban(chat['id'], person.id)
-
