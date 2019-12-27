@@ -159,7 +159,7 @@ def rank_required(message, min_rank, loud=True):
         else:
             reply(message, "Ваше звание ({}) не дотягивает до необходимого ({}) для данной команды"
                   .format(your_rank, min_rank))
-    return your_rank_n >= min_rank_n
+        return your_rank_n >= min_rank_n
 
 
 def appointment_required(message, appointment, loud=True):
