@@ -85,7 +85,10 @@ def ban(message, person):
     database = Database()
     blowout = database.get('channels', ('name', 'Проколы'))['id']
     how_many = 10  # Сколько пересылает сообщений
-    end_forwarding = message.reply_to_message.message_id
+    target = message
+    if message.reply_to_message:
+        target = message.reply_to_message
+    end_forwarding = target.message_id
     start_forwarding = end_forwarding - how_many
     send(blowout, "В чате '{}' забанили участника {} (@{}) [{}]. Прысылаю {} сообщений".
          format(message.chat.title, person.first_name, person.username, person.id, how_many))
@@ -160,15 +163,17 @@ def promotion(message, person):
     """Назначает человека админом"""
     log.log_print("promotion invoked")
     database = Database()
+    # TODO При повторном использовании команды не должна появляться новая запись
     database.append((person.id, "Админ"), table='appointments')
     # TODO пусть бот шлёт админу ссылку на чат админосостава и меняет её при входе
     # Дать челу админку во всех чатах, кроме Комитета и Админосостава
     for chat in chat_list(database):
-        promote(chat[0], person.id,
-                can_change_info=False, can_delete_messages=True, can_invite_users=True,
+        promote(chat['id'], person.id,
+                can_change_info=True, can_delete_messages=True, can_invite_users=True,
                 can_restrict_members=True, can_pin_messages=True, can_promote_members=False)
     for channel in channel_list(database):
-        promote(channel[0], person.id, can_post_messages=True, can_invite_users=True)
+        print(channel)
+        promote(channel['id'], person.id, can_change_info=True, can_post_messages=True, can_invite_users=True)
     reply(message, "Теперь это админ!")
     del database
 

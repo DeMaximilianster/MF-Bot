@@ -37,7 +37,8 @@ def new_member(message):
         send(message.chat.id, "Ещё один бот, вряд-ли более умный, чем я")
     if database.get('members', ('id', member.id), ('rank', 'Violator')):
         kick(message.chat.id, member.id)
-    elif database.get('appointments', ('id', member.id), ('appointment', 'Admin')):
+    elif database.get('appointments', ('id', member.id), ('appointment', 'Admin'))\
+            and database.get('chats', ('id', message.chat.id), ('admins_promote', 2)):
         promote(message.chat.id, member.id,
                 can_change_info=False, can_delete_messages=True, can_invite_users=True,
                 can_restrict_members=True, can_pin_messages=True, can_promote_members=False)

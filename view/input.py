@@ -33,8 +33,11 @@ def new_member_handler(message):
     """Реагирует на вход в чат"""
     log.log_print(f"{__name__} invoked")
     if in_mf(message, command_type=None, or_private=False):
-        if get(f"https://api.cas.chat/check?user_id={message.from_user.id}").json["ok"]:
-            ban(message)
+        person = message.new_chat_members[0]
+        if get(f"https://api.cas.chat/check?user_id={person.id}").json()["ok"]:
+            # TODO Additional layer of anti-spam protection
+            # TODO Deletion of spammer's messages and bots' greeting to it
+            ban(message, person)
         else:
             new_member(message)
 
