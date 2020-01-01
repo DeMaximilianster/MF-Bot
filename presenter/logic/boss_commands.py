@@ -164,7 +164,7 @@ def give_admin(message, person):
     log.log_print("give_admin invoked")
     database = Database()
     # TODO При повторном использовании команды не должна появляться новая запись
-    database.append((person.id, "Админ"), table='appointments')
+    database.append((person.id, "Admin"), table='appointments')
     # TODO пусть бот шлёт админу ссылку на чат админосостава и меняет её при входе
     # Дать челу админку во всех чатах, кроме Комитета и Админосостава
     for chat in chat_list(database):
@@ -175,6 +175,20 @@ def give_admin(message, person):
         print(channel)
         promote(channel['id'], person.id, can_change_info=True, can_post_messages=True, can_invite_users=True)
     reply(message, "Теперь это админ!")
+    del database
+
+
+def del_admin(message, person):
+    log.log_print("del_admin invoked")
+    database = Database()
+    database.remove("appointments", ("appointment", "Admin"), ("id", person.id))
+    for chat in chat_list(database):
+        promote(chat['id'], person.id,
+                can_change_info=False, can_delete_messages=False, can_invite_users=False,
+                can_restrict_members=False, can_pin_messages=False, can_promote_members=False)
+    for channel in channel_list(database):
+        promote(channel['id'], person.id, can_post_messages=False, can_invite_users=False)
+    reply(message, "Теперь это не админ!")
     del database
 
 
