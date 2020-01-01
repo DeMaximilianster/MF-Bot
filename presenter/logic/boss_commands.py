@@ -203,7 +203,7 @@ def set_citizen(message, person):
     database.change("Citizen", "rank", 'members', ('id', person.id))
     unban_user(person)
     del_admin(message, person)
-    reply(message, "Теперь это гость!")
+    reply(message, "Теперь это гражданин!")
 
 
 def message_change(message, person):
