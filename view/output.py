@@ -66,7 +66,7 @@ def edit_markup(chat_id, message_id, reply_markup=None):
     """Отредактировать кнопки сообщения"""
     log.log_print("edit_markup invoked")
     try:
-        return bot.edit_message_reply_markup(chat_id, '❄ '+message_id+' ❄', reply_markup=reply_markup)
+        return bot.edit_message_reply_markup(chat_id, message_id, reply_markup=reply_markup)
     except Exception as e:
         log.log_print(e)
 
