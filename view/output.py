@@ -8,7 +8,7 @@ def send(chat_id, message_text, parse_mode=None, reply_markup=None, disable_web_
     """Отправить сообщение"""
     log.log_print("send invoked")
     try:
-        return bot.send_message(chat_id, '❄ '+message_text+' ❄', parse_mode=parse_mode, reply_markup=reply_markup,
+        return bot.send_message(chat_id, message_text, parse_mode=parse_mode, reply_markup=reply_markup,
                                 disable_web_page_preview=disable_web_page_preview)
     except Exception as e:
         log.log_print(e)
@@ -47,7 +47,7 @@ def reply(message, message_text, parse_mode=None, reply_markup=None, disable_web
     """Ответить на сообщение"""
     log.log_print("reply invoked")
     try:
-        return bot.reply_to(message, '❄ '+message_text+' ❄', parse_mode=parse_mode, reply_markup=reply_markup,
+        return bot.reply_to(message, message_text, parse_mode=parse_mode, reply_markup=reply_markup,
                             disable_web_page_preview=disable_web_page_preview)
     except Exception as e:
         log.log_print(e)
@@ -75,7 +75,7 @@ def edit_text(text, chat_id, message_id, parse_mode=None, reply_markup=None):
     """Отредактировать текст сообщения"""
     log.log_print("edit_text invoked")
     try:
-        return bot.edit_message_text('❄ '+text+' ❄', chat_id, message_id, parse_mode=parse_mode, reply_markup=reply_markup)
+        return bot.edit_message_text(text, chat_id, message_id, parse_mode=parse_mode, reply_markup=reply_markup)
     except Exception as e:
         log.log_print(e)
 
