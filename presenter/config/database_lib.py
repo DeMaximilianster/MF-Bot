@@ -87,4 +87,15 @@ class Database:
             print(e)
         self.connection.commit()  # Сохраняем изменения
 
+    def remove(self, table, *column_value):
+        sql = f"DELETE * FROM {table} WHERE "
+        reqs = []
+        for value in column_value:
+            val = str(value[1]).replace('"', '').replace("'", "")
+            reqs.append(f"{value[0]}='{val}'")
+        sql += " AND ".join(reqs)
+        log.log_print("[SQL]: " + sql)
+        self.cursor.execute(sql)
+        self.connection.commit()
+
 # TODO Удаление одной записи
