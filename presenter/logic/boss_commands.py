@@ -173,7 +173,7 @@ def give_admin(message, person):
     reply(message, "Теперь это админ!")
 
 
-def del_admin(message, person):
+def del_admin(message, person, loud=True):
     log.log_print(f"{__name__} invoked")
     database = Database()
     database.remove("appointments", ("appointment", "Admin"), ("id", person.id))
@@ -183,7 +183,8 @@ def del_admin(message, person):
                 can_restrict_members=False, can_pin_messages=False, can_promote_members=False)
     for channel in channel_list(database):
         promote(channel['id'], person.id, can_post_messages=False, can_invite_users=False)
-    reply(message, "Теперь это не админ!")
+    if loud:
+        reply(message, "Теперь это не админ!")
 
 
 def set_guest(message, person):
@@ -192,7 +193,7 @@ def set_guest(message, person):
     database = Database()
     database.change("Guest", "rank", 'members', ('id', person.id))
     unban_user(person)
-    del_admin(message, person)
+    del_admin(message, person, loud=False)
     reply(message, "Теперь это гость!")
 
 
@@ -202,7 +203,7 @@ def set_citizen(message, person):
     database = Database()
     database.change("Citizen", "rank", 'members', ('id', person.id))
     unban_user(person)
-    del_admin(message, person)
+    del_admin(message, person, loud=False)
     reply(message, "Теперь это гражданин!")
 
 
