@@ -10,7 +10,7 @@ from presenter.logic.complicated_commands import adequate, inadequate, response,
 from presenter.logic.reactions import deleter, new_member, left_member
 from presenter.logic.standart_commands import helper, send_drakken, send_me, send_meme, minet, show_id, \
     all_members, money_give, money_top, language_getter, month_set, day_set, birthday, admins, chat_check, \
-    chats
+    chats, anon_message
 from presenter.logic.start import starter
 from presenter.config.log import Loger, log_to
 from requests import get
@@ -404,20 +404,35 @@ def birthday_handler(message):
 
 @bot.message_handler(commands=['admins', 'report'])
 def admins_handler(message):
+    """Ping admins"""
     if in_mf(message, 'standart_commands') and rank_required(message, 'Citizen') and cooldown(message, 'admins', 300):
         admins(message)
 
 
 @bot.message_handler(commands=['chat'])
 def chat_check_handler(message):
+    """Show options of the current chat"""
     if in_mf(message, command_type=None, or_private=False):
         chat_check(message)
 
 
 @bot.message_handler(commands=['chats'])
 def chats_handler(message):
+    """Send chat list"""
     if in_mf(message, 'standart_commands'):
         chats(message)
+
+
+@bot.message_handler(commands=['anon'])
+def anon_message_handler(message):
+    """Send anon message to admin place"""
+    if message.chat.id > 0:
+        if len(message.text) == 5:
+            reply(message, "После команды /anon должно следовать то, что надо отправить админам")
+        else:
+            anon_message(message)
+    else:
+        reply(message, "И как это может быть анонимно?")
 
 
 '''Последний хэндлер. Просто считает сообщения, что не попали в другие хэндлеры'''

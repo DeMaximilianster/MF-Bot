@@ -327,3 +327,14 @@ def chat_check(message):
                 mark = '✅'
             text += f'{i}:  {mark}\n\n'
     reply(message, text)
+
+
+def anon_message(message):
+    log.log_print(f'{__name__} invoked')
+    database = Database()
+    admin_chat = admin_place(database)
+    sent = send(admin_chat, "#anon\n\n"+message.text[6:])
+    if sent:
+        reply(message, "Сообщение успешно отправлено. Спасибо за ваше мнение!")
+    else:
+        reply(message, "Произошла ошибка!")
