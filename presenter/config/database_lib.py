@@ -97,5 +97,3 @@ class Database:
         log.log_print("[SQL]: " + sql)
         self.cursor.execute(sql)
         self.connection.commit()
-
-# TODO Удаление одной записи

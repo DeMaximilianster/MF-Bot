@@ -161,7 +161,7 @@ def money_pay(message, person):
 
 def give_admin(message, person):
     """Назначает человека админом"""
-    log.log_print("give_admin invoked")
+    log.log_print(f"{__name__} invoked")
     database = Database()
     # TODO При повторном использовании команды не должна появляться новая запись
     database.append((person.id, "Admin"), table='appointments')
@@ -179,7 +179,7 @@ def give_admin(message, person):
 
 
 def del_admin(message, person):
-    log.log_print("del_admin invoked")
+    log.log_print(f"{__name__} invoked")
     database = Database()
     database.remove("appointments", ("appointment", "Admin"), ("id", person.id))
     for chat in chat_list(database):
@@ -205,6 +205,7 @@ def set_guest(message, person):
     for channel in channel_list(database):
         promote(channel['id'], person.id, can_post_messages=False, can_invite_users=False)
     unban_user(person)
+    del_admin(message, person)
     reply(message, "Теперь это гость!")
     del database
 
