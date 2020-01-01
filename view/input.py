@@ -3,7 +3,7 @@ from view.output import reply, answer_callback
 from presenter.config.config_func import in_mf, cooldown, person_analyze, rank_required, rank_superiority, \
     appointment_required, int_check
 from presenter.logic.elite import elite
-from presenter.logic.boss_commands import ban, deleter_mode, give_admin, set_guest, add_chat, warn, unwarn, \
+from presenter.logic.boss_commands import ban, deleter_mode, give_admin, del_admin, set_guest, add_chat, warn, unwarn, \
     message_change, money_pay
 from presenter.logic.complicated_commands import adequate, inadequate, response, insult, non_ironic, ironic, \
     place_here, mv, av, add_vote, vote
@@ -132,6 +132,15 @@ def give_admin_handler(message):
     if in_mf(message, 'boss_commands') and rank_required(message, "The Committee Member") \
             and person and rank_superiority(message, person):
         give_admin(message, person)
+
+
+@bot.message_handler(commands=['unadmin'])
+def del_admin_handler(message):
+    log.log_print(f"{__name__} invoked")
+    person = person_analyze(message)
+    if in_mf(message, 'boss_commands') and rank_required(message, "The Committee Member") \
+            and person and rank_superiority(message, person):
+        del_admin(message, person)
 
 
 @bot.message_handler(commands=['guest'])
