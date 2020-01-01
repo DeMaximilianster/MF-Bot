@@ -196,6 +196,16 @@ def set_guest(message, person):
     reply(message, "Теперь это гость!")
 
 
+def set_citizen(message, person):
+    """Sets person's rank to citizen"""
+    log.log_print(f"{__name__} invoked")
+    database = Database()
+    database.change("Citizen", "rank", 'members', ('id', person.id))
+    unban_user(person)
+    del_admin(message, person)
+    reply(message, "Теперь это гость!")
+
+
 def message_change(message, person):
     """Меняет запись в БД о количестве сообщений чела"""
     log.log_print(f"message_change invoked to person {person.id}")
