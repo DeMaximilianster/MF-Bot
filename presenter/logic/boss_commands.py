@@ -53,11 +53,10 @@ def warn(message, person):
     start_forwarding = end_forwarding - how_many
     send(blowout, "В чате '{}' случилось нарушение участником {} (@{}) [{}]. Прысылаю {} сообщений".
          format(message.chat.title, person.first_name, person.username, person.id, how_many))
-    for msg_id in range(start_forwarding, end_forwarding+1):
+    for msg_id in range(start_forwarding, end_forwarding + 1):
         forward(blowout, message.chat.id, msg_id)
     if value >= 3:
         ban(message, person)
-    del database
 
 
 def unwarn(message, person):
@@ -76,7 +75,6 @@ def unwarn(message, person):
     reply(message, "Варн(ы) снят(ы). Теперь их {}".format(value))
     if value < 3:
         set_guest(message, person)
-    del database
 
 
 def ban(message, person):
@@ -100,7 +98,6 @@ def ban(message, person):
         kick(chat['id'], person.id)
     for channel in channel_list(database):
         kick(channel['id'], person.id)
-    del database
 
 
 def money_pay(message, person):
@@ -117,7 +114,7 @@ def money_pay(message, person):
         reply(message, "Я вам запрещаю делать подобные бессмысленные запросы")
     elif money[0] == '-':
         money = -int(money)  # Делаем из отрицательного числа положительное
-        if value-money >= 0:
+        if value - money >= 0:
             value -= money
             bot_money += money
             sent = send(p_id, f"#Финансы\n\n"
@@ -127,11 +124,11 @@ def money_pay(message, person):
             else:
                 sent = "🔕 не уведомлён(а)"
             reply(message, f"#Финансы #Бюджет #Ф{p_id}\n\n"
-                           f"Бюджет [{bot_money-money} --> {bot_money}]\n"
-                           f"ID {p_id} [{value+money} --> {value}] {sent}")
+                           f"Бюджет [{bot_money - money} --> {bot_money}]\n"
+                           f"ID {p_id} [{value + money} --> {value}] {sent}")
             send(admin_place(database), f"#Финансы #Бюджет #Ф{p_id}\n\n"
-                                        f"Бюджет [{bot_money-money} --> {bot_money}]\n"
-                                        f"ID {p_id} [{value+money} --> {value}] {sent}")
+                                        f"Бюджет [{bot_money - money} --> {bot_money}]\n"
+                                        f"ID {p_id} [{value + money} --> {value}] {sent}")
         else:
             reply(message, "Часто у людей видишь отрицательное количество денег?")
     else:
@@ -148,15 +145,14 @@ def money_pay(message, person):
             else:
                 sent = "🔕 не уведомлён(а)"
             reply(message, f"#Финансы #Бюджет #Ф{p_id}\n\n"
-                           f"Бюджет [{bot_money+money} --> {bot_money}]\n"
-                           f"ID {p_id} [{value-money} --> {value}] {sent}")
+                           f"Бюджет [{bot_money + money} --> {bot_money}]\n"
+                           f"ID {p_id} [{value - money} --> {value}] {sent}")
 
             send(admin_place(database), f"#Финансы #Бюджет #Ф{p_id}\n\n"
-                                        f"Бюджет [{bot_money+money} --> {bot_money}]\n"
-                                        f"ID {p_id} [{value-money} --> {value}] {sent}")
+                                        f"Бюджет [{bot_money + money} --> {bot_money}]\n"
+                                        f"ID {p_id} [{value - money} --> {value}] {sent}")
     database.change(value, 'money', 'members', ('id', p_id))
     database.change(bot_money, 'money', 'members', ('id', bot_id))
-    del database
 
 
 def give_admin(message, person):
@@ -175,7 +171,6 @@ def give_admin(message, person):
         print(channel)
         promote(channel['id'], person.id, can_change_info=True, can_post_messages=True, can_invite_users=True)
     reply(message, "Теперь это админ!")
-    del database
 
 
 def del_admin(message, person):
@@ -189,7 +184,6 @@ def del_admin(message, person):
     for channel in channel_list(database):
         promote(channel['id'], person.id, can_post_messages=False, can_invite_users=False)
     reply(message, "Теперь это не админ!")
-    del database
 
 
 def set_guest(message, person):
@@ -200,7 +194,6 @@ def set_guest(message, person):
     unban_user(person)
     del_admin(message, person)
     reply(message, "Теперь это гость!")
-    del database
 
 
 def message_change(message, person):
@@ -216,7 +209,6 @@ def message_change(message, person):
         database.append((p_id, ch_id, value), 'messages')
     else:
         database.change(value, 'messages', 'messages', ('person_id', p_id), ('chat_id', ch_id))
-    del database
 
 
 def deleter_mode(message):
@@ -226,7 +218,7 @@ def deleter_mode(message):
     delete = int(database.get('config', ('var', 'delete'))['value'])
     delete = (delete + 1) % 2  # Переводит 0 в 1, а 1 в 0
     database.change(delete, 'value', 'config', ('var', 'delete'))
-    del database
+
     if delete:
         reply(message, 'Окей, господин, теперь я буду удалять медиа, которые присланы гостями')
     else:
@@ -246,7 +238,6 @@ def add_chat(message):
         link = message.chat.username
     database.append((message.chat.id, message.chat.title, message.text[10:], typee, link, 2, 0, 0, 0, 0, 0, 0), 'chats')
     reply(message, "Теперь это часть МФ2. Как и:\n" + '\n'.join(map(str, full_chat_list(database))))
-    del database
 
 
 '''
@@ -265,7 +256,7 @@ def database_changer():
         if rank not in rank_shifter.values():
             rank = rank_shifter[rank]
             database.change(rank, 'rank', 'members', ('id', member[0]))
-    del database
+    
 '''
 
 # TODO Команда /add_channel

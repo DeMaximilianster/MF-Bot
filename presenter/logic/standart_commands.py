@@ -36,7 +36,6 @@ def language_getter(message):
         reply(message, f"✅ {language[0]} ✅")
     else:
         reply(message, f"✅ {language[0]} | {language[1]} ✅")
-    del database
 
 
 def helper(message):
@@ -234,7 +233,8 @@ def money_top(message):
     text = "Бюджет: {} 🍎\n".format(bot_money)
     for person in people:
         print(person)
-        text += "\n{}. <a href='t.me/{}'>{}</a> — {} 🍎".format(i, person['username'], person['nickname'], person['money'])
+        text += "\n{}. <a href='t.me/{}'>{}</a> — {} 🍎".format(i, person['username'], person['nickname'],
+                                                                person['money'])
         i += 1
     reply(message, text, parse_mode='HTML', disable_web_page_preview=True)
 
@@ -333,7 +333,7 @@ def anon_message(message):
     log.log_print(f'{__name__} invoked')
     database = Database()
     admin_chat = admin_place(database)
-    sent = send(admin_chat, "#anon\n\n"+message.text[6:])
+    sent = send(admin_chat, "#anon\n\n" + message.text[6:])
     if sent:
         reply(message, "Сообщение успешно отправлено. Спасибо за ваше мнение!")
     else:

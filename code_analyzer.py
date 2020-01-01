@@ -24,12 +24,12 @@ def analyze(event=None):
                     text.insert(END, 'File: {}\n'.format(FILE))
                     text.insert(END, 'Строка: {}\n'.format(string))
                     try:
-                        text.insert(END, line+'\n')
+                        text.insert(END, line + '\n')
                     except Exception as e:
                         print(e)
                         text.insert(END, 'This line is not available')
-                string += 1         
-    label['text'] = "{} items are found".format(counter)            
+                string += 1
+    label['text'] = "{} items are found".format(counter)
 
 
 files_list = []
@@ -38,11 +38,11 @@ print(path)
 tree = os.walk(path)
 
 for branch in tree:
-    if not smth_in(branch[0], '.git', '.idea', '__pycache__'):    
+    if not smth_in(branch[0], '.git', '.idea', '__pycache__'):
         print(branch)
         for file in branch[2]:
             if file[-3:] == '.py':
-                files_list.append(branch[0]+'\\'+file)
+                files_list.append(branch[0] + '\\' + file)
 
 print(files_list)
 

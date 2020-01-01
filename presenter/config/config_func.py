@@ -28,7 +28,7 @@ def language_analyzer(message, only_one):
     database = Database()
     entry = database.get('languages', ('id', message.chat.id))
     languages = {"Russian": False, "English": False}
-    del database
+
     if entry:
         if only_one:
             return entry['language']
@@ -134,7 +134,7 @@ def rank_superiority(message, person):
     database = Database()
     your_rank = database.get('members', ('id', message.from_user.id))['rank']
     their_rank = database.get('members', ('id', person.id))['rank']
-    del database
+
     your_rank_n = roles.index(your_rank)
     their_rank_n = roles.index(their_rank)
     if their_rank_n >= your_rank_n:
@@ -168,7 +168,7 @@ def appointment_required(message, appointment, loud=True):
     true_false = database.get("appointments", ('id', message.from_user.id), ('appointment', appointment))
     if not true_false and loud:
         reply(message, "Вам для этого нужна должность {}".format(appointment))
-    del database
+
     return true_false
 
 
@@ -182,7 +182,7 @@ def cooldown(message, command, timeout=3600):
                          ('chat_id', message.chat.id))
     if not entry:  # Чел впервые пользуется коммандой
         database.append((message.from_user.id, command, message.chat.id, message.date), 'cooldown')
-        del database
+
         return True
     # Чел уже пользовался командой
     time_passed = message.date - entry['time']
@@ -193,12 +193,12 @@ def cooldown(message, command, timeout=3600):
         answer = "Воу, придержи коней, ковбой. Ты сможешь воспользоваться этой командой только "
         answer += "через {} минут и {} секунд 🤠".format(minutes, seconds)
         reply(message, answer)
-        del database
+
         return False
     else:  # Кулдаун прошёл
         database.change(message.date, 'time', 'cooldown', ('person_id', message.from_user.id), ('command', command),
                         ('chat_id', message.chat.id))
-        del database
+
         return True
 
 
@@ -282,7 +282,6 @@ def counter(message):
     value = database.get('messages', ('person_id', person.id), ('chat_id', message.chat.id))['messages'] + 1
     database.change(value, 'messages', 'messages', ('person_id', person.id), ('chat_id', message.chat.id))
     # TODO Добавить время последнего сообщения и элитократические взаимодействия с ним
-    del database
 
 
 def member_update(person):

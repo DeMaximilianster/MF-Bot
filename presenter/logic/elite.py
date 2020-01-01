@@ -40,14 +40,14 @@ def submit(message):  # TODO возможность отменить свои о
     # TODO Записывать результаты в elite_results
     if success >= 4:
         send(person.id, "Поздравляю! Количество ваших правильных ответов ({}) достаточно для прохождения"
-                        .format(success), reply_markup=markup)
+             .format(success), reply_markup=markup)
         send(-1001233124059, '#тест_на_логику {} ({}) [{}] осилил(а) тест со счётом {}'
-                             .format(person.first_name, person.username, person.id, success))
+             .format(person.first_name, person.username, person.id, success))
     else:
         send(person.id, "К сожалению, количество ваших правильных ответов ({}) недостаточно для прохождения"
-                        .format(success), reply_markup=markup)
+             .format(success), reply_markup=markup)
         send(-1001233124059, '#тест_на_логику {} ({}) [{}] провалил(а) тест со счётом {}'
-                             .format(person.first_name, person.username, person.id, success))
+             .format(person.first_name, person.username, person.id, success))
 
 
 def check(message, ques):
@@ -60,7 +60,7 @@ def check(message, ques):
     database = Database()
     database.change(message.text, f'answer_{ques}', 'basic_logic_tested', ('id', message.from_user.id))
     if ques != 6:
-        ask_question(message, ques+1)
+        ask_question(message, ques + 1)
     else:
         submit(message)
 
@@ -79,17 +79,15 @@ def elite(message):  # TODO Привести эти команды в поряд
             question = choice(all_questions)
             value = database.get('basic_logic', ('id', question))['text']
             print(value)
-            database.change(value, f'question_{i+1}', 'basic_logic_tested', ('id', message.from_user.id))
+            database.change(value, f'question_{i + 1}', 'basic_logic_tested', ('id', message.from_user.id))
             all_questions.remove(question)
     for i in range(1, 7):
         if database.get('basic_logic_tested', ('id', message.from_user.id))[f'answer_{i}'] == "None":
             ask_question(message, i)
-            del database
+
             break
     else:
         submit(message)  # TODO тест когда-то проходили, пересдача
-        del database
-
 
 # TODO Продвинутая логика
 # TODO Сочинение

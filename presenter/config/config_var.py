@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from presenter.config.log import Loger, log_to
 from telebot.types import InlineKeyboardButton, InlineKeyboardMarkup
-from presenter.config.texts import january, february, march, april, may, june, july, august, september, october,\
+from presenter.config.texts import january, february, march, april, may, june, july, august, september, october, \
     november, december
 
 log = Loger(log_to)
@@ -67,7 +67,6 @@ a_adequate_keyboard = InlineKeyboardMarkup()
 a_adequate_keyboard.add(InlineKeyboardButton("Адекватно", callback_data="a_adequate"))
 a_adequate_keyboard.add(InlineKeyboardButton("Неадекватно", callback_data="inadequate"))
 a_adequate_keyboard.row_width = 1
-
 
 # Список всех ролей и их подтипы
 roles = [None, 'Violator', 'Guest', 'Citizen', 'Senior Citizen', 'The Committee Member', 'Deputy', 'Leader']

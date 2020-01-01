@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 from presenter.config.config_func import update_adapt_vote, update_multi_vote, create_adapt_vote, create_vote, \
     create_multi_vote, appointment_required
-from presenter.config.config_var import test_keyboard, ironic_keyboard,  \
-     vote_keyboard, admin_place
+from presenter.config.config_var import test_keyboard, ironic_keyboard, \
+    vote_keyboard, admin_place
 from presenter.config.database_lib import Database
 from presenter.config.files_paths import multi_votes_file, adapt_votes_file, votes_file
 from view.output import edit_markup, answer_inline, reply, answer_callback, edit_text, delete, send
@@ -127,7 +127,7 @@ def mv(call):
 
     if user_id in votey['votes'][which][1].keys():  # Челик нажал на кнопку, на которой есть его мнение
         # удаляем челика из словаря
-        votey['votes'][which][1].pop(user_id)   # TODO Убрать быдлокод такого вида, изменив структуру МГ и АГ
+        votey['votes'][which][1].pop(user_id)  # TODO Убрать быдлокод такого вида, изменив структуру МГ и АГ
     else:
         # если чедика нету - то просто добавляем
         votey['votes'][which][1].update([(user_id, username)])
@@ -223,7 +223,6 @@ def vote(message):
     if appointment_required(message, 'Content-maker', loud=False):
         where_keyboard.add(InlineKeyboardButton("На канал недостримов", callback_data="nedostream"))
     reply(message, "А запостить куда?", reply_markup=where_keyboard)
-
 
 # TODO Голосовашки только для граждан
 # TODO разделить этот модуль на сообщения с кнопками и триггеры кнопок

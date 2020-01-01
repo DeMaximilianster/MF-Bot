@@ -53,7 +53,7 @@ class Database:
     def get_all(self, table, order_by='id', how_sort='DESC'):  # how_sort can be equal to ASC
         """Read all entries in one table of the database"""
         sql = "SELECT rowid, * FROM {} ORDER BY {} {}".format(table, order_by, how_sort)
-        log.log_print("[SQL]: "+sql)
+        log.log_print("[SQL]: " + sql)
         all_list = []
         for element in self.cursor.execute(sql):
             all_list.append(dict(zip([c[0] for c in self.cursor.description], element)))
@@ -70,7 +70,7 @@ class Database:
         sql = f"UPDATE {table}\n"
         sql += f"SET {set_where} = '{set_what}'\n"
         sql += "WHERE " + " AND ".join(reqs)
-        log.log_print("[SQL]: "+sql)
+        log.log_print("[SQL]: " + sql)
         self.cursor.execute(sql)
         self.connection.commit()  # Сохраняем изменения
 
@@ -81,7 +81,7 @@ class Database:
             INSERT INTO {}
             VALUES {}
             """.format(table, tuple(map(str, values)))
-            log.log_print("[SQL]: "+sql)
+            log.log_print("[SQL]: " + sql)
             self.cursor.execute(sql)
         except Exception as e:
             print(e)
