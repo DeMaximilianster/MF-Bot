@@ -159,9 +159,9 @@ def money_pay(message, person):
     del database
 
 
-def promotion(message, person):
+def give_admin(message, person):
     """Назначает человека админом"""
-    log.log_print("promotion invoked")
+    log.log_print("give_admin invoked")
     database = Database()
     # TODO При повторном использовании команды не должна появляться новая запись
     database.append((person.id, "Админ"), table='appointments')
