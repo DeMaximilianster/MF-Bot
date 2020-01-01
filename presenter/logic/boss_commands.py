@@ -197,13 +197,6 @@ def set_guest(message, person):
     log.log_print(f"{__name__} invoked")
     database = Database()
     database.change("Guest", "rank", 'members', ('id', person.id))
-    # Забрать у чела админку во всех чатах, кроме Комитета и Админосостава
-    for chat in chat_list(database):
-        promote(chat['id'], person.id,
-                can_change_info=False, can_delete_messages=False, can_invite_users=False,
-                can_restrict_members=False, can_pin_messages=False, can_promote_members=False)
-    for channel in channel_list(database):
-        promote(channel['id'], person.id, can_post_messages=False, can_invite_users=False)
     unban_user(person)
     del_admin(message, person)
     reply(message, "Теперь это гость!")
