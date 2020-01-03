@@ -67,13 +67,10 @@ def unwarn(message, person):
         unwarns = int(message.text.split()[-1])  # TODO Эта проверка происходит дважды
     else:
         unwarns = 1
-    if unwarns == 0:
-        reply(message, "Я вам запрещаю делать подобные бессмысленные запросы")
-        return None
     value = database.get('members', ('id', person.id))['warns'] - unwarns
     database.change(value, 'warns', 'members', ('id', person.id))
     reply(message, "Варн(ы) снят(ы). Теперь их {}".format(value))
-    if value < 3:
+    if 3 - unwarns <= value < 3:
         set_guest(message, person)
 
 

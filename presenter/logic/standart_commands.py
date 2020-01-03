@@ -137,7 +137,6 @@ def send_me(message, person):
     database = Database()
     member_update(person)  # Update person's messages, nickname and username
     p = database.get('members', ('id', person.id))
-    print(p)
     appointments = [x['appointment'] for x in database.get_many('appointments', ('id', person.id))]
     if database.get('messages', ('person_id', person.id), ('chat_id', message.chat.id)):
         messages_here = database.get('messages', ('person_id', person.id), ('chat_id', message.chat.id))['messages']

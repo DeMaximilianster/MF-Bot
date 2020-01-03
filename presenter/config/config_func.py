@@ -1,12 +1,14 @@
 # -*- coding: utf-8 -*-
-from presenter.config.database_lib import Database
-from telebot.types import InlineKeyboardButton, InlineKeyboardMarkup, CallbackQuery
-from presenter.config.files_paths import adapt_votes_file, multi_votes_file, votes_file
-from view.output import *
-from presenter.config.log import Loger
-from presenter.config.config_var import roles, bot_id
-from presenter.config.log import log_to
 from random import choice
+
+from telebot.types import InlineKeyboardButton, InlineKeyboardMarkup, CallbackQuery
+
+from presenter.config.config_var import roles, bot_id
+from presenter.config.database_lib import Database
+from presenter.config.files_paths import adapt_votes_file, multi_votes_file, votes_file
+from presenter.config.log import Loger
+from presenter.config.log import log_to
+from view.output import *
 
 log = Loger(log_to)
 
@@ -95,38 +97,43 @@ def shuffle(old_list):
     return new_list
 
 
+def person_check(message, person, to_self=False, to_bot=False):
+    log.log_print(f"{__name__} invoked")
+    if person.id == message.from_user.id and not to_self:
+        reply(message, "Я вам запрещаю пользоваться этой командой на самом себе")
+        return False
+    elif person.id == bot_id and not to_bot:
+        reply(message, "Я вам запрещаю пользоваться этой командой на мне")
+        return False
+    else:
+        return True
+
+
 def person_analyze(message, to_self=False, to_bot=False):
-    log.log_print("person_analyze invoked")
+    log.log_print(f"{__name__} invoked")
     if message.reply_to_message:  # Сообщение является ответом
         if message.reply_to_message.new_chat_members:
             person = message.reply_to_message.new_chat_members[0]
         else:
             person = message.reply_to_message.from_user
+        if person_check(message, person, to_self, to_bot):
+            return person
     elif len(message.text.split()) > 1:
         par = message.text.split()[1]
-        if par.isdigit() and 7 <= len(par) <= 10:
-            person = get_member(-1001408293838, par)
-            if person:
-                person = person.user
+        if int_check(par, positive=True) and 7 <= len(par) <= 10:
+            member = get_member(-1001408293838, par)
+            if member:
+                person = member.user
+                if person_check(message, person, to_self, to_bot):
+                    return person
             else:
                 reply(message, "Не вижу такого ID")
-                return None
         else:
             reply(message, "Некорректный ID. ID это число, которое содержит в себе от 7 до 10 цифр")
-            return None
     elif to_self:
         return message.from_user
     else:
         reply(message, "Ответьте на сообщение необходимого человека или напишите после команды его ID")
-        return None
-    if person.id == message.from_user.id and not to_self:
-        reply(message, "Я вам запрещаю пользоваться этой командой на самом себе")
-        return None
-    elif person.id == bot_id and not to_bot:
-        reply(message, "Я вам запрещаю пользоваться этой командой на мне")
-        return None
-    else:
-        return person
 
 
 def rank_superiority(message, person):

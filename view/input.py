@@ -1,7 +1,7 @@
 from presenter.config.token import bot
 from view.output import reply, answer_callback
 from presenter.config.config_func import in_mf, cooldown, person_analyze, rank_required, rank_superiority, \
-    appointment_required, int_check
+    appointment_required, int_check, person_check
 from presenter.logic.elite import elite
 from presenter.logic.boss_commands import ban, deleter_mode, give_admin, del_admin, set_guest, set_citizen, add_chat,\
     warn, unwarn, message_change, money_pay
@@ -83,15 +83,15 @@ def warn_handler(message):
     elif not int_check(message.text.split()[-1], positive=True) and len(message.text.split()) > 1:
         reply(message, "Последнее слово должно быть положительным числом, сколько варнов даём")
     elif in_mf(message, 'boss_commands', False) and appointment_required(message, "Admin") \
-            and rank_superiority(message, rep.from_user):
-        warn(message, rep.from_user.id)
+            and rank_superiority(message, rep.from_user) and person_check(message, rep.from_user, to_bot=True):
+        warn(message, rep.from_user)
 
 
 @bot.message_handler(commands=['unwarn'])
 def unwarn_handler(message):
     """Снимает с участника предупреждение"""
     log.log_print(f"{__name__} invoked")
-    person = person_analyze(message)
+    person = person_analyze(message, to_bot=True)
     if not int_check(message.text.split()[-1], positive=True) and len(message.text.split()) > 1:
         reply(message, "Последнее слово должно быть положительным числом, сколько варнов снимаем")
     elif in_mf(message, 'boss_commands', False) and appointment_required(message, "Admin") and person:
