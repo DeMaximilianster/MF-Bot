@@ -61,10 +61,16 @@ def new_member(message):
 def left_member(message):
     """Комментирует уход участника и прощается участником"""
     log.log_print("left_member invoked")
+    database = Database()
+    chat = database.get('chats', ('id', message.chat.id))
+    if chat['type'] == 'private':
+        chat = chat['name']
+    else:
+        chat = '@' + chat['link']
     person = message.left_chat_member
     if message.from_user.id == person.id:  # Чел вышел самостоятельно
         reply(message, "Минус чувачок")
-        send(person.id, 'До встречи в @MultiFandomRu!')
+        send(person.id, 'До встречи в ' + chat)
     else:  # Чела забанили
         send_video(message.chat.id, "BAADAgADhgMAAgYqMUvW-ezcbZS2ohYE")
     # Держим Дэ'Макса в курсе происходящего
