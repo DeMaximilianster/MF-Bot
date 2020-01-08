@@ -71,11 +71,12 @@ def edit_markup(chat_id, message_id, reply_markup=None):
         log.log_print(e)
 
 
-def edit_text(text, chat_id, message_id, parse_mode=None, reply_markup=None):
+def edit_text(text, chat_id, message_id, parse_mode=None, reply_markup=None, disable_web_page_preview=False):
     """Отредактировать текст сообщения"""
     log.log_print("edit_text invoked")
     try:
-        return bot.edit_message_text(text, chat_id, message_id, parse_mode=parse_mode, reply_markup=reply_markup)
+        return bot.edit_message_text(text, chat_id, message_id, parse_mode=parse_mode, reply_markup=reply_markup,
+                                     disable_web_page_preview=disable_web_page_preview)
     except Exception as e:
         log.log_print(e)
 

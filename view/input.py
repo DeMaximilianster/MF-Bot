@@ -252,7 +252,7 @@ def ironic_handler(call):
 def vote_handler(message):
     """Генерирует голосовашку"""
     log.log_print(f"{__name__} invoked")
-    if in_mf(message, 'standart_commands'):
+    if in_mf(message, None):
         vote(message)
 
 

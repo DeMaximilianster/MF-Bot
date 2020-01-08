@@ -273,8 +273,9 @@ def birthday(message):
     i = 1
     text = ""
     for person in people:
-        text += "\n{}. <a href='t.me/{}'>{}</a> — {} {} ".format(i, person[1], person[2], months[person[7]][lang],
-                                                                 person[8])
+        text += "\n{}. <a href='t.me/{}'>{}</a> — {} {} ".format(i, person['username'], person['nickname'],
+                                                                 months[person['month_birthday']][lang],
+                                                                 person['day_birthday'])
         i += 1
     reply(message, text, parse_mode='HTML', disable_web_page_preview=True)
 

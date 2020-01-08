@@ -115,10 +115,13 @@ def place_here(call):
 def mv(call):
     """Обновляет мульти-голосовашку"""
     log.log_print("mv invoked")
-    user_id = str(call.from_user.id)  # Ай ди жмакнувшего челика
+    user = call.from_user
+    user_username = user.username  # юзернейм жмакнувшего челика
+    user_nickname = user.first_name
+    user_id = user.id
     msg_id = call.message.message_id  # Ай ди жмакнутого сообщения
     # Как этот челик будет отображаться в сообщении
-    username = "[{}](tg://user?id={})".format(call.from_user.first_name.replace('[', '').replace(']', ''), user_id)
+    link = f'<a href="t.me/{user_username}">{user_nickname}</a>'
     which = int(call.data[-1])  # Где менять мнение
     file = open(multi_votes_file, encoding='utf-8')
     votes_shelve = eval(file.read())
@@ -130,7 +133,7 @@ def mv(call):
         votey['votes'][which][1].pop(user_id)  # TODO Убрать быдлокод такого вида, изменив структуру МГ и АГ
     else:
         # если чедика нету - то просто добавляем
-        votey['votes'][which][1].update([(user_id, username)])
+        votey['votes'][which][1].update([(user_id, link)])
     # Сохраняем изменения
     votes_shelve[msg_id] = votey
     file = open(multi_votes_file, 'w', encoding='utf-8')
@@ -143,10 +146,13 @@ def mv(call):
 def av(call):
     """Обновляет адапт-голосовашку"""
     log.log_print("av invoked")
-    user_id = str(call.from_user.id)  # Ай ди жмакнувшего челика
+    user = call.from_user
+    user_username = user.username  # юзернейм жмакнувшего челика
+    user_nickname = user.first_name
+    user_id = user.id
     msg_id = call.message.message_id  # Ай ди жмакнутого сообщения
     # Как этот челик будет отображаться в сообщении
-    username = "[{}](tg://user?id={})".format(call.from_user.first_name.replace('[', '').replace(']', ''), user_id)
+    link = f'<a href="t.me/{user_username}">{user_nickname}</a>'
     which = int(call.data[-1])  # Где менять мнение
     file = open(adapt_votes_file, encoding='utf-8')
     votes_shelve = eval(file.read())
@@ -160,7 +166,7 @@ def av(call):
             for i in votey['votes']:
                 i[1].pop(user_id, None)
             # если чедика нету - то просто добавляем
-            votey['votes'][which][1].update([(user_id, username)])
+            votey['votes'][which][1].update([(user_id, link)])
     # Сохраняем изменения
     votes_shelve[msg_id] = votey
     file = open(adapt_votes_file, 'w', encoding='utf-8')
@@ -175,10 +181,13 @@ def add_vote(call):
     log.log_print("add_vote invoked")
     reply_markup = vote_keyboard
     text = ''
-    user_id = call.from_user.id  # Ай ди жмакнувшего челика
+    user = call.from_user
+    user_username = user.username  # юзернейм жмакнувшего челика
+    user_nickname = user.first_name
+    user_id = user.id
     msg_id = call.message.message_id  # Ай ди жмакнутого сообщения
     # Как этот челик будет отображаться в сообщении
-    username = "[{}](tg://user?id={})".format(call.from_user.first_name.replace('[', '').replace(']', ''), user_id)
+    link = f'<a href="t.me/{user_username}">{user_nickname}</a>'
     file = open(votes_file, 'r', encoding='utf-8')
     votes_shelve = eval(file.read())
     file.close()
@@ -195,7 +204,7 @@ def add_vote(call):
             votey['favor'].pop(user_id, None)
             votey['against'].pop(user_id, None)
             votey['abstain'].pop(user_id, None)
-            votey[call.data].update([(user_id, username)])
+            votey[call.data].update([(user_id, link)])
         votes_shelve[msg_id] = votey
         text += votey["text"]
         text += '\nЗа: ' + ', '.join(votey["favor"].values())
@@ -209,7 +218,7 @@ def add_vote(call):
     file.write(str(votes_shelve))
     file.close()
     edit_text(text=text, chat_id=call.message.chat.id, message_id=call.message.message_id,
-              reply_markup=reply_markup, parse_mode="Markdown")
+              reply_markup=reply_markup, parse_mode="HTML", disable_web_page_preview=True)
     answer_callback(call.id, text="Жмак учтён!")
 
 

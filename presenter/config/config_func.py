@@ -388,7 +388,8 @@ def update_multi_vote(vote_id):
     for i in votey['votes']:
         text += '\n{}: '.format(i[0]) + ', '.join(i[1].values())
     try:
-        edit_text(text=text, chat_id=votey['chat'], message_id=vote_id, reply_markup=keyboard, parse_mode="Markdown")
+        edit_text(text=text, chat_id=votey['chat'], message_id=vote_id, reply_markup=keyboard, parse_mode="HTML",
+                  disable_web_page_preview=True)
     except Exception as e:
         print(e)
 
@@ -415,7 +416,8 @@ def update_adapt_vote(vote_id):
     for i in votey['votes']:
         text += '\n{}: '.format(i[0]) + ', '.join(i[1].values())
     try:
-        edit_text(text=text, chat_id=votey['chat'], message_id=vote_id, reply_markup=keyboard, parse_mode="Markdown")
+        edit_text(text=text, chat_id=votey['chat'], message_id=vote_id, reply_markup=keyboard, parse_mode="HTML",
+                  disable_web_page_preview=True)
     except Exception as e:
         print(e)
 
