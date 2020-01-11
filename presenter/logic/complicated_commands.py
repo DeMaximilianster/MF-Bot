@@ -233,5 +233,4 @@ def vote(message):
         where_keyboard.add(InlineKeyboardButton("На канал недостримов", callback_data="nedostream"))
     reply(message, "А запостить куда?", reply_markup=where_keyboard)
 
-# TODO Голосовашки только для граждан
 # TODO разделить этот модуль на сообщения с кнопками и триггеры кнопок

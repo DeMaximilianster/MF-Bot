@@ -244,28 +244,17 @@ def add_chat(message):
     if message.chat.username:
         typee = 'public'
         link = message.chat.username
-    database.append((message.chat.id, message.chat.title, message.text[10:], typee, link, 2, 0, 0, 0, 0, 0, 0), 'chats')
-    reply(message, "Теперь это часть МФ2. Как и:\n" + '\n'.join(map(str, full_chat_list(database))))
+    database.append((message.chat.id, message.text.split()[-1], message.chat.title, typee, link, 2, 0, 0, 0, 0, 0, 0),
+                    'chats')
+    reply(message, "Теперь я здесь работаю!")
 
 
-'''
 def database_changer():
     database = Database()
-    rank_shifter = {"Нарушитель": 'Violator',
-                    "Гость": 'Guest',
-                    "Гражданин": 'Citizen',
-                    "Высший Гражданин": 'Senior Citizen',
-                    "Член Комитета": 'The Committee Member',
-                    "Заместитель": 'Deputy',
-                    "Лидер": 'Leader'}
     members = database.get_all('members')
     for member in members:
-        rank = member[3]
-        if rank not in rank_shifter.values():
-            rank = rank_shifter[rank]
-            database.change(rank, 'rank', 'members', ('id', member[0]))
-    
-'''
+        database.change(1, 'system', 'members', ('id', member['id']))
+
 
 # TODO Команда /add_channel
 # TODO Команда /del_chat

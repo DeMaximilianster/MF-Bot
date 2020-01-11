@@ -129,7 +129,7 @@ def give_admin_handler(message):
     """Назначает человека админом"""
     log.log_print(f"{__name__} invoked")
     person = person_analyze(message)
-    if in_mf(message, 'boss_commands') and rank_required(message, "The Committee Member") \
+    if in_mf(message, 'boss_commands') and rank_required(message, "The Committee Member", "Leader") \
             and person and rank_superiority(message, person):
         give_admin(message, person)
 
@@ -138,7 +138,7 @@ def give_admin_handler(message):
 def del_admin_handler(message):
     log.log_print(f"{__name__} invoked")
     person = person_analyze(message)
-    if in_mf(message, 'boss_commands') and rank_required(message, "The Committee Member") \
+    if in_mf(message, 'boss_commands') and rank_required(message, "The Committee Member", "Leader") \
             and person and rank_superiority(message, person):
         del_admin(message, person)
 
@@ -148,7 +148,7 @@ def set_guest_handler(message):
     """Sets person's rank to guest"""
     log.log_print(f"{__name__} invoked")
     person = person_analyze(message)
-    if in_mf(message, 'boss_commands') and rank_required(message, "The Committee Member") \
+    if in_mf(message, 'boss_commands') and rank_required(message, "The Committee Member", "Leader") \
             and person and rank_superiority(message, person):
         set_guest(message, person)
 
@@ -158,7 +158,7 @@ def set_citizen_handler(message):
     """Sets person's rank to citizen"""
     log.log_print(f"{__name__} invoked")
     person = person_analyze(message)
-    if in_mf(message, 'boss_commands') and rank_required(message, "The Committee Member") \
+    if in_mf(message, 'boss_commands') and rank_required(message, "The Committee Member", "Leader") \
             and person and rank_superiority(message, person):
         set_citizen(message, person)
 
@@ -181,7 +181,7 @@ def messages_change_handler(message):
 def add_chat_handler(message):
     """Добавляет чат в базу данных чатов, входящих в систему МФ2"""
     log.log_print(f"{__name__} invoked")
-    if rank_required(message, "Deputy"):
+    if rank_required(message, "Deputy", "Leader"):
         add_chat(message)
 
 
@@ -222,7 +222,7 @@ def response_handler(inline_query):
 def insult_handler(message):
     """Спращивает, иронично ли признание оскорблением"""
     log.log_print(f"{__name__} invoked")
-    if in_mf(message, False):
+    if in_mf(message, False) and rank_required(message, "Guest", "Deputy"):
         insult(message)
 
 
@@ -271,7 +271,7 @@ def place_here_handler(call):
 def mv_handler(call):
     """Обновляет мульти-голосовашку"""
     log.log_print(f"{__name__} invoked")
-    if call.chat_instance != "-8294084429973252853" or rank_required(call, "Citizen"):
+    if call.chat_instance != "-8294084429973252853" or rank_required(call, "Citizen", "Leader"):
         mv(call)
 
 
@@ -279,7 +279,7 @@ def mv_handler(call):
 def av_handler(call):
     """Обновляет адапт-голосовашку"""
     log.log_print(f"{__name__} invoked")
-    if call.chat_instance != "-8294084429973252853" or rank_required(call, "Citizen"):
+    if call.chat_instance != "-8294084429973252853" or rank_required(call, "Citizen", "Leader"):
         av(call)
 
 
@@ -287,7 +287,7 @@ def av_handler(call):
 def add_vote_handler(call):
     """Вставляет голос в голосоовашку"""
     log.log_print(f"{__name__} invoked")
-    if call.chat_instance != "-8294084429973252853" or rank_required(call, "Citizen"):
+    if call.chat_instance != "-8294084429973252853" or rank_required(call, "Citizen", "Leader"):
         add_vote(call)
 
 
@@ -424,7 +424,8 @@ def birthday_handler(message):
 @bot.message_handler(commands=['admins', 'report'])
 def admins_handler(message):
     """Ping admins"""
-    if in_mf(message, 'standart_commands') and rank_required(message, 'Citizen') and cooldown(message, 'admins', 300):
+    if in_mf(message, 'standart_commands') and rank_required(message, 'Citizen', "Leader")\
+            and cooldown(message, 'admins', 300):
         admins(message)
 
 

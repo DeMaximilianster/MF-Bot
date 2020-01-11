@@ -151,22 +151,30 @@ def rank_superiority(message, person):
         return True
 
 
-def rank_required(message, min_rank, loud=True):
+def rank_required(message, min_rank, max_rank, loud=True):
     log.log_print("rank_required invoked from userID {}".format(message.from_user.id))
     database = Database()
     your_rank = database.get('members', ('id', message.from_user.id))['rank']
     your_rank_n = roles.index(your_rank)
     min_rank_n = roles.index(min_rank)
-
+    max_rank_n = roles.index(max_rank)
     if your_rank_n < min_rank_n and loud:
         if type(message) == CallbackQuery:
             answer_callback(message.id,
-                            "Ваше звание ({}) не дотягивает до звания ({}) для голоса"
+                            "Ваше звание ({}) не дотягивает до звания ({}) для жмака"
                             .format(your_rank, min_rank), show_alert=True)
         else:
             reply(message, "Ваше звание ({}) не дотягивает до необходимого ({}) для данной команды"
                   .format(your_rank, min_rank))
-    return your_rank_n >= min_rank_n
+    elif your_rank_n > max_rank_n and loud:
+        if type(message) == CallbackQuery:
+            answer_callback(message.id,
+                            "Ваше звание ({}) выше максимального ({}) для жмака. Гордитесь своим превосходством"
+                            .format(your_rank, max_rank), show_alert=True)
+        else:
+            reply(message, "Ваше звание ({}) выше максимального ({}) для данной команды. Гордитесь своим превосходством"
+                  .format(your_rank, max_rank))
+    return min_rank_n <= your_rank_n <= max_rank_n
 
 
 def appointment_required(message, appointment, loud=True):
