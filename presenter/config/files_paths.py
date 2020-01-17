@@ -8,3 +8,4 @@ ranks = 'model/texts/ranks.txt'
 appointments = 'model/texts/appointments.txt'
 database_file = 'model/MF.db'
 log_files = ["model/log.txt"]
+systems_file = 'model/systems.json'

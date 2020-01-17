@@ -1,7 +1,9 @@
 # -*- coding: utf-8 -*-
-from presenter.config.config_func import Database, time_replace
+from presenter.config.config_func import Database, time_replace, is_suitable
 from view.output import delete, kick, send, promote, reply, send_video
 from presenter.config.log import Loger, log_to
+from presenter.config.files_paths import systems_file
+import json
 
 log = Loger(log_to)
 
@@ -28,34 +30,39 @@ def deleter(message):
 
 def new_member(message):
     """Реагирует на вход в чат"""
-    log.log_print("new_member invoked")
+    log.log_print(f"{__name__} invoked")
     database = Database()
     member = message.new_chat_members[0]
     answer = ''
-
+    chat = database.get('chats', ('id', message.chat.id))
+    system = chat['system']
+    read_file = open(systems_file, 'r', encoding='utf-8')
+    data = json.load(read_file)
+    read_file.close()
+    chat_configs = data[system]
     if member.is_bot:
         send(message.chat.id, "Ещё один бот, вряд-ли более умный, чем я")
-    if database.get('members', ('id', member.id), ('rank', 'Violator')):
+    if database.get('members', ('id', member.id), ('rank', chat_configs['ranks'][0])):
         kick(message.chat.id, member.id)
-    elif database.get('appointments', ('id', member.id), ('appointment', 'Admin')) \
-            and database.get('chats', ('id', message.chat.id), ('admins_promote', 2)):
-        promote(message.chat.id, member.id,
-                can_change_info=False, can_delete_messages=True, can_invite_users=True,
-                can_restrict_members=True, can_pin_messages=True, can_promote_members=False)
-        answer += "О, добро пожаловать, держи админку"
-    elif database.get('members', ('id', member.id), ('rank', 'Deputy')):
+    elif is_suitable(message, member, 'uber', loud=False):
         promote(message.chat.id, member.id,
                 can_change_info=True, can_delete_messages=True, can_invite_users=True,
                 can_restrict_members=True, can_pin_messages=True, can_promote_members=True)
         answer += "О, добро пожаловать, держи полную админку"
+    elif is_suitable(message, member, 'boss', loud=False):
+        promote(message.chat.id, member.id,
+                can_change_info=False, can_delete_messages=True, can_invite_users=True,
+                can_restrict_members=True, can_pin_messages=True, can_promote_members=False)
+        answer += "О, добро пожаловать, держи админку"
     else:  # У нового участника нет особенностей
         answer = 'Добро пожаловать, {}'.format(member.first_name)
-    if answer:  # Если ответ не пустой
-        reply(message, answer)  # То отправляем ответ
-    # Держим Дэ'Макса в курсе происходящего
-    person = message.new_chat_members[0]
-    send(381279599, '{} (@{}) [{}] теперь в {}'.format(person.first_name, person.username, person.id,
-                                                       message.chat.title))
+    sent = reply(message, answer)
+    # Notify admins if admin's chat exists
+    admin_place = database.get('systems', ('id', system))['admin_place']
+    if admin_place:
+        send(admin_place, '{} (@{}) [{}] теперь в {}'.format(member.first_name, member.username, member.id,
+                                                         message.chat.title))
+    return sent
 
 
 def left_member(message):
@@ -63,16 +70,19 @@ def left_member(message):
     log.log_print("left_member invoked")
     database = Database()
     chat = database.get('chats', ('id', message.chat.id))
+    system = chat['system']
     if chat['type'] == 'private':
         chat = chat['name']
     else:
         chat = '@' + chat['link']
-    person = message.left_chat_member
-    if message.from_user.id == person.id:  # Чел вышел самостоятельно
+    member = message.left_chat_member
+    if message.from_user.id == member.id:  # Чел вышел самостоятельно
         reply(message, "Минус чувачок")
-        send(person.id, 'До встречи в ' + chat)
+        send(member.id, 'До встречи в ' + chat)
     else:  # Чела забанили
         send_video(message.chat.id, "BAADAgADhgMAAgYqMUvW-ezcbZS2ohYE")
-    # Держим Дэ'Макса в курсе происходящего
-    send(381279599, '{} (@{}) [{}] теперь не в {}'.format(person.first_name, person.username, person.id,
-                                                          message.chat.title))
+    # Notify admins if admin's chat exists
+    admin_place = database.get('systems', ('id', system))['admin_place']
+    if admin_place:
+        send(admin_place, '{} (@{}) [{}] теперь не в {}'.format(member.first_name, member.username, member.id,
+                                                            message.chat.title))

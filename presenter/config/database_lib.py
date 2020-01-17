@@ -74,7 +74,7 @@ class Database:
         self.cursor.execute(sql)
         self.connection.commit()  # Сохраняем изменения
 
-    def append(self, values, table='members'):
+    def append(self, values, table):
         """Добавляет запись в базу данных"""
         try:
             sql = """

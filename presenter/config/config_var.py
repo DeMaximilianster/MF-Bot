@@ -13,22 +13,24 @@ english_to_original = {'Russian': 'Русский', 'English': 'English'}
 months = ['No Month', january, february, march, april, may, june, july, august, september, october, november, december]
 
 
-def admin_place(database):
+def admin_place(message, database):
     log.log_print(f"{__name__} invoked")
-    return database.get('chats', ('purpose', "Админосостав"))['id']
+    chat = database.get('chats', ('id', message.chat.id))
+    system = chat['system']
+    return database.get('systems', ('id', system))['admin_place']
 
 
-def chat_list(database):  # TODO Сделать приличную чатоискалку
+def chat_list(database, system):  # TODO Сделать приличную чатоискалку
     """Список всех МФ2-чатов, кроме Админосостава и Комитета"""
     log.log_print(f"{__name__} invoked")
-    ch_list = database.get_many('chats', ('boss_commands', 2), ('violators_ban', 2), ('admins_promote', 2))
+    ch_list = database.get_many('chats', ('system', system))
     return ch_list
 
 
-def full_chat_list(database):
+def full_chat_list(database, system):
     """Список всех МФ2-чатов"""
     log.log_print(f"{__name__} invoked")
-    return database.get_all('chats')
+    return database.get_many('chats', ('system', system))
 
 
 def channel_list(database):
@@ -70,3 +72,4 @@ a_adequate_keyboard.row_width = 1
 
 # Список всех ролей и их подтипы
 roles = [None, 'Violator', 'Guest', 'Citizen', 'Senior Citizen', 'The Committee Member', 'Deputy', 'Leader']
+# TODO Эту переменную отсюда надо нахуй убрать

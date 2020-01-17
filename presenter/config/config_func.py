@@ -1,11 +1,12 @@
 # -*- coding: utf-8 -*-
 from random import choice
+import json
 
 from telebot.types import InlineKeyboardButton, InlineKeyboardMarkup, CallbackQuery
 
-from presenter.config.config_var import roles, bot_id
+from presenter.config.config_var import bot_id
 from presenter.config.database_lib import Database
-from presenter.config.files_paths import adapt_votes_file, multi_votes_file, votes_file
+from presenter.config.files_paths import adapt_votes_file, multi_votes_file, votes_file, systems_file
 from presenter.config.log import Loger
 from presenter.config.log import log_to
 from view.output import *
@@ -137,13 +138,19 @@ def person_analyze(message, to_self=False, to_bot=False):
 
 
 def rank_superiority(message, person):
-    log.log_print("rank superiority invoked")
+    log.log_print(f"{__name__} invoked")
     database = Database()
-    your_rank = database.get('members', ('id', message.from_user.id))['rank']
-    their_rank = database.get('members', ('id', person.id))['rank']
-
-    your_rank_n = roles.index(your_rank)
-    their_rank_n = roles.index(their_rank)
+    chat = database.get('chats', ('id', message.chat.id))
+    system = chat['system']
+    read_file = open(systems_file, 'r', encoding='utf-8')
+    data = json.load(read_file)
+    read_file.close()
+    chat_configs = data[str(system)]
+    ranks = chat_configs['ranks']
+    your_rank = database.get('members', ('id', message.from_user.id), ('system', system))['rank']
+    their_rank = database.get('members', ('id', person.id), ('system', system))['rank']
+    your_rank_n = ranks.index(your_rank)
+    their_rank_n = ranks.index(their_rank)
     if their_rank_n >= your_rank_n:
         reply(message, "Для этого ваше звание ({}) должно превосходить звание цели ({})".format(your_rank, their_rank))
         return False
@@ -151,13 +158,18 @@ def rank_superiority(message, person):
         return True
 
 
-def rank_required(message, min_rank, max_rank, loud=True):
+def rank_required(message, person, system, min_rank, max_rank, loud=True):
     log.log_print("rank_required invoked from userID {}".format(message.from_user.id))
     database = Database()
-    your_rank = database.get('members', ('id', message.from_user.id))['rank']
-    your_rank_n = roles.index(your_rank)
-    min_rank_n = roles.index(min_rank)
-    max_rank_n = roles.index(max_rank)
+    read_file = open(systems_file, 'r', encoding='utf-8')
+    data = json.load(read_file)
+    read_file.close()
+    chat_configs = data[system]
+    ranks = chat_configs['ranks']
+    your_rank = database.get('members', ('id', person.id), ('system', system))['rank']
+    your_rank_n = ranks.index(your_rank)
+    min_rank_n = ranks.index(min_rank)
+    max_rank_n = ranks.index(max_rank)
     if your_rank_n < min_rank_n and loud:
         if type(message) == CallbackQuery:
             answer_callback(message.id,
@@ -177,14 +189,40 @@ def rank_required(message, min_rank, max_rank, loud=True):
     return min_rank_n <= your_rank_n <= max_rank_n
 
 
-def appointment_required(message, appointment, loud=True):
-    log.log_print(f"{__name__} invoked")
+def appointment_required(message, person, system, appointment, loud=True):
+    log.log_print("appointment_required invoked")
     database = Database()
-    true_false = database.get("appointments", ('id', message.from_user.id), ('appointment', appointment))
+    true_false = database.get("appointments", ('id', person.id), ('appointment', appointment),
+                              ('system', system))
     if not true_false and loud:
         reply(message, "Вам для этого нужна должность {}".format(appointment))
-
     return true_false
+
+
+def is_suitable(inputed, person, command_type, system=None, loud=True):
+    """Function to check if this command can be permitted in current chat"""
+    log.log_print("is_suitable invoked")
+    database = Database()
+    # determine if input is a message or a callback query
+    if type(inputed) == CallbackQuery:
+        message = inputed.message
+    else:
+        message = inputed
+    # determine which system chat belongs to, and check for requirements
+    chat = database.get('chats', ('id', message.chat.id))
+    if chat:
+        if not system:
+            system = chat['system']
+        read_file = open(systems_file, 'r', encoding='utf-8')
+        data = json.load(read_file)
+        read_file.close()
+        chat_configs = data[str(system)]
+        requirements = chat_configs['commands'][command_type]
+        # check if requirement for this command type is a rank or appointment
+        if isinstance(requirements, list):  # Requirement is a list
+            return rank_required(inputed, person, system, requirements[0], requirements[1], loud=loud)
+        elif isinstance(requirements, str):  # Requirement is a string
+            return appointment_required(message, person, system, requirements, loud=loud)
 
 
 def cooldown(message, command, timeout=3600):
@@ -232,14 +270,14 @@ def in_mf(message, command_type, or_private=True, loud=True):
     """Позволяет регулировать использование команл вне чатов и в личке"""
     log.log_print("in_mf invoked")
     database = Database()
+
     if message.new_chat_members:
         person = message.new_chat_members[0]
     elif message.left_chat_member:
         person = message.left_chat_member
     else:
         person = message.from_user
-    if not database.get('members', ('id', person.id)):
-        database.append((person.id, person.username, person.first_name, 'Guest', 0, 0, 0, 0, 0), 'members')
+
     if message.chat.id > 0:
         if loud and not or_private:
             person = message.from_user
@@ -247,39 +285,53 @@ def in_mf(message, command_type, or_private=True, loud=True):
                  .format(person.first_name, person.username, person.id, message.text))
             reply(message, "Эта команда отключена в ЛС")
         return or_private
-    if not database.get('chats', ('id', message.chat.id)) and \
-            get_member(message.chat.id, database.get('members', ('rank', 'Leader'))['id']).status in ['member',
-                                                                                                      'administrator',
-                                                                                                      'creator']:
-        typee = 'private'
-        link = 'None'
-        if message.chat.username:
-            typee = 'public'
-            link = message.chat.username
-        database.append((message.chat.id, message.chat.title, 'None', typee, link, 2, 0, 0, 0, 0, 0, 0), 'chats')
-    if command_type:
-        chat = database.get('chats', ('id', message.chat.id), (command_type, 2))
-    else:
-        chat = database.get('chats', ('id', message.chat.id))
-    if chat:  # Команда вызвана в системе МФ2
-        counter(message)  # Отправляем сообщение на учёт в БД
-        return True
+
+    chat = database.get('chats', ('id', message.chat.id))
+    if chat:
+        system = chat['system']
+        read_file = open(systems_file, 'r', encoding='utf-8')
+        data = json.load(read_file)
+        read_file.close()
+        chat_configs = data[system]
+        if not database.get('members', ('id', person.id), ('system', system)):
+            person_entry = (person.id, system, person.username, person.first_name, chat_configs['ranks'][1], 0, 0, 0, 0, 0)
+            database.append(person_entry, 'members')
+        if command_type:
+            chat = database.get('chats', ('id', message.chat.id), (command_type, 2))
+        else:
+            chat = database.get('chats', ('id', message.chat.id))
+        if chat:  # Команда вызвана в системе МФ2
+            counter(message)  # Отправляем сообщение на учёт в БД
+            return True
     if loud:
         text = "Жалкие завистники из чата с ID {} и названием {}, в частности {} (@{}) [{}] "
         text += "попытались мной воспользоваться"
         send(381279599, text.format(message.chat.id, message.chat.title, message.from_user.first_name,
                                     message.from_user.username, message.from_user.id))
         rep_text = ""
-        if command_type:
-            rep_text += "I'm sorry, but I don't support here types like {}. ".format(command_type)
-            rep_text += "Call @DeMaximilianster for help\n\n"
-            rep_text += "Прошу прощения, но я не здесь не поддерживаю команды вида {}. ".format(command_type)
-            rep_text += "Обратитесь к @DeMaximilianster за помощью\n\n"
-        else:
-            rep_text += "Hmm, I don't know this chat. Call @DeMaximilianster for help\n\n"
-            rep_text += "Хмм, я не знаю этот чат. Обратитесь к @DeMaximilianster за помощью\n\n"
+        rep_text += "Hmm, I don't know this chat. Call @DeMaximilianster for help\n\n"
+        rep_text += "Хмм, я не знаю этот чат. Обратитесь к @DeMaximilianster за помощью\n\n"
         reply(message, rep_text)
-    return False
+
+
+def in_system_commands(message):
+    """Check if command is available in this system"""
+    log.log_print(f"{__name__} invoked")
+    database = Database()
+    chat = database.get('chats', ('id', message.chat.id))
+    if chat:
+        system = chat['system']
+        read_file = open(systems_file, 'r', encoding='utf-8')
+        data = json.load(read_file)
+        read_file.close()
+        chat_configs = data[str(system)]
+        if message.text:
+            command = message.text.split()[0]
+            every = chat_configs["ranks_commands"] + chat_configs["appointment_adders"]
+            every += chat_configs["appointment_removers"]
+            return command in every
+    else:
+        return message.text.split()[0] in ("/guest", "/admin", "/senior_admin", "/leader")
 
 
 def counter(message):
@@ -299,16 +351,16 @@ def counter(message):
     # TODO Добавить время последнего сообщения и элитократические взаимодействия с ним
 
 
-def member_update(person):
+def member_update(system, person):
     database = Database()
-    chats_ids = [x['id'] for x in database.get_many('chats', ('messages_count', 2))]
+    chats_ids = [x['id'] for x in database.get_many('chats', ('messages_count', 2), ('system', system))]
     msg_count = 0
     for chat_id in chats_ids:
         if database.get('messages', ('person_id', person.id), ('chat_id', chat_id)):
             msg_count += database.get('messages', ('person_id', person.id), ('chat_id', chat_id))['messages']
-    database.change(person.username, 'username', 'members', ('id', person.id))
-    database.change(person.first_name, 'nickname', 'members', ('id', person.id))
-    database.change(msg_count, 'messages', 'members', ('id', person.id))
+    database.change(person.username, 'username', 'members', ('id', person.id), ('system', system))
+    database.change(person.first_name, 'nickname', 'members', ('id', person.id), ('system', system))
+    database.change(msg_count, 'messages', 'members', ('id', person.id), ('system', system))
 
 
 # TODO перенести все голосовашки в базу данных или ещё куда-то (JSON)

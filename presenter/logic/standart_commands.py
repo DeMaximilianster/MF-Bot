@@ -1,12 +1,15 @@
 # -*- coding: utf-8 -*-
 from view.output import reply, send_photo, send_sticker, send
-from presenter.config.config_func import time_replace, language_analyzer, case_analyzer, member_update
+from presenter.config.config_func import time_replace, language_analyzer, case_analyzer, member_update, int_check, \
+    is_suitable
 from presenter.config.database_lib import Database
 from presenter.config.config_var import bot_id, admin_place, original_to_english, english_to_original, months
 from random import choice
 from time import ctime, time
 from presenter.config.log import Loger, log_to
 from presenter.config.texts import minets
+from presenter.config.files_paths import systems_file
+import json
 
 log = Loger(log_to)
 
@@ -41,17 +44,30 @@ def language_getter(message):
 def helper(message):
     """Предоставляет человеку список команд"""
     log.log_print(str(message.from_user.id) + ": helper invoked")
-    answer = '*Команды:*\n\n'
-    answer += '/help - Присылает это сообщение\n'
-    answer += "/id - Присылает различные ID'шники, зачастую бесполезные\n"
-    answer += '/minet - Делает приятно\n'
-    answer += '/drakken - Присылает арт с Доктором Драккеном\n'
-    answer += '/meme - Присылает хороший мем\n'
-    answer += '/me - Присылает вашу запись в базе данных\n\n'
+    answer = 'Команды:\n\n'
+    answer += '/help - Прислать это сообщение\n'
+    # answer += "/id - Присылает различные ID'шники, зачастую бесполезные\n"
+    # answer += '/minet - Делает приятно\n'
+    # answer += '/drakken - Присылает арт с Доктором Драккеном\n'
+    # answer += '/meme - Присылает хороший мем\n'
+    answer += '/me - Присылает вашу запись в базе данных\n'
+    answer += '/anon - Прислать анонимное послание в админский чат (если таковой имеется)\n'
+    answer += '/members - Прислать в личку перечень участников (нынешних и бывших) и их ID\n\n'
 
-    answer += '/admin - Только для главадмина и его заместителя. Даёт человеку админку\n'
-    answer += '/unadmin - Только для главадмина и его заместителя. Забирает у человека админку\n'
-    reply(message, answer, parse_mode='Markdown')
+    if is_suitable(message, message.from_user, 'boss', loud=False):
+        answer += '/messages <число сообщений> - Изменить количество сообщений от участника в этом чате\n'
+        answer += '/warn <число варнов>- Дать варн(ы) (3 варна = бан)\n'
+        answer += '/unwarn <число варнов>- Снять варн(ы)\n'
+        answer += '/mute <количество часов> - Запретить писать в чат\n'
+        answer += '/ban - Дать бан\n'
+        answer += '/guest - Снять ограничения, забрать админку\n\n'
+    if is_suitable(message, message.from_user, 'uber', loud=False):
+        answer += '/admin - Снять ограничения, дать админку\n'
+        answer += '/senior_admin - Снять бан, дать продвинутую админку\n\n'
+    if is_suitable(message, message.from_user, 'chat_changer', loud=False):
+        answer += '/add_chat <номер системы чатов> - Добавить чат в систему чатов\n'
+        answer += '/admin_place - Отметить чат как админский'
+    reply(message, answer)
 
 
 def show_id(message):
@@ -135,9 +151,13 @@ def send_me(message, person):
     """Присылает человеку его запись в БД"""
     log.log_print(str(message.from_user.id) + ": send_me invoked")
     database = Database()
-    member_update(person)  # Update person's messages, nickname and username
-    p = database.get('members', ('id', person.id))
-    appointments = [x['appointment'] for x in database.get_many('appointments', ('id', person.id))]
+    system = database.get('chats', ('id', message.chat.id))['system']
+    read_file = open(systems_file, 'r', encoding='utf-8')
+    data = json.load(read_file)
+    chat_config = data[system]
+    member_update(system, person)  # Update person's messages, nickname and username
+    p = database.get('members', ('id', person.id), ('system', system))
+    appointments = [x['appointment'] for x in database.get_many('appointments', ('id', person.id), ('system', system))]
     if database.get('messages', ('person_id', person.id), ('chat_id', message.chat.id)):
         messages_here = database.get('messages', ('person_id', person.id), ('chat_id', message.chat.id))['messages']
     else:
@@ -147,9 +167,10 @@ def send_me(message, person):
     msg += 'Никнейм: {}\n'.format(p['nickname'])
     msg += 'Ранг: {}\n'.format(p['rank'])
     msg += 'Кол-во сообщений в этом чате: {}\n'.format(messages_here)
-    msg += 'Кол-во сообщений во всём МФ2: {}\n'.format(p['messages'])
+    msg += 'Кол-во сообщений во всей системе: {}\n'.format(p['messages'])
     msg += 'Кол-во предупреждений: {}\n'.format(p['warns'])
-    msg += 'Кол-во ябломилианов: {}\n'.format(p['money'])
+    if chat_config['money']:
+        msg += 'Кол-во валюты: {}\n'.format(p['money'])
     if appointments:
         msg += 'Должности: ' + ', '.join(appointments)
     reply(message, msg)
@@ -159,7 +180,8 @@ def all_members(message):
     """Присылает человеку все записи в БД"""
     log.log_print("all_members invoked")
     database = Database()
-    members = database.get_all('members', 'messages')
+    system = database.get('chats', ('id', message.chat.id))['system']
+    members = database.get_many('members', ('system', system))
     sent = None
     if len(members) % 50 == 0:
         fiftys = len(members) // 50
@@ -172,6 +194,14 @@ def all_members(message):
             username = "[{}](tg://user?id={})".format(member['nickname'].replace('[', '').replace(']', ''),
                                                       member['id'])
             answer += '`' + str(member['id']) + '` ' + username + '\n'
+        sent = send(message.from_user.id, answer, parse_mode='Markdown')
+    if len(members) < 50:
+        answer = ''
+        for member in members:
+            username = "[{}](tg://user?id={})".format(member['nickname'].replace('[', '').replace(']', ''),
+                                                      member['id'])
+            answer += '`' + str(member['id']) + '` ' + username + '\n'
+
         sent = send(message.from_user.id, answer, parse_mode='Markdown')
     if sent:
         reply(message, "Выслал БД в личку")
@@ -187,8 +217,10 @@ def money_give(message, person):
     getter = person.id
     giver = message.from_user.id
     money = message.text.split()[-1]
-    value_getter = database.get('members', ('id', getter))['money']
-    value_giver = database.get('members', ('id', giver))['money']
+    chat = database.get('chats', ('id', message.chat.id))
+    system = chat['system']
+    value_getter = database.get('members', ('id', getter), ('system', system))['money']
+    value_giver = database.get('members', ('id', giver), ('system', system))['money']
     if money[0] == '-':
         reply(message, "Я вам запрещаю воровать")
     elif money == "0":
@@ -215,23 +247,25 @@ def money_give(message, person):
             reply(message, f"#Финансы #Ф{getter} #Ф{giver}\n\n"
                            f"ID {getter} [{value_getter - money} --> {value_getter}] {get_m}\n"
                            f"ID {giver} [{value_giver + money} --> {value_giver}] {giv_m}\n")
-            send(admin_place(database), f"#Финансы #Ф{getter} #Ф{giver}\n\n"
+            send(admin_place(message, database), f"#Финансы #Ф{getter} #Ф{giver}\n\n"
                                         f"ID {getter} [{value_getter - money} --> {value_getter}] {get_m}\n"
                                         f"ID {giver} [{value_giver + money} --> {value_giver}] {giv_m}\n")
-    database.change(value_getter, 'money', 'members', ('id', getter))
-    database.change(value_giver, 'money', 'members', ('id', giver))
+    database.change(value_getter, 'money', 'members', ('id', getter), ('system', system))
+    database.change(value_giver, 'money', 'members', ('id', giver), ('system', system))
 
 
 def money_top(message):
     log.log_print(f"{__name__} invoked")
     database = Database()
-    bot_money = database.get('members', ('id', bot_id))['money']
-    people = list(database.get_all("members", 'money'))
-    people = filter(lambda x: x['money'] != 0 and x['id'] != bot_id, people)
+    chat = database.get('chats', ('id', message.chat.id))
+    system = chat['system']
+    bot_money = database.get('systems', ('id', system))['money']
+    people = list(database.get_many('members', ('system', system)))
+    people = list(filter(lambda x: x['money'] != 0 and x['id'] != bot_id, people))
+    people.sort(key=lambda x: -x['money'])
     i = 1
     text = "Бюджет: {} 🍎\n".format(bot_money)
     for person in people:
-        print(person)
         text += "\n{}. <a href='t.me/{}'>{}</a> — {} 🍎".format(i, person['username'], person['nickname'],
                                                                 person['money'])
         i += 1
@@ -282,8 +316,21 @@ def birthday(message):
 
 def admins(message):
     database = Database()
-    admins_id = [admin['id'] for admin in database.get_many('appointments', ('appointment', 'Admin'))]
-    admins_username = ['@' + database.get('members', ('id', admin))['username'] for admin in admins_id]
+    chat = database.get('chats', ('id', message.chat.id))
+    system = chat['system']
+    read_file = open(systems_file, 'r', encoding='utf-8')
+    data = json.load(read_file)
+    chat_config = data[system]
+    boss = chat_config['commands']['boss']
+    ranks = chat_config['ranks']
+    admins_username = []
+    if isinstance(boss, list):
+        all_ranks = ranks[ranks.index(boss[0]):ranks.index(boss[1])+1]
+        for rank in all_ranks:
+            admins_username += ['@'+x['username'] for x in database.get_many('members', ('rank', rank), ('system', system))]
+    elif isinstance(boss, str):
+        admins_id = [admin['id'] for admin in database.get_many('appointments', ('appointment', boss))]
+        admins_username = ['@'+database.get('members', ('id', admin), ('system', system))['username'] for admin in admins_id]
     reply(message, 'Вызываю сюда админов: ' + ', '.join(admins_username))
 
 
@@ -332,9 +379,28 @@ def chat_check(message):
 def anon_message(message):
     log.log_print(f'{__name__} invoked')
     database = Database()
-    admin_chat = admin_place(database)
-    sent = send(admin_chat, "#anon\n\n" + message.text[6:])
-    if sent:
-        reply(message, "Сообщение успешно отправлено. Спасибо за ваше мнение!")
+    systems = [x['system'] for x in database.get_many('members', ('id', message.from_user.id))]
+    system = None
+    if len(systems) == 1:
+        system = systems[0]
+    elif int_check(message.text.split()[1], positive=True):
+        system = message.text.split()[1]
     else:
-        reply(message, "Произошла ошибка!")
+        read_file = open(systems_file, 'r', encoding='utf-8')
+        data = json.load(read_file)
+        read_file.close()
+        text = "Вижу вы сидите в нескольких чатах. Чтобы уточнить, в какой админосостав отправлять сообщение, " \
+               "оформите вашу команду так:\n\n/anon <номер системы> <ваше послание>.\n\n Вот список систем:\n"
+        names = [f"{sys} — {data[sys]['name']}" for sys in systems]
+        reply(message, text + '\n'.join(names))
+    if system:
+        admin_chat = database.get('systems', ('id', system))
+        if admin_chat['admin_place']:
+            sent = send(admin_chat['admin_place'], "#anon\n\n" + ' '.join(message.text.split()[2:]))
+            if sent:
+                reply(message, "Сообщение успешно отправлено. Спасибо за ваше мнение!")
+            else:
+                reply(message, "Произошла ошибка!")
+        else:
+            reply(message, "У этой системы админосостав не отмечен")
+

@@ -58,8 +58,7 @@ def response(inline_query):
 def insult(message):
     """Спращивает, иронично ли признание оскорблением"""
     log.log_print("insult invoked")
-    text = "Иронично? \n\n(обращаем ваше внимание на то, что если вы по приколу нажмёте на 'неиронично', то "
-    text += "ваши действия могут быть сочтены админами, как провокация)"
+    text = "Иронично? \n\n(В случае нажатия 'Нет' в админосостав будет послана жалоба. Будьте добры не пользоваться каналом жалоб, если вас не оскорбили)"
     reply(message, text, reply_markup=ironic_keyboard)
 
 
@@ -69,7 +68,8 @@ def non_ironic(call):
     # Проверка, нажал ли на кнопку не тот, кто нужен
     edit_text("Неиронично!", call.message.chat.id, call.message.message_id)
     # TODO добавить сюда голосовашку
-    send(admin_place(Database()), "Если вы это читаете, то разработка авто-признавалки оскорблений проходит хорошо " +
+    send(admin_place(call.message, Database()),
+         "Произошло оскорбление! " +
          "[Ссылка на инцидент](t.me/{}/{})".format(call.message.reply_to_message.chat.username,
                                                    call.message.reply_to_message.message_id),
          parse_mode="Markdown", disable_web_page_preview=True)
@@ -227,10 +227,12 @@ def vote(message):
     where_keyboard = InlineKeyboardMarkup()
     where_keyboard.row_width = 1
     where_keyboard.add(InlineKeyboardButton("Сюда", callback_data="here"))
+    '''
     if appointment_required(message, 'Admin', loud=False):
         where_keyboard.add(InlineKeyboardButton("На канал голосовашек", callback_data="there"))
     if appointment_required(message, 'Content-maker', loud=False):
         where_keyboard.add(InlineKeyboardButton("На канал недостримов", callback_data="nedostream"))
+    '''
     reply(message, "А запостить куда?", reply_markup=where_keyboard)
 
 # TODO разделить этот модуль на сообщения с кнопками и триггеры кнопок

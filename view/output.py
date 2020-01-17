@@ -99,6 +99,20 @@ def kick(chat_id, user_id, until_date=None):
         log.log_print(e)
 
 
+def restrict(chat_id, user_id, until_date=None, can_send_messages=None, can_send_media_messages=None,
+             can_send_other_messages=None, can_add_web_page_previews=None):
+    """Restrict chat member"""
+    log.log_print("restrict invoked")
+    try:
+        return bot.restrict_chat_member(chat_id=chat_id, user_id=user_id, until_date=until_date,
+                                        can_send_messages=can_send_messages,
+                                        can_send_media_messages=can_send_media_messages,
+                                        can_send_other_messages=can_send_other_messages,
+                                        can_add_web_page_previews=can_add_web_page_previews)
+    except Exception as e:
+        log.log_print(e)
+
+
 def unban(chat_id, user_id):
     """Unban member"""
     log.log_print(f"{__name__} invoked")
