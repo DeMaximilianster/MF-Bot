@@ -74,7 +74,7 @@ def new_member_handler(message):
                 new_dudes[person.id] = [message.message_id]
                 print(new_dudes)
             sent = new_member(message, person)
-            if message.from_user.id in new_dudes:
+            if message.from_user.id in new_dudes and sent:
                 new_dudes[person.id].append(sent.message_id)
 
 
@@ -571,7 +571,7 @@ def counter_handler(message):
 def dude_is_bad(message, unban_then=True):
     global new_dudes
     if message.from_user.id in new_dudes:
-        if len(new_dudes[message.from_user.id]) < 4:
+        if len(new_dudes[message.from_user.id]) < 2:
             ban(message, message.from_user, comment=False, unban_then=unban_then)
             for msg in new_dudes[message.from_user.id]:
                 delete(message.chat.id, msg)

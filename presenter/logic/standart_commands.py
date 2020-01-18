@@ -3,7 +3,8 @@ from view.output import reply, send_photo, send_sticker, send
 from presenter.config.config_func import time_replace, language_analyzer, case_analyzer, member_update, int_check, \
     is_suitable, feature_is_available
 from presenter.config.database_lib import Database
-from presenter.config.config_var import bot_id, admin_place, original_to_english, english_to_original, months, features
+from presenter.config.config_var import bot_id, admin_place, original_to_english, english_to_original, months,\
+    features, features_texts
 from random import choice
 from time import ctime, time
 from presenter.config.log import Loger, log_to
@@ -370,12 +371,6 @@ def chat_check(message):
     system = database.get('systems', ('id', chat['system']))
     # properties = ['id', 'name', 'purpose', 'type', 'link', 'standart_commands', 'boss_commands', 'financial_commands',
     #              'mutual_invites', 'messages_count', 'violators_ban', 'admins_promote']
-    features_texts = dict()
-    features_texts['Russian'] = ['Стандартные команды', 'Админские команды', 'Денежные команды', 'Ссылка учитывается',
-                                 'Сообщения считаются', 'Нарушители банятся', 'Админы получают админку']
-    features_texts['English'] = ['Standart commands', 'Admin commands', 'Financial commands',
-                                 'Invites links', 'Messages are count for citizenship',
-                                 'MF2 violators are automatically banned', 'MF2 admins are automatically promoted']
     text = 'Настройки этого чата:\n\n'
     for feature in features:
         mark = ''
@@ -408,12 +403,7 @@ def system_check(message):
     database = Database()
     chat = database.get('chats', ('id', message.chat.id))
     system = database.get('systems', ('id', chat['system']))
-    features_texts = dict()
-    features_texts['Russian'] = ['Стандартные команды', 'Админские команды', 'Денежные команды', 'Ссылка учитывается',
-                                 'Сообщения считаются', 'Нарушители банятся', 'Админы получают админку']
-    features_texts['English'] = ['Standart commands', 'Admin commands', 'Financial commands',
-                                 'Invites links', 'Messages are count for citizenship',
-                                 'MF2 violators are automatically banned', 'MF2 admins are automatically promoted']
+    print(system)
     text = 'Настройки по умолчанию:\n\n'
     for feature in features:
         system_property = system[feature]

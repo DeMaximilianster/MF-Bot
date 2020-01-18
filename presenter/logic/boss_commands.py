@@ -327,8 +327,8 @@ def add_chat(message):
         all_systems = database.get_all('systems', 'id')
         ids = [int(sys['id']) for sys in all_systems]
         new_id = str(max(ids) + 1)
-        database.append((message.chat.id, new_id, message.chat.title, typee, link, 2, 2, 2, 2, 2, 2, 2), 'chats')
-        database.append((new_id, 0, 0, 1, 1, 0, 0, 2, 1, 1), 'systems')
+        database.append((message.chat.id, new_id, message.chat.title, typee, link, 2, 2, 2, 2, 2, 2, 2, 2), 'chats')
+        database.append((new_id, 0, 0, 1, 1, 0, 0, 2, 1, 1, 1), 'systems')
         read_file = open(systems_file, 'r', encoding='utf-8')
         data = json.load(read_file)
         read_file.close()

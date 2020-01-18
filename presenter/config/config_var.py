@@ -74,7 +74,14 @@ a_adequate_keyboard.row_width = 1
 roles = [None, 'Violator', 'Guest', 'Citizen', 'Senior Citizen', 'The Committee Member', 'Deputy', 'Leader']
 # TODO Эту переменную отсюда надо нахуй убрать
 features = ('standart_commands', 'boss_commands', 'financial_commands',
-            'mutual_invites', 'messages_count', 'violators_ban', 'admins_promote')
+            'mutual_invites', 'messages_count', 'violators_ban', 'admins_promote', 'moves_delete')
+features_texts = dict()
+features_texts['Russian'] = ['Стандартные команды', 'Админские команды', 'Денежные команды', 'Ссылка учитывается',
+                             'Сообщения считаются', 'Нарушители банятся', 'Админы получают админку',
+                             'Сообщения о входе и выходе удаляются']
+features_texts['English'] = ['Standart commands', 'Admin commands', 'Financial commands',
+                             'Invites links', 'Messages are count for citizenship',
+                             'MF2 violators are automatically banned', 'MF2 admins are automatically promoted']
 features_oners = tuple(map(lambda x: x+'_on', features))
 features_offers = tuple(map(lambda x: x+'_off', features))
 features_defaulters = tuple(map(lambda x: x+'_default', features))

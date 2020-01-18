@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 from presenter.config.config_func import Database, time_replace, is_suitable, feature_is_available
-from view.output import delete, kick, send, promote, reply, send_video
+from view.output import delete, kick, send, promote, reply
 from presenter.config.log import Loger, log_to
 from presenter.config.files_paths import systems_file
 import json
@@ -56,12 +56,16 @@ def new_member(message, member):
         answer += "О, добро пожаловать, держи админку"
     else:  # У нового участника нет особенностей
         answer = 'Добро пожаловать, {}'.format(member.first_name)
-    sent = reply(message, answer)
+    sent = None
+    if feature_is_available(message.chat.id, system, 'moves_delete'):
+        delete(message.chat.id, message.message_id)
+    else:
+        sent = reply(message, answer)
     # Notify admins if admin's chat exists
     admin_place = database.get('systems', ('id', system))['admin_place']
     if admin_place:
         send(admin_place, '{} (@{}) [{}] теперь в {}'.format(member.first_name, member.username, member.id,
-                                                         message.chat.title))
+                                                             message.chat.title))
     return sent
 
 
@@ -77,7 +81,10 @@ def left_member(message):
         chat = '@' + chat['link']
     member = message.left_chat_member
     if message.from_user.id == member.id:  # Чел вышел самостоятельно
-        reply(message, "Минус чувачок")
+        if feature_is_available(message.chat.id, system, 'moves_delete'):
+            delete(message.chat.id, message.message_id)
+        else:
+            reply(message, "Минус чувачок")
         send(member.id, 'До встречи в ' + chat)
     else:  # Чела забанили
         delete(message.chat.id, message.message_id)
@@ -85,4 +92,4 @@ def left_member(message):
     admin_place = database.get('systems', ('id', system))['admin_place']
     if admin_place:
         send(admin_place, '{} (@{}) [{}] теперь не в {}'.format(member.first_name, member.username, member.id,
-                                                            message.chat.title))
+                                                                message.chat.title))
