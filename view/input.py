@@ -3,7 +3,7 @@ from view.output import reply, answer_callback, delete
 from presenter.config.config_func import in_mf, cooldown, person_analyze, rank_superiority, \
      int_check, person_check, is_suitable, in_system_commands
 from presenter.logic.elite import elite
-from presenter.logic.boss_commands import ban, add_chat, add_admin_place, \
+from presenter.logic.boss_commands import ban, add_chat, add_admin_place, chat_options, \
     warn, unwarn, message_change, money_pay, rank_changer, mute
 from presenter.logic.complicated_commands import adequate, inadequate, response, insult, non_ironic, ironic, \
     place_here, mv, av, add_vote, vote
@@ -13,6 +13,7 @@ from presenter.logic.standart_commands import helper, send_drakken, send_me, sen
     anon_message
 from presenter.logic.start import starter
 from presenter.config.log import Loger, log_to
+from presenter.config.config_var import features_defaulters, features_oners, features_offers
 from requests import get
 import time
 from threading import Thread
@@ -206,7 +207,7 @@ def messages_change_handler(message):
 
 
 @bot.message_handler(commands=['add_chat'])
-def add_chat_handler(message):
+def add_chat_handler(message):  # TODO Она работает в личке, а не должна
     """Добавляет чат в базу данных чатов, входящих в систему МФ2"""
     log.log_print(f"add_chat_handler invoked")
     add_chat(message)
@@ -216,9 +217,15 @@ def add_chat_handler(message):
 def add_admin_place_handler(message):
     """Add admin place to system"""
     log.log_print("add_admin_place_handler invoked")
-    if in_mf(message, command_type='boss_commands') and is_suitable(message, message.from_user, "chat_changer"):
+    if in_mf(message, command_type=None, or_private=False) and is_suitable(message, message.from_user, "chat_changer"):
         add_admin_place(message)
 
+
+@bot.message_handler(commands=features_offers+features_oners+features_defaulters)
+def chat_options_handler(message):
+    log.log_print("chat_options_handler invoked")
+    if in_mf(message, command_type=None, or_private=False) and is_suitable(message, message.from_user, "chat_changer"):
+        chat_options(message)
 
 '''
 @bot.message_handler(commands=['change_database'])

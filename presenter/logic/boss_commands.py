@@ -360,6 +360,25 @@ def add_admin_place(message):
         reply(message, "Теперь это чат админов. Я сюда буду присылать различные уведомления!")
 
 
+def chat_options(message):
+    """Optimize current chat"""
+    log.log_print("chat_options invoked")
+    database = Database()
+    text = message.text.split(sep='@')[0]
+    last_word = text.split(sep='_')[-1]
+    if last_word == 'default':
+        mode = 2
+        text = text[1:-8]
+    elif last_word == 'on':
+        mode = 1
+        text = text[1:-3]
+    else:  # last_word == 'off'
+        mode = 0
+        text = text[1:-4]
+    database.change(mode, text, 'chats', ('id', message.chat.id))
+    reply(message, "ОК!")
+
+
 def database_changer():
     database = Database()
     members = database.get_all('members')

@@ -73,3 +73,10 @@ a_adequate_keyboard.row_width = 1
 # Список всех ролей и их подтипы
 roles = [None, 'Violator', 'Guest', 'Citizen', 'Senior Citizen', 'The Committee Member', 'Deputy', 'Leader']
 # TODO Эту переменную отсюда надо нахуй убрать
+features = ('standart_commands', 'boss_commands', 'financial_commands',
+            'mutual_invites', 'messages_count', 'violators_ban', 'admins_promote')
+features_oners = tuple(map(lambda x: x+'_on', features))
+features_offers = tuple(map(lambda x: x+'_off', features))
+features_defaulters = tuple(map(lambda x: x+'_default', features))
+system_features_oners = tuple(map(lambda x: 'system_'+x+'_on', features))
+system_features_offers = tuple(map(lambda x: 'system_'+x+'_off', features))

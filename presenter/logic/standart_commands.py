@@ -3,7 +3,7 @@ from view.output import reply, send_photo, send_sticker, send
 from presenter.config.config_func import time_replace, language_analyzer, case_analyzer, member_update, int_check, \
     is_suitable
 from presenter.config.database_lib import Database
-from presenter.config.config_var import bot_id, admin_place, original_to_english, english_to_original, months
+from presenter.config.config_var import bot_id, admin_place, original_to_english, english_to_original, months, features
 from random import choice
 from time import ctime, time
 from presenter.config.log import Loger, log_to
@@ -350,7 +350,6 @@ def chats(message):
 def chat_check(message):
     database = Database()
     database.change(message.chat.title, 'name', 'chats', ('id', message.chat.id))
-    lang = language_analyzer(message, only_one=True)
     if message.chat.username:
         database.change('public', 'type', 'chats', ('id', message.chat.id))
         database.change(message.chat.username, 'link', 'chats', ('id', message.chat.id))
@@ -358,21 +357,40 @@ def chat_check(message):
         database.change('private', 'type', 'chats', ('id', message.chat.id))
         database.change('None', 'link', 'chats', ('id', message.chat.id))
     chat = database.get('chats', ('id', message.chat.id))
-    properties = ['id', 'name', 'purpose', 'type', 'link', 'standart_commands', 'boss_commands', 'financial_commands']
-    properties += ['mutual_invites', 'messages_count', 'violators_ban', 'admins_promote']
-    props = dict()
-    props['Russian'] = ['Стандартные команды', 'Админские команды', 'Денежные команды', 'Ссылка учитывается',
-                        'Сообщения считаются', 'Нарушители банятся', 'Админы получают админку']
-    props['English'] = ['Standart commands', 'Admin commands', 'Financial commands',
-                        'Invites links', 'Messages are count for citizenship',
-                        'MF2 violators are automatically banned', 'MF2 admins are automatically promoted']
+    system = database.get('systems', ('id', chat['system']))
+    # properties = ['id', 'name', 'purpose', 'type', 'link', 'standart_commands', 'boss_commands', 'financial_commands',
+    #              'mutual_invites', 'messages_count', 'violators_ban', 'admins_promote']
+    features_texts = dict()
+    features_texts['Russian'] = ['Стандартные команды', 'Админские команды', 'Денежные команды', 'Ссылка учитывается',
+                                 'Сообщения считаются', 'Нарушители банятся', 'Админы получают админку']
+    features_texts['English'] = ['Standart commands', 'Admin commands', 'Financial commands',
+                                 'Invites links', 'Messages are count for citizenship',
+                                 'MF2 violators are automatically banned', 'MF2 admins are automatically promoted']
     text = ''
-    for i in properties[5:]:
-        if chat[i]:
-            mark = '❌'
-            if chat[i] == 2:
-                mark = '✅'
-            text += f'{i}:  {mark}\n\n'
+    # TODO Заменить вывод во следующей логике:
+    # Сначала проверить, предложена ли данная фича в данной системе. Если нет, то не печатать фичу, иначе:
+    # Проверить, стоит ли значение по умолчанию, если да, то посмотреть на значение системное, иначе:
+    # Посмотреть на значение чатовое
+    for feature in features:
+        mark = ''
+        microtext = ''
+        system_property = system[feature]
+        chat_property = chat[feature]
+        if system_property:  # Feature is suggested
+            if chat_property == 2:  # Feature is set default
+                mark += '⚙'
+                microtext += ' (по умолчанию)'
+                chat_property = system_property-1
+            if chat_property:
+                mark = '✅' + mark
+                microtext = 'Работает' + microtext
+            else:
+                mark = '❌' + mark
+                microtext = 'Не работает' + microtext
+            text += f"{features_texts['Russian'][features.index(feature)]}: \n{mark} {microtext}\n"
+            text += f"/{feature}_on Поставить всегда включённым\n"
+            text += f"/{feature}_off Поставить всегда выключенным\n"
+            text += f"/{feature}_default Поставить значение по умолчанию\n\n"
     reply(message, text)
 
 
@@ -396,7 +414,7 @@ def anon_message(message):
     if system:
         admin_chat = database.get('systems', ('id', system))
         if admin_chat['admin_place']:
-            sent = send(admin_chat['admin_place'], "#anon\n\n" + ' '.join(message.text.split()[2:]))
+            sent = send(admin_chat['admin_place'], "#anon\n\n" + ' '.join(message.text.split()[1:]))
             if sent:
                 reply(message, "Сообщение успешно отправлено. Спасибо за ваше мнение!")
             else:

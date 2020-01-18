@@ -296,12 +296,15 @@ def in_mf(message, command_type, or_private=True, loud=True):
         if not database.get('members', ('id', person.id), ('system', system)):
             person_entry = (person.id, system, person.username, person.first_name, chat_configs['ranks'][1], 0, 0, 0, 0, 0)
             database.append(person_entry, 'members')
+        counter(message)  # Отправляем сообщение на учёт в БД
         if command_type:
-            chat = database.get('chats', ('id', message.chat.id), (command_type, 2))
+            if database.get('chats', ('id', message.chat.id), (command_type, 2)):
+                return True
+            else:
+                if loud and not database.get('systems', ('id', system), (command_type, 0)):
+                    reply(message, "В данном чате команды такого типа не поддерживаются")
+                return False
         else:
-            chat = database.get('chats', ('id', message.chat.id))
-        if chat:  # Команда вызвана в системе МФ2
-            counter(message)  # Отправляем сообщение на учёт в БД
             return True
     if loud:
         text = "Жалкие завистники из чата с ID {} и названием {}, в частности {} (@{}) [{}] "
