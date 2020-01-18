@@ -37,7 +37,7 @@ class MyThread(Thread):
     def run(self):
         """Запуск потока"""
         time.sleep(60)
-        # dude_is_bad(self.message)
+        dude_is_bad(self.message)
 
 
 '''Реакции на медиа, новых участников и выход участников'''
@@ -50,7 +50,7 @@ def deleter_handler(message):
     log.log_print(f"deleter_handler invoked")
     global new_dudes
     if in_mf(message, command_type=None, or_private=False, loud=False):
-        #  dude_is_bad(message)
+        dude_is_bad(message)
         deleter(message)
     print(new_dudes)
 
@@ -63,19 +63,19 @@ def new_member_handler(message):
     person = message.new_chat_members[0]
     if in_mf(message, command_type=None, or_private=False):
         # TODO Добавить в игнор не только меня, но и просто хорошо поактивывших
-        if message.new_chat_members[0].id != 381279599:
-            my_thread = MyThread(message)
-            my_thread.start()
-            new_dudes[message.new_chat_members[0].id] = [message.message_id]
-            print(new_dudes)
         if get(f"https://api.cas.chat/check?user_id={person.id}").json()["ok"]:
             # TODO Additional layer of anti-spam protection
             # TODO Deletion of spammer's messages and bots' greeting to it
             ban(message, person)
         else:
-            sent = new_member(message)
+            if person.id != 381279599:
+                my_thread = MyThread(message)
+                my_thread.start()
+                new_dudes[person.id] = [message.message_id]
+                print(new_dudes)
+            sent = new_member(message, person)
             if message.from_user.id in new_dudes:
-                new_dudes[message.new_chat_members[0].id].append(sent.message_id)
+                new_dudes[person.id].append(sent.message_id)
 
 
 @bot.message_handler(content_types=['left_chat_member'])
@@ -145,6 +145,15 @@ def ban_handler(message):
         person = person_analyze(message)
         if person and rank_superiority(message, person):
             ban(message, person)
+
+
+@bot.message_handler(commands=['kick'])
+def kick_handler(message):
+    log.log_print(f"kick_handler invoked")
+    if in_mf(message, 'boss_commands', or_private=False) and is_suitable(message, message.from_user, 'boss'):
+        person = person_analyze(message)
+        if person and rank_superiority(message, person):
+            ban(message, person, unban_then=True)
 
 
 @bot.message_handler(commands=['mute'])
@@ -559,11 +568,11 @@ def counter_handler(message):
             print(new_dudes)
 
 
-def dude_is_bad(message):
+def dude_is_bad(message, unban_then=True):
     global new_dudes
     if message.from_user.id in new_dudes:
         if len(new_dudes[message.from_user.id]) < 4:
-            ban(message, message.from_user, comment=False, unban_then=True)
+            ban(message, message.from_user, comment=False, unban_then=unban_then)
             for msg in new_dudes[message.from_user.id]:
                 delete(message.chat.id, msg)
             delete(message.chat.id, message.message_id)

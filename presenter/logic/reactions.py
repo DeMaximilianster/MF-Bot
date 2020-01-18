@@ -28,11 +28,10 @@ def deleter(message):
             delete(message.chat.id, message.message_id)
 
 
-def new_member(message):
+def new_member(message, member):
     """Реагирует на вход в чат"""
     log.log_print(f"{__name__} invoked")
     database = Database()
-    member = message.new_chat_members[0]
     answer = ''
     chat = database.get('chats', ('id', message.chat.id))
     system = chat['system']
@@ -81,7 +80,7 @@ def left_member(message):
         reply(message, "Минус чувачок")
         send(member.id, 'До встречи в ' + chat)
     else:  # Чела забанили
-        send_video(message.chat.id, "BAADAgADhgMAAgYqMUvW-ezcbZS2ohYE")
+        delete(message.chat.id, message.message_id)
     # Notify admins if admin's chat exists
     admin_place = database.get('systems', ('id', system))['admin_place']
     if admin_place:

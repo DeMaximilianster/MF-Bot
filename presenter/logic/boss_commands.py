@@ -81,17 +81,19 @@ def ban(message, person, comment=True, unban_then=False):
     database = Database()
     blowout = database.get('channels', ('name', 'Проколы'))['id']
     how_many = 3  # Сколько пересылает сообщений
-    target = message
-    if message.reply_to_message:
-        target = message.reply_to_message
-    end_forwarding = target.message_id
-    start_forwarding = end_forwarding - how_many
-    send(blowout, "В чате '{}' забанили участника {} (@{}) [{}]. Прысылаю {} сообщений".
-         format(message.chat.title, person.first_name, person.username, person.id, how_many))
-    for msg_id in range(start_forwarding, end_forwarding + 1):
-        forward(blowout, message.chat.id, msg_id)
+    not_unban_then = not unban_then
+    if not_unban_then:
+        target = message
+        if message.reply_to_message:
+            target = message.reply_to_message
+        end_forwarding = target.message_id
+        start_forwarding = end_forwarding - how_many
+        send(blowout, "В чате '{}' забанили участника {} (@{}) [{}]. Прысылаю {} сообщений".
+             format(message.chat.title, person.first_name, person.username, person.id, how_many))
+        for msg_id in range(start_forwarding, end_forwarding + 1):
+            forward(blowout, message.chat.id, msg_id)
     if comment:
-        send(message.chat.id, "Ну всё, этому челу бан")
+        send(message.chat.id, "Ну всё, этому челу " + "бан"*not_unban_then + "кик"*unban_then)
     chat = database.get('chats', ('id', message.chat.id))
     system = chat['system']
     read_file = open(systems_file, 'r', encoding='utf-8')
