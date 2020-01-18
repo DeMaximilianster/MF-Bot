@@ -3,17 +3,18 @@ from view.output import reply, answer_callback, delete
 from presenter.config.config_func import in_mf, cooldown, person_analyze, rank_superiority, \
      int_check, person_check, is_suitable, in_system_commands
 from presenter.logic.elite import elite
-from presenter.logic.boss_commands import ban, add_chat, add_admin_place, chat_options, \
+from presenter.logic.boss_commands import ban, add_chat, add_admin_place, chat_options, system_options, \
     warn, unwarn, message_change, money_pay, rank_changer, mute
 from presenter.logic.complicated_commands import adequate, inadequate, response, insult, non_ironic, ironic, \
     place_here, mv, av, add_vote, vote
 from presenter.logic.reactions import deleter, new_member, left_member
 from presenter.logic.standart_commands import helper, send_drakken, send_me, send_meme, minet, show_id, \
     all_members, money_give, money_top, language_getter, month_set, day_set, birthday, admins, chat_check, \
-    anon_message
+    anon_message, system_check
 from presenter.logic.start import starter
 from presenter.config.log import Loger, log_to
-from presenter.config.config_var import features_defaulters, features_oners, features_offers
+from presenter.config.config_var import features_defaulters, features_oners, features_offers, system_features_offers, \
+    system_features_oners
 from requests import get
 import time
 from threading import Thread
@@ -226,6 +227,13 @@ def chat_options_handler(message):
     log.log_print("chat_options_handler invoked")
     if in_mf(message, command_type=None, or_private=False) and is_suitable(message, message.from_user, "chat_changer"):
         chat_options(message)
+
+
+@bot.message_handler(commands=system_features_oners+system_features_offers)
+def system_options_handler(message):
+    log.log_print("system_options_handler invoked")
+    if in_mf(message, command_type=None, or_private=False) and is_suitable(message, message.from_user, "chat_changer"):
+        system_options(message)
 
 '''
 @bot.message_handler(commands=['change_database'])
@@ -480,6 +488,14 @@ def chat_check_handler(message):
     log.log_print("chat_check_handler invoked")
     if in_mf(message, command_type=None, or_private=False):
         chat_check(message)
+
+
+@bot.message_handler(commands=['system'])
+def system_check_handler(message):
+    """Show options of the current chat"""
+    log.log_print("system_check_handler invoked")
+    if in_mf(message, command_type=None, or_private=False):
+        system_check(message)
 
 
 '''

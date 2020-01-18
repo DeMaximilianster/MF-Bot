@@ -78,5 +78,5 @@ features = ('standart_commands', 'boss_commands', 'financial_commands',
 features_oners = tuple(map(lambda x: x+'_on', features))
 features_offers = tuple(map(lambda x: x+'_off', features))
 features_defaulters = tuple(map(lambda x: x+'_default', features))
-system_features_oners = tuple(map(lambda x: 'system_'+x+'_on', features))
-system_features_offers = tuple(map(lambda x: 'system_'+x+'_off', features))
+system_features_oners = tuple(map(lambda x: 's_'+x+'_on', features))
+system_features_offers = tuple(map(lambda x: 's_'+x+'_off', features))

@@ -248,8 +248,8 @@ def money_give(message, person):
                            f"ID {getter} [{value_getter - money} --> {value_getter}] {get_m}\n"
                            f"ID {giver} [{value_giver + money} --> {value_giver}] {giv_m}\n")
             send(admin_place(message, database), f"#Финансы #Ф{getter} #Ф{giver}\n\n"
-                                        f"ID {getter} [{value_getter - money} --> {value_getter}] {get_m}\n"
-                                        f"ID {giver} [{value_giver + money} --> {value_giver}] {giv_m}\n")
+                                                 f"ID {getter} [{value_getter - money} --> {value_getter}] {get_m}\n"
+                                                 f"ID {giver} [{value_giver + money} --> {value_giver}] {giv_m}\n")
     database.change(value_getter, 'money', 'members', ('id', getter), ('system', system))
     database.change(value_giver, 'money', 'members', ('id', giver), ('system', system))
 
@@ -325,12 +325,14 @@ def admins(message):
     ranks = chat_config['ranks']
     admins_username = []
     if isinstance(boss, list):
-        all_ranks = ranks[ranks.index(boss[0]):ranks.index(boss[1])+1]
+        all_ranks = ranks[ranks.index(boss[0]):ranks.index(boss[1]) + 1]
         for rank in all_ranks:
-            admins_username += ['@'+x['username'] for x in database.get_many('members', ('rank', rank), ('system', system))]
+            admins_username += ['@' + x['username'] for x in
+                                database.get_many('members', ('rank', rank), ('system', system))]
     elif isinstance(boss, str):
         admins_id = [admin['id'] for admin in database.get_many('appointments', ('appointment', boss))]
-        admins_username = ['@'+database.get('members', ('id', admin), ('system', system))['username'] for admin in admins_id]
+        admins_username = ['@' + database.get('members', ('id', admin), ('system', system))['username'] for admin in
+                           admins_id]
     reply(message, 'Вызываю сюда админов: ' + ', '.join(admins_username))
 
 
@@ -349,6 +351,7 @@ def chats(message):
 
 def chat_check(message):
     database = Database()
+    # TODO Сделать функцию для обновы чата
     database.change(message.chat.title, 'name', 'chats', ('id', message.chat.id))
     if message.chat.username:
         database.change('public', 'type', 'chats', ('id', message.chat.id))
@@ -356,6 +359,7 @@ def chat_check(message):
     else:
         database.change('private', 'type', 'chats', ('id', message.chat.id))
         database.change('None', 'link', 'chats', ('id', message.chat.id))
+    # Здесь конец
     chat = database.get('chats', ('id', message.chat.id))
     system = database.get('systems', ('id', chat['system']))
     # properties = ['id', 'name', 'purpose', 'type', 'link', 'standart_commands', 'boss_commands', 'financial_commands',
@@ -367,10 +371,6 @@ def chat_check(message):
                                  'Invites links', 'Messages are count for citizenship',
                                  'MF2 violators are automatically banned', 'MF2 admins are automatically promoted']
     text = ''
-    # TODO Заменить вывод во следующей логике:
-    # Сначала проверить, предложена ли данная фича в данной системе. Если нет, то не печатать фичу, иначе:
-    # Проверить, стоит ли значение по умолчанию, если да, то посмотреть на значение системное, иначе:
-    # Посмотреть на значение чатовое
     for feature in features:
         mark = ''
         microtext = ''
@@ -380,7 +380,7 @@ def chat_check(message):
             if chat_property == 2:  # Feature is set default
                 mark += '⚙'
                 microtext += ' (по умолчанию)'
-                chat_property = system_property-1
+                chat_property = system_property - 1
             if chat_property:
                 mark = '✅' + mark
                 microtext = 'Работает' + microtext
@@ -388,9 +388,35 @@ def chat_check(message):
                 mark = '❌' + mark
                 microtext = 'Не работает' + microtext
             text += f"{features_texts['Russian'][features.index(feature)]}: \n{mark} {microtext}\n"
-            text += f"/{feature}_on Поставить всегда включённым\n"
-            text += f"/{feature}_off Поставить всегда выключенным\n"
-            text += f"/{feature}_default Поставить значение по умолчанию\n\n"
+            if '⚙' in mark or '❌' in mark:
+                text += f"/{feature}_on Включить на постоянку\n"
+            if '⚙' in mark or '✅' in mark:
+                text += f"/{feature}_off Выключить на постоянку\n"
+            if '⚙' not in mark:
+                text += f"/{feature}_default Поставить значение по умолчанию\n"
+            text += '\n'
+    reply(message, text)
+
+
+def system_check(message):
+    database = Database()
+    chat = database.get('chats', ('id', message.chat.id))
+    system = database.get('systems', ('id', chat['system']))
+    features_texts = dict()
+    features_texts['Russian'] = ['Стандартные команды', 'Админские команды', 'Денежные команды', 'Ссылка учитывается',
+                                 'Сообщения считаются', 'Нарушители банятся', 'Админы получают админку']
+    features_texts['English'] = ['Standart commands', 'Admin commands', 'Financial commands',
+                                 'Invites links', 'Messages are count for citizenship',
+                                 'MF2 violators are automatically banned', 'MF2 admins are automatically promoted']
+    text = ''
+    for feature in features:
+        system_property = system[feature]
+        if system_property == 2:
+            text += f"{features_texts['Russian'][features.index(feature)]}: \n✅ Включено\n"
+            text += f"/s_{feature}_off Выключить\n\n"
+        elif system_property == 1:
+            text += f"{features_texts['Russian'][features.index(feature)]}: \n❌ Выключено\n"
+            text += f"/s_{feature}_on Включить\n\n"
     reply(message, text)
 
 
@@ -421,4 +447,3 @@ def anon_message(message):
                 reply(message, "Произошла ошибка!")
         else:
             reply(message, "У этой системы админосостав не отмечен")
-

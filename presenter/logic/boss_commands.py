@@ -379,6 +379,23 @@ def chat_options(message):
     reply(message, "ОК!")
 
 
+def system_options(message):
+    """Optimize current system"""
+    log.log_print("system_options invoked")
+    database = Database()
+    text = message.text.split(sep='@')[0]
+    last_word = text.split(sep='_')[-1]
+    if last_word == 'on':
+        mode = 2
+        text = text[3:-3]
+    else:  # last_word == 'off'
+        mode = 1
+        text = text[3:-4]
+    system = database.get('chats', ('id', message.chat.id))['system']
+    database.change(mode, text, 'systems', ('id', system))
+    reply(message, "ОК!")
+
+
 def database_changer():
     database = Database()
     members = database.get_all('members')
