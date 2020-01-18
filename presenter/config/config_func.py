@@ -101,10 +101,10 @@ def shuffle(old_list):
 def person_check(message, person, to_self=False, to_bot=False):
     log.log_print(f"{__name__} invoked")
     if person.id == message.from_user.id and not to_self:
-        reply(message, "Я вам запрещаю пользоваться этой командой на самом себе")
+        reply(message, "Этой командой нельзя пользоваться на самом себе")
         return False
     elif person.id == bot_id and not to_bot:
-        reply(message, "Я вам запрещаю пользоваться этой командой на мне")
+        reply(message, "Этой командой нельзя пользоваться на мне")
         return False
     else:
         return True
@@ -288,6 +288,7 @@ def in_mf(message, command_type, or_private=True, loud=True):
 
     chat = database.get('chats', ('id', message.chat.id))
     if chat:
+        chat_id = message.chat.id
         system = chat['system']
         read_file = open(systems_file, 'r', encoding='utf-8')
         data = json.load(read_file)
@@ -298,7 +299,7 @@ def in_mf(message, command_type, or_private=True, loud=True):
             database.append(person_entry, 'members')
         counter(message)  # Отправляем сообщение на учёт в БД
         if command_type:
-            if database.get('chats', ('id', message.chat.id), (command_type, 2)):
+            if feature_is_available(chat_id, system, command_type):
                 return True
             else:
                 if loud and not database.get('systems', ('id', system), (command_type, 0)):
@@ -319,7 +320,7 @@ def in_mf(message, command_type, or_private=True, loud=True):
 
 def in_system_commands(message):
     """Check if command is available in this system"""
-    log.log_print(f"{__name__} invoked")
+    log.log_print("in_system_commands invoked")
     database = Database()
     chat = database.get('chats', ('id', message.chat.id))
     if chat:
@@ -335,6 +336,18 @@ def in_system_commands(message):
             return command in every
     else:
         return message.text.split()[0] in ("/guest", "/admin", "/senior_admin", "/leader")
+
+
+def feature_is_available(chat_id, system, command_type):
+    log.log_print("command_is_available invoked")
+    database = Database()
+    if database.get('chats', ('id', chat_id), (command_type, 1)):
+        return True
+    elif database.get('chats', ('id', chat_id), (command_type, 2)) and database.get('systems', ('id', system),
+                                                                                            (command_type, 2)):
+        return True
+    return False
+
 
 
 def counter(message):
@@ -359,8 +372,10 @@ def member_update(system, person):
     chats_ids = [x['id'] for x in database.get_many('chats', ('messages_count', 2), ('system', system))]
     msg_count = 0
     for chat_id in chats_ids:
-        if database.get('messages', ('person_id', person.id), ('chat_id', chat_id)):
-            msg_count += database.get('messages', ('person_id', person.id), ('chat_id', chat_id))['messages']
+        if feature_is_available(chat_id, system, 'messages_count'):
+            msg_entry = database.get('messages', ('person_id', person.id), ('chat_id', chat_id))
+            if msg_entry:
+                msg_count += msg_entry['messages']
     database.change(person.username, 'username', 'members', ('id', person.id), ('system', system))
     database.change(person.first_name, 'nickname', 'members', ('id', person.id), ('system', system))
     database.change(msg_count, 'messages', 'members', ('id', person.id), ('system', system))

@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from presenter.config.config_func import Database, time_replace, is_suitable
+from presenter.config.config_func import Database, time_replace, is_suitable, feature_is_available
 from view.output import delete, kick, send, promote, reply, send_video
 from presenter.config.log import Loger, log_to
 from presenter.config.files_paths import systems_file
@@ -40,16 +40,17 @@ def new_member(message):
     data = json.load(read_file)
     read_file.close()
     chat_configs = data[system]
-    if member.is_bot:
-        send(message.chat.id, "Ещё один бот, вряд-ли более умный, чем я")
-    if database.get('members', ('id', member.id), ('rank', chat_configs['ranks'][0])):
+    if database.get('members', ('id', member.id), ('rank', chat_configs['ranks'][0])) and feature_is_available(
+            message.chat.id, system, 'violators_ban'):
         kick(message.chat.id, member.id)
-    elif is_suitable(message, member, 'uber', loud=False):
+    elif is_suitable(message, member, 'uber', loud=False) and feature_is_available(
+            message.chat.id, system, 'admins_promote'):
         promote(message.chat.id, member.id,
                 can_change_info=True, can_delete_messages=True, can_invite_users=True,
                 can_restrict_members=True, can_pin_messages=True, can_promote_members=True)
         answer += "О, добро пожаловать, держи полную админку"
-    elif is_suitable(message, member, 'boss', loud=False):
+    elif is_suitable(message, member, 'boss', loud=False) and feature_is_available(
+            message.chat.id, system, 'admins_promote'):
         promote(message.chat.id, member.id,
                 can_change_info=False, can_delete_messages=True, can_invite_users=True,
                 can_restrict_members=True, can_pin_messages=True, can_promote_members=False)

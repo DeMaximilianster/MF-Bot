@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from view.output import reply, send_photo, send_sticker, send
 from presenter.config.config_func import time_replace, language_analyzer, case_analyzer, member_update, int_check, \
-    is_suitable
+    is_suitable, feature_is_available
 from presenter.config.database_lib import Database
 from presenter.config.config_var import bot_id, admin_place, original_to_english, english_to_original, months, features
 from random import choice
@@ -44,15 +44,20 @@ def language_getter(message):
 def helper(message):
     """Предоставляет человеку список команд"""
     log.log_print(str(message.from_user.id) + ": helper invoked")
+    database = Database()
+    system = database.get('chats', ('id', message.chat.id))['system']
     answer = 'Команды:\n\n'
     answer += '/help - Прислать это сообщение\n'
     # answer += "/id - Присылает различные ID'шники, зачастую бесполезные\n"
-    # answer += '/minet - Делает приятно\n'
-    # answer += '/drakken - Присылает арт с Доктором Драккеном\n'
-    # answer += '/meme - Присылает хороший мем\n'
+    if feature_is_available(message.chat.id, system, 'standart_commands'):
+        answer += '/minet - Делает приятно\n'
+        answer += '/drakken - Присылает арт с Доктором Драккеном\n'
+        answer += '/meme - Присылает мем\n'
     answer += '/me - Присылает вашу запись в базе данных\n'
     answer += '/anon - Прислать анонимное послание в админский чат (если таковой имеется)\n'
-    answer += '/members - Прислать в личку перечень участников (нынешних и бывших) и их ID\n\n'
+    answer += '/members - Прислать в личку перечень участников (нынешних и бывших) и их ID\n'
+    answer += '/chat - Показать настройки в чате\n'
+    answer += '/system - Показать настройки по умолчанию\n\n'
 
     if is_suitable(message, message.from_user, 'boss', loud=False):
         answer += '/messages <число сообщений> - Изменить количество сообщений от участника в этом чате\n'
@@ -167,7 +172,8 @@ def send_me(message, person):
     msg += 'Никнейм: {}\n'.format(p['nickname'])
     msg += 'Ранг: {}\n'.format(p['rank'])
     msg += 'Кол-во сообщений в этом чате: {}\n'.format(messages_here)
-    msg += 'Кол-во сообщений во всей системе: {}\n'.format(p['messages'])
+    if p['messages']:
+        msg += 'Кол-во сообщений во всей системе: {}\n'.format(p['messages'])
     msg += 'Кол-во предупреждений: {}\n'.format(p['warns'])
     if chat_config['money']:
         msg += 'Кол-во валюты: {}\n'.format(p['money'])
@@ -370,7 +376,7 @@ def chat_check(message):
     features_texts['English'] = ['Standart commands', 'Admin commands', 'Financial commands',
                                  'Invites links', 'Messages are count for citizenship',
                                  'MF2 violators are automatically banned', 'MF2 admins are automatically promoted']
-    text = ''
+    text = 'Настройки этого чата:\n\n'
     for feature in features:
         mark = ''
         microtext = ''
@@ -408,7 +414,7 @@ def system_check(message):
     features_texts['English'] = ['Standart commands', 'Admin commands', 'Financial commands',
                                  'Invites links', 'Messages are count for citizenship',
                                  'MF2 violators are automatically banned', 'MF2 admins are automatically promoted']
-    text = ''
+    text = 'Настройки по умолчанию:\n\n'
     for feature in features:
         system_property = system[feature]
         if system_property == 2:

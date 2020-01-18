@@ -326,7 +326,7 @@ def add_chat(message):
         ids = [int(sys['id']) for sys in all_systems]
         new_id = str(max(ids) + 1)
         database.append((message.chat.id, new_id, message.chat.title, typee, link, 2, 2, 2, 2, 2, 2, 2), 'chats')
-        database.append((new_id, 0, 0, 0, 1, 0, 0, 2, 1, 1), 'systems')
+        database.append((new_id, 0, 0, 1, 1, 0, 0, 2, 1, 1), 'systems')
         read_file = open(systems_file, 'r', encoding='utf-8')
         data = json.load(read_file)
         read_file.close()
@@ -340,7 +340,7 @@ def add_chat(message):
                                      "advanced": ["Участник", "Лидер"],
                                      "boss": ["Админ", "Лидер"],
                                      "uber": ["Старший Админ", "Лидер"],
-                                     "chat_changer": ["Лидер", "Лидер"]}}
+                                     "chat_changer": ["Старший Админ", "Лидер"]}}
         write_file = open(systems_file, 'w', encoding='utf-8')
         json.dump(data, write_file, indent=4, ensure_ascii=False)
         write_file.close()

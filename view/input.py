@@ -37,7 +37,7 @@ class MyThread(Thread):
     def run(self):
         """Запуск потока"""
         time.sleep(60)
-        dude_is_bad(self.message)
+        # dude_is_bad(self.message)
 
 
 '''Реакции на медиа, новых участников и выход участников'''
@@ -50,7 +50,7 @@ def deleter_handler(message):
     log.log_print(f"deleter_handler invoked")
     global new_dudes
     if in_mf(message, command_type=None, or_private=False, loud=False):
-        dude_is_bad(message)
+        #  dude_is_bad(message)
         deleter(message)
     print(new_dudes)
 
@@ -184,8 +184,11 @@ def deleter_mode_handler(message):
 def rank_changer_handler(message):
     """Sets person's rank to guest"""
     log.log_print("rank_changer_handler invoked")
-    if in_mf(message, 'boss_commands', or_private=False):
-        if message.from_user.id == 381279599 or is_suitable(message, message.from_user, 'boss'):
+    if in_mf(message, command_type=None, or_private=False):
+        if message.from_user.id == 381279599:
+            person = person_analyze(message)
+            rank_changer(message, person)
+        elif is_suitable(message, message.from_user, 'boss'):
             person = person_analyze(message)
             if person and rank_superiority(message, person):
                 rank_changer(message, person)
@@ -234,6 +237,7 @@ def system_options_handler(message):
     log.log_print("system_options_handler invoked")
     if in_mf(message, command_type=None, or_private=False) and is_suitable(message, message.from_user, "chat_changer"):
         system_options(message)
+
 
 '''
 @bot.message_handler(commands=['change_database'])

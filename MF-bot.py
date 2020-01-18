@@ -4,9 +4,11 @@ from presenter.config.log import Loger, log_to
 
 log = Loger(log_to)
 
+bot.infinity_polling()  # Запуск бота
 try:
     #  telebot.logger.setLevel("DEBUG")  # Иногда помогает, но обычно не нужна
-    bot.polling(none_stop=True)  # Запуск бота
+    pass
+    #  bot.polling(none_stop=True)
 except Exception as e:
     log.log_print(e)
 
