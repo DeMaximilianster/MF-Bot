@@ -43,6 +43,14 @@ def send_sticker(chat_id, sticker, reply_to_message_id=None):
         log.log_print(e)
 
 
+def send_document(chat_id, data):
+    log.log_print("send_document invoked")
+    try:
+        return bot.send_document(chat_id, data)
+    except Exception as e:
+        log.log_print(e)
+
+
 def reply(message, message_text, parse_mode=None, reply_markup=None, disable_web_page_preview=False):
     """Ответить на сообщение"""
     log.log_print("reply invoked")

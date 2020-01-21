@@ -46,34 +46,61 @@ def helper(message):
     """Предоставляет человеку список команд"""
     log.log_print(str(message.from_user.id) + ": helper invoked")
     database = Database()
-    system = database.get('chats', ('id', message.chat.id))['system']
-    answer = 'Команды:\n\n'
-    answer += '/help - Прислать это сообщение\n'
-    # answer += "/id - Присылает различные ID'шники, зачастую бесполезные\n"
-    if feature_is_available(message.chat.id, system, 'standart_commands'):
-        answer += '/minet - Делает приятно\n'
-        answer += '/drakken - Присылает арт с Доктором Драккеном\n'
-        answer += '/meme - Присылает мем\n'
+    if message.chat.id < 0:
+        system = database.get('chats', ('id', message.chat.id))['system']
+    answer = '<b>Команды:</b>\n\n'
+
+    answer += '<b>Общие команды:</b>\n'
     answer += '/me - Присылает вашу запись в базе данных\n'
     answer += '/anon - Прислать анонимное послание в админский чат (если таковой имеется)\n'
-    answer += '/members - Прислать в личку перечень участников (нынешних и бывших) и их ID\n'
+    answer += '/members - Прислать в личку перечень участников (нынешних и бывших) и их ID\n\n'
+    # Helps
+    answer += '<b>Помощь и менюшки:</b>\n'
+    answer += '/help - Прислать это сообщение\n'
+    answer += '/money_help - Финансовый режим\n'
     answer += '/chat - Показать настройки в чате\n'
     answer += '/system - Показать настройки по умолчанию\n\n'
+    if message.chat.id > 0 or feature_is_available(message.chat.id, system, 'standart_commands'):
+        answer += '<b>Развлекательные команды:</b>\n'
+        answer += '/minet - Делает приятно\n'
+        answer += '/drakken - Присылает арт с Доктором Драккеном\n'
+        answer += '/meme - Присылает мем\n\n'
 
-    if is_suitable(message, message.from_user, 'boss', loud=False):
-        answer += '/messages <число сообщений> - Изменить количество сообщений от участника в этом чате\n'
-        answer += '/warn <число варнов>- Дать варн(ы) (3 варна = бан)\n'
-        answer += '/unwarn <число варнов>- Снять варн(ы)\n'
-        answer += '/mute <количество часов> - Запретить писать в чат\n'
+    if message.chat.id > 0 or is_suitable(message, message.from_user, 'boss', loud=False):
+        answer += '<b>Базовые админские команды:</b>\n'
+        answer += '/messages [число сообщений] - Изменить количество сообщений от участника в этом чате\n'
+        answer += '/warn [число варнов]- Дать варн(ы) (3 варна = бан)\n'
+        answer += '/unwarn [число варнов]- Снять варн(ы)\n'
+        answer += '/mute [количество часов] - Запретить писать в чат\n'
         answer += '/ban - Дать бан\n'
         answer += '/guest - Снять ограничения, забрать админку\n\n'
-    if is_suitable(message, message.from_user, 'uber', loud=False):
+    if message.chat.id > 0 or is_suitable(message, message.from_user, 'uber', loud=False):
+        answer += '<b>Продвинутые админские команды:</b>\n'
         answer += '/admin - Снять ограничения, дать админку\n'
         answer += '/senior_admin - Снять бан, дать продвинутую админку\n\n'
-    if is_suitable(message, message.from_user, 'chat_changer', loud=False):
-        answer += '/add_chat <номер системы чатов> - Добавить чат в систему чатов\n'
+    if message.chat.id > 0 or is_suitable(message, message.from_user, 'chat_changer', loud=False):
+        answer += '<b>Настройщики чатов:</b>\n'
+        answer += '/add_chat [номер системы чатов] - Добавить чат в систему чатов\n'
         answer += '/admin_place - Отметить чат как админский'
-    reply(message, answer)
+    reply(message, answer, parse_mode='HTML')
+
+
+def money_helper(message):
+    answer = "<b>Финансовые команды:</b>\n\n"
+    answer += "/money_off - Выключить финансовый режим\n\n"
+    answer += '/money_on [Кол-во денег] - Включить финансовый режим с заданным бюджетом или обновить бюджет\n'
+    answer += '[Казна] = [Кол-вово денег] - [Деньги участников]\n'
+    answer += 'Если кол-во денег не указано, будет установлена бесконечная казна\n\n'
+    answer += '/m_emoji [Смайлик или короткий текст] - Поставить сокращение валюты\n'
+    answer += '/m_name [Название] - Поставить название валюты\n'
+    answer += 'Если она, к примеру называется доллар, пишите \n"/m_name долларов"\n\n'
+
+    answer += '/pay [Кол-во] - Заплатить челу. Если деньги не вечны, то берутся из казны. Забрать деньги тоже можно\n\n'
+
+    answer += '/give [Кол-во] - Дать челу деньги из вашего личного счёта\n\n'
+
+    # TODO answer += '/fund [Кол-во] - Заплатить в фонд чата'
+    reply(message, answer, parse_mode='HTML')
 
 
 def show_id(message):
@@ -161,6 +188,7 @@ def send_me(message, person):
     read_file = open(systems_file, 'r', encoding='utf-8')
     data = json.load(read_file)
     chat_config = data[system]
+    money_name = chat_config['money_name']
     member_update(system, person)  # Update person's messages, nickname and username
     p = database.get('members', ('id', person.id), ('system', system))
     appointments = [x['appointment'] for x in database.get_many('appointments', ('id', person.id), ('system', system))]
@@ -177,7 +205,7 @@ def send_me(message, person):
         msg += 'Кол-во сообщений во всей системе: {}\n'.format(p['messages'])
     msg += 'Кол-во предупреждений: {}\n'.format(p['warns'])
     if chat_config['money']:
-        msg += 'Кол-во валюты: {}\n'.format(p['money'])
+        msg += 'Кол-во {}: {}\n'.format(money_name, p['money'])
     if appointments:
         msg += 'Должности: ' + ', '.join(appointments)
     reply(message, msg)
@@ -239,9 +267,9 @@ def money_give(message, person):
         else:
             value_getter += money
             value_giver -= money
-            giv_m = send(giver, f"#Финансы\n\n Вы успешно перевели {money} ЯМ на счёт {getter}. "
+            giv_m = send(giver, f"#Финансы\n\n Вы успешно перевели {money} денег на счёт {getter}. "
                                 f"Теперь у вас их {value_giver}. А у него/неё {value_getter}")
-            get_m = send(getter, f"#Финансы\n\n На ваш счёт было {money} ЯМ со счёта {giver}. "
+            get_m = send(getter, f"#Финансы\n\n На ваш счёт было {money} денег со счёта {giver}. "
                                  f"Теперь у вас их {value_getter}. А у него/неё {value_giver}")
             if get_m:
                 get_m = "🔔 уведомлён(а)"
@@ -270,11 +298,18 @@ def money_top(message):
     people = list(database.get_many('members', ('system', system)))
     people = list(filter(lambda x: x['money'] != 0 and x['id'] != bot_id, people))
     people.sort(key=lambda x: -x['money'])
+    read_file = open(systems_file, 'r', encoding='utf-8')
+    data = json.load(read_file)
+    read_file.close()
+    chat_configs = data[system]
+    emoji = chat_configs['money_emoji']
     i = 1
-    text = "Бюджет: {} 🍎\n".format(bot_money)
+    text = ''
+    if bot_money != 'inf':
+        text = "Бюджет: {} {}\n".format(bot_money, emoji)
     for person in people:
-        text += "\n{}. <a href='t.me/{}'>{}</a> — {} 🍎".format(i, person['username'], person['nickname'],
-                                                                person['money'])
+        text += "\n{}. <a href='t.me/{}'>{}</a> — {} {}".format(i, person['username'], person['nickname'],
+                                                                person['money'], emoji)
         i += 1
     reply(message, text, parse_mode='HTML', disable_web_page_preview=True)
 

@@ -2,7 +2,7 @@
 from presenter.config.database_lib import Database
 from presenter.config.config_var import full_chat_list, channel_list, bot_id, admin_place, chat_list
 from presenter.config.log import Loger, log_to
-from presenter.config.config_func import unban_user, is_suitable
+from presenter.config.config_func import unban_user, is_suitable, int_check
 from view.output import kick, reply, promote, send, forward, restrict
 import json
 from presenter.config.files_paths import systems_file
@@ -127,6 +127,7 @@ def mute(message, person):
     if adm_place:
         send(adm_place, "Пользователь {} (@{}) [{}] получил(а) мут на {} час(ов)".format(
             person.first_name, person.username, person.id, hours))
+    reply(message, "Мут выдан")
 
 
 def money_pay(message, person):
@@ -137,53 +138,59 @@ def money_pay(message, person):
     database = Database()
     chat = database.get('chats', ('id', message.chat.id))
     system = chat['system']
-    bot_money = int(database.get('systems', ('id', system))['money'])
+    bot_money = database.get('systems', ('id', system))['money']
+    not_inf = bot_money != 'inf'
+    if not_inf:
+        bot_money = int(bot_money)
     p_id = person.id
     money = message.text.split()[-1]
     value = database.get('members', ('id', p_id), ('system', system))['money']
     if money == "0":
-        reply(message, "Я вам запрещаю делать подобные бессмысленные запросы")
+        reply(message, "Не")
     elif money[0] == '-':
         money = -int(money)  # Делаем из отрицательного числа положительное
         if value - money >= 0:
             value -= money
-            bot_money += money
+            if not_inf:
+                bot_money += money
             sent = send(p_id, f"#Финансы\n\n"
-                              f"С вашего счёта было снято {money} ЯМ в фонд чата. У вас осталось {value} ЯМ")
+                              f"С вашего счёта было снято {money} денег в фонд чата. У вас осталось {value} денег")
             if sent:
                 sent = "🔔 уведомлён(а)"
             else:
                 sent = "🔕 не уведомлён(а)"
-            reply(message, f"#Финансы #Бюджет #Ф{p_id}\n\n"
-                           f"Бюджет [{bot_money - money} --> {bot_money}]\n"
-                           f"ID {p_id} [{value + money} --> {value}] {sent}")
-            send(admin_place(message, database), f"#Финансы #Бюджет #Ф{p_id}\n\n"
-                                        f"Бюджет [{bot_money - money} --> {bot_money}]\n"
-                                        f"ID {p_id} [{value + money} --> {value}] {sent}")
+            answer = "#Финансы " + "#Бюджет "*not_inf + f"#f{p_id}\n\n"
+            if not_inf:
+                answer += f"Бюджет [{bot_money - money} --> {bot_money}]\n"
+            answer += f"ID {p_id} [{value + money} --> {value}] {sent}"
+            reply(message, answer)
+            send(admin_place(message, database), answer)
         else:
-            reply(message, "Часто у людей видишь отрицательное количество денег?")
+            reply(message, "У людей число денег должно быть больше нуля")
     else:
         money = int(money)
-        if bot_money < money:
+        if not_inf and bot_money < money:
             reply(message, "У нас нет столько в бюджете")
         else:
             value += money
-            bot_money -= money
+            if not_inf:
+                bot_money -= money
             sent = send(p_id, f"#Финансы\n\n"
-                              f"На ваш счёт было переведено {money} ЯМ из фонда чата. Теперь у вас {value} ЯМ")
+                              f"На ваш счёт было переведено {money} денег из фонда чата. Теперь у вас {value} денег")
             if sent:
                 sent = "🔔 уведомлён(а)"
             else:
                 sent = "🔕 не уведомлён(а)"
-            reply(message, f"#Финансы #Бюджет #Ф{p_id}\n\n"
-                           f"Бюджет [{bot_money + money} --> {bot_money}]\n"
-                           f"ID {p_id} [{value - money} --> {value}] {sent}")
+            answer = "#Финансы " + "#Бюджет " * not_inf + f"#f{p_id}\n\n"
+            if not_inf:
+                answer += f"Бюджет [{bot_money + money} --> {bot_money}]\n"
+            answer += f"ID {p_id} [{value - money} --> {value}] {sent}"
+            reply(message, answer)
 
-            send(admin_place(message, database), f"#Финансы #Бюджет #Ф{p_id}\n\n"
-                                        f"Бюджет [{bot_money + money} --> {bot_money}]\n"
-                                        f"ID {p_id} [{value - money} --> {value}] {sent}")
+            send(admin_place(message, database), answer)
     database.change(value, 'money', 'members', ('id', p_id), ('system', system))
-    database.change(bot_money, 'money', 'systems', ('id', system))
+    if not_inf:
+        database.change(bot_money, 'money', 'systems', ('id', system))
     # TODO Засунуть эти зассанские уебанские денежные функции в отдельный блять модуль
 
 
@@ -316,9 +323,11 @@ def add_chat(message):
         if database.get('systems', ('id', system)):  # Adding new chat to existing system
             if database.get('members', ('id', message.from_user.id), ('system', system)):
                 if is_suitable(message, message.from_user, "chat_changer", system=system):
-                    chat = (message.chat.id, system, message.chat.title, typee, link, 2, 2, 2, 2, 2, 2, 2)
+                    chat = (message.chat.id, system, message.chat.title, typee, link, 2, 2, 2, 2, 2, 2, 2, 2)
                     database.append(chat, 'chats')
                     reply(message, "Теперь я здесь работаю!")
+                else:
+                    reply(message, "Произошла ошибка!")
             else:
                 reply(message, "У вас в этой системе нет полномочий для добавления чатов в неё)")
         else:
@@ -332,7 +341,7 @@ def add_chat(message):
         read_file = open(systems_file, 'r', encoding='utf-8')
         data = json.load(read_file)
         read_file.close()
-        data[new_id] = {"name": message.chat.title, "money": False,
+        data[new_id] = {"name": message.chat.title, "money": False, "money_emoji": "💰", "money_name": "💰💰💰",
                         "ranks": ["Забаненный", "Участник", "Админ", "Старший Админ", "Лидер"],
                         "ranks_commands": [None, "/guest", "/admin", "/senior_admin", "/leader"],
                         "appointments": [],
@@ -360,6 +369,8 @@ def add_admin_place(message):
         system = chat["system"]
         database.change(message.chat.id, "admin_place", "systems", ('id', system))
         reply(message, "Теперь это чат админов. Я сюда буду присылать различные уведомления!")
+    else:
+        reply(message, "Произошла ошибка!")
 
 
 def chat_options(message):
@@ -396,6 +407,90 @@ def system_options(message):
     system = database.get('chats', ('id', message.chat.id))['system']
     database.change(mode, text, 'systems', ('id', system))
     reply(message, "ОК!")
+
+
+def money_mode_change(message):
+    log.log_print("money_mode_change invoked")
+    database = Database()
+
+    mode = message.text.split()[0].split(sep='@')[0].split(sep='_')[-1]
+
+    chat = database.get('chats', ('id', message.chat.id))
+    system = chat['system']
+    read_file = open(systems_file, 'r', encoding='utf-8')
+    data = json.load(read_file)
+    read_file.close()
+    chat_configs = data[system]
+    chat_configs['money'] = mode == 'on'
+    data[system] = chat_configs
+    write_file = open(systems_file, 'w', encoding='utf-8')
+    json.dump(data, write_file, indent=4, ensure_ascii=False)
+    write_file.close()
+    if mode == 'on':
+        all_money = message.text.split()[-1]
+        if int_check(all_money, positive=True):
+            all_money = int(all_money)
+            people = list(database.get_many('members', ('system', system)))
+            people = list(filter(lambda x: x['money'] != 0 and x['id'] != bot_id, people))
+            money = 0
+            for person in people:
+                money += person['money']
+            all_money -= money
+            if all_money < 0:
+                reply(message, "Казна выходит отрицательная, ставлю бесконечную валюту")
+                database.change('inf', 'money', 'systems', ('id', system))
+            else:
+                reply(message, f"В казне выходит {all_money} денег. Спасибо за сотрудничество!")
+                database.change(all_money, 'money', 'systems', ('id', system))
+        else:
+            database.change('inf', 'money', 'systems', ('id', system))
+            reply(message, "Бесконечная валюта поставлена")
+    else:
+        reply(message, "Валюта выключена")
+
+
+def money_emoji(message):
+    log.log_print("money_emoji invoked")
+    database = Database()
+
+    mode = message.text.split()[-1]
+    chat = database.get('chats', ('id', message.chat.id))
+    system = chat['system']
+    read_file = open(systems_file, 'r', encoding='utf-8')
+    data = json.load(read_file)
+    read_file.close()
+    chat_configs = data[system]
+    if mode:
+        chat_configs['money_emoji'] = mode
+        data[system] = chat_configs
+        write_file = open(systems_file, 'w', encoding='utf-8')
+        json.dump(data, write_file, indent=4, ensure_ascii=False)
+        write_file.close()
+        reply(message, "OK!")
+    else:
+        reply(message, "После команды введите смайлик-сокращение валюты")
+
+
+def money_name(message):
+    log.log_print("money_name invoked")
+    database = Database()
+
+    mode = message.text.split()[-1]
+    chat = database.get('chats', ('id', message.chat.id))
+    system = chat['system']
+    read_file = open(systems_file, 'r', encoding='utf-8')
+    data = json.load(read_file)
+    read_file.close()
+    chat_configs = data[system]
+    if mode:
+        chat_configs['money_name'] = mode
+        data[system] = chat_configs
+        write_file = open(systems_file, 'w', encoding='utf-8')
+        json.dump(data, write_file, indent=4, ensure_ascii=False)
+        write_file.close()
+        reply(message, "OK!")
+    else:
+        reply(message, "После команды введите название валюты")
 
 
 def database_changer():

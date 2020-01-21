@@ -148,6 +148,9 @@ def rank_superiority(message, person):
     chat_configs = data[str(system)]
     ranks = chat_configs['ranks']
     your_rank = database.get('members', ('id', message.from_user.id), ('system', system))['rank']
+    if not database.get('members', ('id', person.id), ('system', system)):
+        person_entry = (person.id, system, person.username, person.first_name, chat_configs['ranks'][1], 0, 0, 0, 0, 0)
+        database.append(person_entry, 'members')
     their_rank = database.get('members', ('id', person.id), ('system', system))['rank']
     your_rank_n = ranks.index(your_rank)
     their_rank_n = ranks.index(their_rank)
@@ -210,19 +213,18 @@ def is_suitable(inputed, person, command_type, system=None, loud=True):
         message = inputed
     # determine which system chat belongs to, and check for requirements
     chat = database.get('chats', ('id', message.chat.id))
-    if chat:
-        if not system:
-            system = chat['system']
-        read_file = open(systems_file, 'r', encoding='utf-8')
-        data = json.load(read_file)
-        read_file.close()
-        chat_configs = data[str(system)]
-        requirements = chat_configs['commands'][command_type]
-        # check if requirement for this command type is a rank or appointment
-        if isinstance(requirements, list):  # Requirement is a list
-            return rank_required(inputed, person, system, requirements[0], requirements[1], loud=loud)
-        elif isinstance(requirements, str):  # Requirement is a string
-            return appointment_required(message, person, system, requirements, loud=loud)
+    if chat and not system:
+        system = chat['system']
+    read_file = open(systems_file, 'r', encoding='utf-8')
+    data = json.load(read_file)
+    read_file.close()
+    chat_configs = data[str(system)]
+    requirements = chat_configs['commands'][command_type]
+    # check if requirement for this command type is a rank or appointment
+    if isinstance(requirements, list):  # Requirement is a list
+        return rank_required(inputed, person, system, requirements[0], requirements[1], loud=loud)
+    elif isinstance(requirements, str):  # Requirement is a string
+        return appointment_required(message, person, system, requirements, loud=loud)
 
 
 def cooldown(message, command, timeout=3600):
@@ -298,6 +300,10 @@ def in_mf(message, command_type, or_private=True, loud=True):
             person_entry = (person.id, system, person.username, person.first_name, chat_configs['ranks'][1], 0, 0, 0, 0, 0)
             database.append(person_entry, 'members')
         counter(message)  # Отправляем сообщение на учёт в БД
+        if command_type == 'financial_commands':
+            if not chat_configs['money']:
+                reply(message, "В этом чате система денег не включена. Смотрите /money_help")
+                return False
         if command_type:
             if feature_is_available(chat_id, system, command_type):
                 return True

@@ -1,20 +1,21 @@
 from presenter.config.token import bot
-from view.output import reply, answer_callback, delete
+from view.output import reply, answer_callback, delete, send_document
 from presenter.config.config_func import in_mf, cooldown, person_analyze, rank_superiority, \
      int_check, person_check, is_suitable, in_system_commands
 from presenter.logic.elite import elite
 from presenter.logic.boss_commands import ban, add_chat, add_admin_place, chat_options, system_options, \
-    warn, unwarn, message_change, money_pay, rank_changer, mute
+    warn, unwarn, message_change, money_pay, rank_changer, mute, money_mode_change, money_emoji, money_name
 from presenter.logic.complicated_commands import adequate, inadequate, response, insult, non_ironic, ironic, \
     place_here, mv, av, add_vote, vote
 from presenter.logic.reactions import deleter, new_member, left_member
 from presenter.logic.standart_commands import helper, send_drakken, send_me, send_meme, minet, show_id, \
     all_members, money_give, money_top, language_getter, month_set, day_set, birthday, admins, chat_check, \
-    anon_message, system_check
+    anon_message, system_check, money_helper
 from presenter.logic.start import starter
 from presenter.config.log import Loger, log_to
 from presenter.config.config_var import features_defaulters, features_oners, features_offers, system_features_offers, \
     system_features_oners
+from presenter.config.files_paths import votes_file, database_file, adapt_votes_file, multi_votes_file,  systems_file
 from requests import get
 import time
 from threading import Thread
@@ -44,7 +45,7 @@ class MyThread(Thread):
 
 
 @bot.message_handler(content_types=['document', 'photo', 'sticker', 'video', 'video_note'])
-@bot.message_handler(func=lambda message: message.entities and message.from_user.id in new_dudes)
+#  @bot.message_handler(func=lambda message: message.entities and message.from_user.id in new_dudes)
 def deleter_handler(message):
     """Удаляет медиа ночью"""
     log.log_print(f"deleter_handler invoked")
@@ -68,11 +69,11 @@ def new_member_handler(message):
             # TODO Deletion of spammer's messages and bots' greeting to it
             ban(message, person)
         else:
-            if person.id != 381279599:
-                my_thread = MyThread(message)
-                my_thread.start()
-                new_dudes[person.id] = [message.message_id]
-                print(new_dudes)
+            #  if person.id != 381279599:
+            #      my_thread = MyThread(message)
+            #      my_thread.start()
+            #      new_dudes[person.id] = [message.message_id]
+            #      print(new_dudes)
             sent = new_member(message, person)
             if message.from_user.id in new_dudes and sent:
                 new_dudes[person.id].append(sent.message_id)
@@ -234,6 +235,27 @@ def add_admin_place_handler(message):
         add_admin_place(message)
 
 
+@bot.message_handler(commands=['money_on', 'money_off'])
+def money_mode_change_handler(message):
+    log.log_print("money_mode_change_handler invoked")
+    if in_mf(message, command_type=None, or_private=False) and is_suitable(message, message.from_user, "chat_changer"):
+        money_mode_change(message)
+
+
+@bot.message_handler(commands=['m_emoji'])
+def money_emoji_handler(message):
+    log.log_print("money_emoji_handler invoked")
+    if in_mf(message, command_type=None, or_private=False) and is_suitable(message, message.from_user, "chat_changer"):
+        money_emoji(message)
+
+
+@bot.message_handler(commands=['m_name'])
+def money_name_handler(message):
+    log.log_print("money_name_handler invoked")
+    if in_mf(message, command_type=None, or_private=False) and is_suitable(message, message.from_user, "chat_changer"):
+        money_name(message)
+
+
 @bot.message_handler(commands=features_offers+features_oners+features_defaulters)
 def chat_options_handler(message):
     log.log_print("chat_options_handler invoked")
@@ -350,7 +372,7 @@ def av_handler(call):
 @bot.callback_query_handler(func=lambda call: call.data == 'favor' or call.data == 'against' or call.data == 'abstain')
 def add_vote_handler(call):
     """Вставляет голос в голосоовашку"""
-    log.log_print(f"add_vote_handler invoked")
+    log.log_print("add_vote_handler invoked")
     if call.chat_instance != "-8294084429973252853" or is_suitable(call, call.from_user, "advanced"):
         add_vote(call)
 
@@ -362,7 +384,7 @@ def add_vote_handler(call):
 @bot.message_handler(commands=['lang'])
 def language_getter_handler(message):
     """Gets the language of the chat"""
-    log.log_print(f"language_getter_handler invoked")  # TODO Более удобную ставилку языков
+    log.log_print("language_getter_handler invoked")  # TODO Более удобную ставилку языков
     if in_mf(message, command_type=None, or_private=False) and is_suitable(message, message.from_user, 'boss'):
         language_getter(message)
 
@@ -370,7 +392,7 @@ def language_getter_handler(message):
 @bot.message_handler(commands=['start'])
 def starter_handler(message):
     """Запуск бота в личке, в чате просто реагирует"""
-    log.log_print(f"starter_handler invoked")
+    log.log_print("starter_handler invoked")
     if in_mf(message, command_type=None):
         starter(message)
 
@@ -378,9 +400,17 @@ def starter_handler(message):
 @bot.message_handler(commands=['help'])
 def helper_handler(message):
     """Предоставляет человеку список команд"""
-    log.log_print(f"helper_handler invoked")
+    log.log_print("helper_handler invoked")
     if in_mf(message, command_type=None):
         helper(message)
+
+
+@bot.message_handler(commands=['money_help', 'help_money'])
+def money_helper_handler(message):
+    """Financial instructions"""
+    log.log_print("money_helper_handler invoked")
+    if in_mf(message, command_type=None):
+        money_helper(message)
 
 
 @bot.message_handler(commands=['id'])
@@ -438,7 +468,7 @@ def money_give_handler(message):
     """Обмен денег между пользователями"""
     log.log_print(f"money_give_handler invoked")
     if in_mf(message, 'financial_commands', or_private=False):
-        person = person_analyze(message, to_bot=True)
+        person = person_analyze(message, to_bot=False)
         if person:
             if int_check(message.text.split()[-1], positive=False):
                 money_give(message, person)
@@ -533,26 +563,16 @@ def anon_message_handler(message):
         reply(message, "И как это может быть анонимно?")
 
 
+@bot.message_handler(commands=['test'])
+def database_send_handler(message):
+    if message.chat.id == 381279599:
+        for FILE in (database_file, votes_file, adapt_votes_file, multi_votes_file, systems_file):
+            file_send = open(FILE, 'rb')
+            send_document(message.chat.id, file_send)
+            file_send.close()
+
+
 '''Последний хэндлер. Просто считает сообщения, что не попали в другие хэндлеры'''
-
-
-@bot.message_handler(commands=['trash'])
-def oh_shit(message):
-    log.log_print("oh_shit invoked")
-    global trash
-    if in_mf(message, 'boss_commands', or_private=False) and is_suitable(message, message.from_user, 'boss'):
-        person = person_analyze(message)
-        if person and rank_superiority(message, person):
-            ban(message, person)
-            trash.append(message.reply_to_message.text)
-            reply(message, "Добавил фразу в ЧС")
-
-
-@bot.message_handler(func=lambda message: message.text in trash)
-def fuck_that_guy(message):
-    log.log_print("fuck_that_guy invoked")
-    if in_mf(message, command_type=None, loud=False):
-        ban(message, message.from_user)
 
 
 @bot.message_handler(func=lambda message: True, content_types=None)
@@ -571,7 +591,7 @@ def counter_handler(message):
 def dude_is_bad(message, unban_then=True):
     global new_dudes
     if message.from_user.id in new_dudes:
-        if len(new_dudes[message.from_user.id]) < 2:
+        if len(new_dudes[message.from_user.id]) < 3:
             ban(message, message.from_user, comment=False, unban_then=unban_then)
             for msg in new_dudes[message.from_user.id]:
                 delete(message.chat.id, msg)
