@@ -393,7 +393,7 @@ def language_getter_handler(message):
 def starter_handler(message):
     """Запуск бота в личке, в чате просто реагирует"""
     log.log_print("starter_handler invoked")
-    if in_mf(message, command_type=None):
+    if in_mf(message, command_type=None) and is_correct_message(message):
         starter(message)
 
 
@@ -401,7 +401,7 @@ def starter_handler(message):
 def helper_handler(message):
     """Предоставляет человеку список команд"""
     log.log_print("helper_handler invoked")
-    if in_mf(message, command_type=None):
+    if in_mf(message, command_type=None) and is_correct_message(message):
         helper(message)
 
 
@@ -425,7 +425,7 @@ def show_id_handler(message):
 def minet_handler(message):
     """Приносит удовольствие"""
     log.log_print(f"minet_handler invoked")
-    if in_mf(message, 'standart_commands') and cooldown(message, 'minet'):
+    if in_mf(message, 'standart_commands') and cooldown(message, 'minet') and is_correct_message(message):
         minet(message)
 
 
