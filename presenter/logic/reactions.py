@@ -1,9 +1,7 @@
 # -*- coding: utf-8 -*-
-from presenter.config.config_func import Database, time_replace, is_suitable, feature_is_available
+from presenter.config.config_func import Database, time_replace, is_suitable, feature_is_available, get_system_configs
 from view.output import delete, kick, send, promote, reply
 from presenter.config.log import Loger, log_to
-from presenter.config.files_paths import systems_file
-import json
 
 log = Loger(log_to)
 
@@ -35,10 +33,7 @@ def new_member(message, member):
     answer = ''
     chat = database.get('chats', ('id', message.chat.id))
     system = chat['system']
-    read_file = open(systems_file, 'r', encoding='utf-8')
-    data = json.load(read_file)
-    read_file.close()
-    chat_configs = data[system]
+    chat_configs = get_system_configs(system)
     if database.get('members', ('id', member.id), ('rank', chat_configs['ranks'][0])) and feature_is_available(
             message.chat.id, system, 'violators_ban'):
         kick(message.chat.id, member.id)

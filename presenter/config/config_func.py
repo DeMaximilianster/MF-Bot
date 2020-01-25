@@ -297,7 +297,8 @@ def in_mf(message, command_type, or_private=True, loud=True):
         read_file.close()
         chat_configs = data[system]
         if not database.get('members', ('id', person.id), ('system', system)):
-            person_entry = (person.id, system, person.username, person.first_name, chat_configs['ranks'][1], 0, 0, 0, 0, 0)
+            person_entry = (person.id, system, person.username, person.first_name, chat_configs['ranks'][1],
+                            0, 0, 0, 0, 0)
             database.append(person_entry, 'members')
         counter(message)  # Отправляем сообщение на учёт в БД
         if command_type == 'financial_commands':
@@ -350,10 +351,9 @@ def feature_is_available(chat_id, system, command_type):
     if database.get('chats', ('id', chat_id), (command_type, 1)):
         return True
     elif database.get('chats', ('id', chat_id), (command_type, 2)) and database.get('systems', ('id', system),
-                                                                                            (command_type, 2)):
+                                                                                               (command_type, 2)):
         return True
     return False
-
 
 
 def counter(message):
@@ -385,6 +385,46 @@ def member_update(system, person):
     database.change(person.username, 'username', 'members', ('id', person.id), ('system', system))
     database.change(person.first_name, 'nickname', 'members', ('id', person.id), ('system', system))
     database.change(msg_count, 'messages', 'members', ('id', person.id), ('system', system))
+
+
+def get_systems_json():
+    with open(systems_file, 'r', encoding='utf-8') as read_file:
+        return json.load(read_file)
+
+
+def get_system_configs(system):
+    data = get_systems_json()
+    return data[system]
+
+
+def write_systems_json(data):
+    with open(systems_file, 'w', encoding='utf-8') as write_file:
+        json.dump(data, write_file, indent=4, ensure_ascii=False)
+
+
+def update_systems_json(system, set_what, set_where):
+    data = get_systems_json()
+    system_configs = data[system]
+    system_configs[set_where] = set_what
+    data[system] = system_configs
+    write_systems_json(data)
+
+
+def create_system(message, system_id, database):
+    database.append((system_id, 0, 0, 1, 1, 0, 0, 2, 1, 1, 1), 'systems')
+    data = get_systems_json()
+    data[system_id] = {"name": message.chat.title, "money": False, "money_emoji": "💰", "money_name": "валюты",
+                       "ranks": ["Забаненный", "Участник", "Админ", "Старший Админ", "Лидер"],
+                       "ranks_commands": [None, "/guest", "/admin", "/senior_admin", "/leader"],
+                       "appointments": [],
+                       "appointment_adders": [],
+                       "appointment_removers": [],
+                       "commands": {"standart": ["Участник", "Лидер"],
+                                    "advanced": ["Участник", "Лидер"],
+                                    "boss": ["Админ", "Лидер"],
+                                    "uber": ["Старший Админ", "Лидер"],
+                                    "chat_changer": ["Старший Админ", "Лидер"]}}
+    write_systems_json(data)
 
 
 # TODO перенести все голосовашки в базу данных или ещё куда-то (JSON)

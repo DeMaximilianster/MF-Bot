@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from view.output import reply, send_photo, send_sticker, send
 from presenter.config.config_func import time_replace, language_analyzer, case_analyzer, member_update, int_check, \
-    is_suitable, feature_is_available
+    is_suitable, feature_is_available, get_system_configs, get_systems_json
 from presenter.config.database_lib import Database
 from presenter.config.config_var import bot_id, admin_place, original_to_english, english_to_original, months,\
     features, features_texts
@@ -9,8 +9,6 @@ from random import choice
 from time import ctime, time
 from presenter.config.log import Loger, log_to
 from presenter.config.texts import minets
-from presenter.config.files_paths import systems_file
-import json
 
 log = Loger(log_to)
 
@@ -191,9 +189,7 @@ def send_me(message, person):
     log.log_print(str(message.from_user.id) + ": send_me invoked")
     database = Database()
     system = database.get('chats', ('id', message.chat.id))['system']
-    read_file = open(systems_file, 'r', encoding='utf-8')
-    data = json.load(read_file)
-    chat_config = data[system]
+    chat_config = get_system_configs(system)
     money_name = chat_config['money_name']
     member_update(system, person)  # Update person's messages, nickname and username
     p = database.get('members', ('id', person.id), ('system', system))
@@ -304,10 +300,7 @@ def money_top(message):
     people = list(database.get_many('members', ('system', system)))
     people = list(filter(lambda x: x['money'] != 0 and x['id'] != bot_id, people))
     people.sort(key=lambda x: -x['money'])
-    read_file = open(systems_file, 'r', encoding='utf-8')
-    data = json.load(read_file)
-    read_file.close()
-    chat_configs = data[system]
+    chat_configs = get_system_configs(system)
     emoji = chat_configs['money_emoji']
     i = 1
     text = ''
@@ -366,9 +359,7 @@ def admins(message):
     database = Database()
     chat = database.get('chats', ('id', message.chat.id))
     system = chat['system']
-    read_file = open(systems_file, 'r', encoding='utf-8')
-    data = json.load(read_file)
-    chat_config = data[system]
+    chat_config = get_system_configs(system)
     boss = chat_config['commands']['boss']
     ranks = chat_config['ranks']
     admins_username = []
@@ -469,9 +460,7 @@ def anon_message(message):
         system = message.text.split()[1]
         system_specification_length += len(system) + 1
     else:
-        read_file = open(systems_file, 'r', encoding='utf-8')
-        data = json.load(read_file)
-        read_file.close()
+        data = get_systems_json()
         text = "Вижу вы сидите в нескольких чатах. Чтобы уточнить, в какой админосостав отправлять сообщение, " \
                "оформите вашу команду так:\n\n/anon <номер системы> <ваше послание>.\n\n Вот список систем:\n"
         names = [f"{sys} — {data[sys]['name']}" for sys in systems]

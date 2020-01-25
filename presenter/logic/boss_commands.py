@@ -2,13 +2,11 @@
 from presenter.config.database_lib import Database
 from presenter.config.config_var import full_chat_list, channel_list, bot_id, admin_place, chat_list
 from presenter.config.log import Loger, log_to
-from presenter.config.config_func import unban_user, is_suitable, int_check
+from presenter.config.config_func import unban_user, is_suitable, int_check, get_system_configs, \
+    update_systems_json, create_system
 from view.output import kick, reply, promote, send, forward, restrict
-import json
-from presenter.config.files_paths import systems_file
 from time import time
 
-work = True
 log = Loger(log_to)
 
 # TODO команда /kick, кикает и сразу разбанивает
@@ -37,7 +35,7 @@ def warn(message, person):
     adm_place = admin_place(message, database)
     if adm_place:
         send(adm_place, "Пользователь {} (@{}) [{}] получил(а) {} варн(а) и их стало {}".format(
-        person.first_name, person.username, person.id, warns, value))
+                         person.first_name, person.username, person.id, warns, value))
     blowout = database.get('channels', ('name', 'Проколы'))['id']
     how_many = 10  # Сколько пересылает сообщений
     end_forwarding = message.reply_to_message.message_id
@@ -65,13 +63,10 @@ def unwarn(message, person):
     adm_place = admin_place(message, database)
     if adm_place:
         send(adm_place, "Пользователь {} (@{}) [{}] получил(а) {} варн(а) и их стало {}".format(
-        person.first_name, person.username, person.id, unwarns, value))
+                         person.first_name, person.username, person.id, unwarns, value))
     reply(message, "Варн(ы) снят(ы). Теперь их {}".format(value))
     if 3 - unwarns <= value < 3:
-        read_file = open(systems_file, 'r', encoding='utf-8')
-        data = json.load(read_file)
-        read_file.close()
-        chat_configs = data[system]
+        chat_configs = get_system_configs(system)
         database.change(chat_configs['ranks'][0], 'rank', 'members', ('id', person.id), ('system', system))
 
 
@@ -96,10 +91,7 @@ def ban(message, person, comment=True, unban_then=False):
         send(message.chat.id, "Ну всё, этому челу " + "бан"*not_unban_then + "кик"*unban_then)
     chat = database.get('chats', ('id', message.chat.id))
     system = chat['system']
-    read_file = open(systems_file, 'r', encoding='utf-8')
-    data = json.load(read_file)
-    read_file.close()
-    chat_configs = data[system]
+    chat_configs = get_system_configs(system)
     if not unban_then:
         database.change(chat_configs['ranks'][0], 'rank', 'members', ('id', person.id), ('system', system))
     for chat in full_chat_list(database, system):
@@ -236,10 +228,7 @@ def rank_changer(message, person):
     database = Database()
     chat = database.get('chats', ('id', message.chat.id))
     system = chat['system']
-    read_file = open(systems_file, 'r', encoding='utf-8')
-    data = json.load(read_file)
-    read_file.close()
-    chat_configs = data[str(system)]
+    chat_configs = get_system_configs(system)
     command = message.text.split()[0]
     adm_place = admin_place(message, database)
 
@@ -296,7 +285,6 @@ def deleter_mode(message):
     delete = int(database.get('config', ('var', 'delete'))['value'])
     delete = (delete + 1) % 2  # Переводит 0 в 1, а 1 в 0
     database.change(delete, 'value', 'config', ('var', 'delete'))
-
     if delete:
         reply(message, 'Окей, господин, теперь я буду удалять медиа, которые присланы гостями')
     else:
@@ -337,24 +325,7 @@ def add_chat(message):
         ids = [int(sys['id']) for sys in all_systems]
         new_id = str(max(ids) + 1)
         database.append((message.chat.id, new_id, message.chat.title, typee, link, 2, 2, 2, 2, 2, 2, 2, 2), 'chats')
-        database.append((new_id, 0, 0, 1, 1, 0, 0, 2, 1, 1, 1), 'systems')
-        read_file = open(systems_file, 'r', encoding='utf-8')
-        data = json.load(read_file)
-        read_file.close()
-        data[new_id] = {"name": message.chat.title, "money": False, "money_emoji": "💰", "money_name": "💰💰💰",
-                        "ranks": ["Забаненный", "Участник", "Админ", "Старший Админ", "Лидер"],
-                        "ranks_commands": [None, "/guest", "/admin", "/senior_admin", "/leader"],
-                        "appointments": [],
-                        "appointment_adders": [],
-                        "appointment_removers": [],
-                        "commands": {"standart": ["Участник", "Лидер"],
-                                     "advanced": ["Участник", "Лидер"],
-                                     "boss": ["Админ", "Лидер"],
-                                     "uber": ["Старший Админ", "Лидер"],
-                                     "chat_changer": ["Старший Админ", "Лидер"]}}
-        write_file = open(systems_file, 'w', encoding='utf-8')
-        json.dump(data, write_file, indent=4, ensure_ascii=False)
-        write_file.close()
+        create_system(message, new_id, database)
         reply(message, "Создана новая система чатов с ID {}".format(new_id))
     else:
         reply(message, "Для этой операции прошу вызвать @DeMaximilianster")
@@ -417,15 +388,7 @@ def money_mode_change(message):
 
     chat = database.get('chats', ('id', message.chat.id))
     system = chat['system']
-    read_file = open(systems_file, 'r', encoding='utf-8')
-    data = json.load(read_file)
-    read_file.close()
-    chat_configs = data[system]
-    chat_configs['money'] = mode == 'on'
-    data[system] = chat_configs
-    write_file = open(systems_file, 'w', encoding='utf-8')
-    json.dump(data, write_file, indent=4, ensure_ascii=False)
-    write_file.close()
+    update_systems_json(system, mode == 'on', 'money')
     if mode == 'on':
         all_money = message.text.split()[-1]
         if int_check(all_money, positive=True):
@@ -452,20 +415,11 @@ def money_mode_change(message):
 def money_emoji(message):
     log.log_print("money_emoji invoked")
     database = Database()
-
     mode = message.text.split()[-1]
     chat = database.get('chats', ('id', message.chat.id))
     system = chat['system']
-    read_file = open(systems_file, 'r', encoding='utf-8')
-    data = json.load(read_file)
-    read_file.close()
-    chat_configs = data[system]
     if mode:
-        chat_configs['money_emoji'] = mode
-        data[system] = chat_configs
-        write_file = open(systems_file, 'w', encoding='utf-8')
-        json.dump(data, write_file, indent=4, ensure_ascii=False)
-        write_file.close()
+        update_systems_json(system, mode, 'money_emoji')
         reply(message, "OK!")
     else:
         reply(message, "После команды введите смайлик-сокращение валюты")
@@ -474,20 +428,11 @@ def money_emoji(message):
 def money_name(message):
     log.log_print("money_name invoked")
     database = Database()
-
     mode = message.text.split()[-1]
     chat = database.get('chats', ('id', message.chat.id))
     system = chat['system']
-    read_file = open(systems_file, 'r', encoding='utf-8')
-    data = json.load(read_file)
-    read_file.close()
-    chat_configs = data[system]
     if mode:
-        chat_configs['money_name'] = mode
-        data[system] = chat_configs
-        write_file = open(systems_file, 'w', encoding='utf-8')
-        json.dump(data, write_file, indent=4, ensure_ascii=False)
-        write_file.close()
+        update_systems_json(system, mode, 'money_name')
         reply(message, "OK!")
     else:
         reply(message, "После команды введите название валюты")
