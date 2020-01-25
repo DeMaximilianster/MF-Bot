@@ -1,7 +1,7 @@
 from presenter.config.token import bot
 from view.output import reply, answer_callback, delete, send_document
 from presenter.config.config_func import in_mf, cooldown, person_analyze, rank_superiority, \
-     int_check, person_check, is_suitable, in_system_commands
+     int_check, person_check, is_suitable, in_system_commands, is_correct_message
 from presenter.logic.elite import elite
 from presenter.logic.boss_commands import ban, add_chat, add_admin_place, chat_options, system_options, \
     warn, unwarn, message_change, money_pay, rank_changer, mute, money_mode_change, money_emoji, money_name

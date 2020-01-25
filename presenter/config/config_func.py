@@ -325,6 +325,12 @@ def in_mf(message, command_type, or_private=True, loud=True):
         reply(message, rep_text)
 
 
+def is_correct_message(message):
+    """ Checks if a command has been sent to this bot or if the command is not a forwarding """
+    cmd = message.text.split("@")
+    return not message.forward_from and (len(cmd) == 1 or cmd[1] == bot.get_me().username)
+
+
 def in_system_commands(message):
     """Check if command is available in this system"""
     log.log_print("in_system_commands invoked")
