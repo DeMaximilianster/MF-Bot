@@ -195,9 +195,10 @@ def rank_changer_handler(message):
     """Sets person's rank to guest"""
     log.log_print("rank_changer_handler invoked")
     if in_mf(message, command_type=None, or_private=False):
-        if message.from_user.id == 381279599:
+        if message.from_user.id == 381279599:  # TODO Сделать так, чтоб добавлять можно было только лидера
             person = person_analyze(message)
-            rank_changer(message, person)
+            if person:
+                rank_changer(message, person)
         elif is_suitable(message, message.from_user, 'boss'):
             person = person_analyze(message)
             if person and rank_superiority(message, person):
@@ -393,7 +394,7 @@ def language_getter_handler(message):
 def starter_handler(message):
     """Запуск бота в личке, в чате просто реагирует"""
     log.log_print("starter_handler invoked")
-    if in_mf(message, command_type=None) and is_correct_message(message):
+    if is_correct_message(message) and in_mf(message, command_type=None):
         starter(message)
 
 
@@ -401,7 +402,7 @@ def starter_handler(message):
 def helper_handler(message):
     """Предоставляет человеку список команд"""
     log.log_print("helper_handler invoked")
-    if in_mf(message, command_type=None) and is_correct_message(message):
+    if is_correct_message(message) and in_mf(message, command_type=None):
         helper(message)
 
 
@@ -425,7 +426,7 @@ def show_id_handler(message):
 def minet_handler(message):
     """Приносит удовольствие"""
     log.log_print(f"minet_handler invoked")
-    if in_mf(message, 'standart_commands') and cooldown(message, 'minet') and is_correct_message(message):
+    if is_correct_message(message) and in_mf(message, 'standart_commands') and cooldown(message, 'minet'):
         minet(message)
 
 

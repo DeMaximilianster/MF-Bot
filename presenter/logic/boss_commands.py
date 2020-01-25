@@ -3,7 +3,7 @@ from presenter.config.database_lib import Database
 from presenter.config.config_var import full_chat_list, channel_list, bot_id, admin_place, chat_list
 from presenter.config.log import Loger, log_to
 from presenter.config.config_func import unban_user, is_suitable, int_check, get_system_configs, \
-    update_systems_json, create_system
+    update_systems_json, create_system, create_chat
 from view.output import kick, reply, promote, send, forward, restrict
 from time import time
 
@@ -192,8 +192,6 @@ def give_admin(message, person, loud=True):
     database = Database()
     chat = database.get('chats', ('id', message.chat.id))
     system = chat['system']
-    # TODO При повторном использовании команды не должна появляться новая запись
-    database.append((person.id, "Admin"), table='appointments')
     # TODO пусть бот шлёт админу ссылку на чат админосостава и меняет её при входе
     # Дать челу админку во всех чатах, кроме Комитета и Админосостава
     for chat in chat_list(database, system):
@@ -231,7 +229,6 @@ def rank_changer(message, person):
     chat_configs = get_system_configs(system)
     command = message.text.split()[0]
     adm_place = admin_place(message, database)
-
     if command in chat_configs["ranks_commands"]:
         rank_index = chat_configs["ranks_commands"].index(command)
         rank = chat_configs["ranks"][rank_index]
@@ -243,11 +240,14 @@ def rank_changer(message, person):
     elif command in chat_configs["appointment_adders"]:
         appointment_index = chat_configs["appointment_adders"].index(command)
         appointment = chat_configs["appointments"][appointment_index]
-        database.append((person.id, system, appointment), "appointments")
-        reply(message, f"Теперь это {appointment}. Поздравим человека с назначением на должность!")
-        if adm_place:
-            send(adm_place, "Пользователь {} (@{}) [{}] получил(а) должность {}".format(
-                person.first_name, person.username, person.id, appointment))
+        if not database.get('appointments', ('id', person.id), ('system', system), ('appointment', appointment)):
+            database.append((person.id, system, appointment), "appointments")
+            reply(message, f"Теперь это {appointment}. Поздравим человека с назначением на должность!")
+            if adm_place:
+                send(adm_place, "Пользователь {} (@{}) [{}] получил(а) должность {}".format(
+                    person.first_name, person.username, person.id, appointment))
+        else:
+            reply(message, "У этого человека и так есть эта должность")
     elif command in chat_configs["appointment_removers"]:
         appointment_index = chat_configs["appointment_removers"].index(command)
         appointment = chat_configs["appointments"][appointment_index]
@@ -293,7 +293,6 @@ def deleter_mode(message):
 
 def add_chat(message):
     """Добавляет чат в базу данных чатов, входящих в систему МФ2"""
-    # TODO Предохранитель на уникальность некоторых чатов
     log.log_print("add_chat invoked")
     database = Database()
     system = None
@@ -311,8 +310,7 @@ def add_chat(message):
         if database.get('systems', ('id', system)):  # Adding new chat to existing system
             if database.get('members', ('id', message.from_user.id), ('system', system)):
                 if is_suitable(message, message.from_user, "chat_changer", system=system):
-                    chat = (message.chat.id, system, message.chat.title, typee, link, 2, 2, 2, 2, 2, 2, 2, 2)
-                    database.append(chat, 'chats')
+                    create_chat(message, system, typee, link, database)
                     reply(message, "Теперь я здесь работаю!")
                 else:
                     reply(message, "Произошла ошибка!")
@@ -324,7 +322,7 @@ def add_chat(message):
         all_systems = database.get_all('systems', 'id')
         ids = [int(sys['id']) for sys in all_systems]
         new_id = str(max(ids) + 1)
-        database.append((message.chat.id, new_id, message.chat.title, typee, link, 2, 2, 2, 2, 2, 2, 2, 2), 'chats')
+        create_chat(message, system, typee, link, database)
         create_system(message, new_id, database)
         reply(message, "Создана новая система чатов с ID {}".format(new_id))
     else:

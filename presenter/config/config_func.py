@@ -148,10 +148,8 @@ def rank_superiority(message, person):
     chat_configs = data[str(system)]
     ranks = chat_configs['ranks']
     your_rank = database.get('members', ('id', message.from_user.id), ('system', system))['rank']
-    if not database.get('members', ('id', person.id), ('system', system)):
-        person_entry = (person.id, system, person.username, person.first_name, chat_configs['ranks'][1], 0, 0, 0, 0, 0)
-        database.append(person_entry, 'members')
-    their_rank = database.get('members', ('id', person.id), ('system', system))['rank']
+    person_entry = get_person(person, system, database, system_configs=chat_configs)
+    their_rank = person_entry['rank']
     your_rank_n = ranks.index(your_rank)
     their_rank_n = ranks.index(their_rank)
     if their_rank_n >= your_rank_n:
@@ -159,6 +157,21 @@ def rank_superiority(message, person):
         return False
     else:
         return True
+
+
+def add_person(person, system, database, system_configs):
+    person_entry = (person.id, system, person.username, person.first_name, system_configs['ranks'][1], 0, 0, 0, 0, 0)
+    database.append(person_entry, 'members')
+
+
+def get_person(person, system, database, system_configs=None):
+    person_entry = database.get('members', ('id', person.id), ('system', system))
+    if not person_entry:
+        if not system_configs:
+            system_configs = get_system_configs(system)
+        add_person(person, system, database, system_configs)
+        person_entry = database.get('members', ('id', person.id), ('system', system))
+    return person_entry
 
 
 def rank_required(message, person, system, min_rank, max_rank, loud=True):
@@ -292,14 +305,8 @@ def in_mf(message, command_type, or_private=True, loud=True):
     if chat:
         chat_id = message.chat.id
         system = chat['system']
-        read_file = open(systems_file, 'r', encoding='utf-8')
-        data = json.load(read_file)
-        read_file.close()
-        chat_configs = data[system]
-        if not database.get('members', ('id', person.id), ('system', system)):
-            person_entry = (person.id, system, person.username, person.first_name, chat_configs['ranks'][1],
-                            0, 0, 0, 0, 0)
-            database.append(person_entry, 'members')
+        chat_configs = get_system_configs(system)
+        get_person(person, system, database, system_configs=chat_configs)
         counter(message)  # Отправляем сообщение на учёт в БД
         if command_type == 'financial_commands':
             if not chat_configs['money']:
@@ -315,7 +322,7 @@ def in_mf(message, command_type, or_private=True, loud=True):
         else:
             return True
     if loud:
-        text = "Жалкие завистники из чата с ID {} и названием {}, в частности {} (@{}) [{}] "
+        text = "Люди из чата с ID {} и названием {}, в частности {} (@{}) [{}] "
         text += "попытались мной воспользоваться"
         send(381279599, text.format(message.chat.id, message.chat.title, message.from_user.first_name,
                                     message.from_user.username, message.from_user.id))
@@ -431,6 +438,10 @@ def create_system(message, system_id, database):
                                     "uber": ["Старший Админ", "Лидер"],
                                     "chat_changer": ["Старший Админ", "Лидер"]}}
     write_systems_json(data)
+
+
+def create_chat(message, system_id, typee, link, database):
+    database.append((message.chat.id, system_id, message.chat.title, typee, link, 2, 2, 2, 2, 2, 2, 2, 2), 'chats')
 
 
 # TODO перенести все голосовашки в базу данных или ещё куда-то (JSON)
