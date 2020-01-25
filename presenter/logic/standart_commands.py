@@ -46,42 +46,48 @@ def helper(message):
     """Предоставляет человеку список команд"""
     log.log_print(str(message.from_user.id) + ": helper invoked")
     database = Database()
-    if message.chat.id < 0:
-        system = database.get('chats', ('id', message.chat.id))['system']
     answer = '<b>Команды:</b>\n\n'
+    if message.chat.id < 0:  # Command is used in chat
+        system = database.get('chats', ('id', message.chat.id))['system']
 
-    answer += '<b>Общие команды:</b>\n'
-    answer += '/me - Присылает вашу запись в базе данных\n'
-    answer += '/anon - Прислать анонимное послание в админский чат (если таковой имеется)\n'
-    answer += '/members - Прислать в личку перечень участников (нынешних и бывших) и их ID\n\n'
-    # Helps
-    answer += '<b>Помощь и менюшки:</b>\n'
-    answer += '/help - Прислать это сообщение\n'
-    answer += '/money_help - Финансовый режим\n'
-    answer += '/chat - Показать настройки в чате\n'
-    answer += '/system - Показать настройки по умолчанию\n\n'
-    if message.chat.id > 0 or feature_is_available(message.chat.id, system, 'standart_commands'):
-        answer += '<b>Развлекательные команды:</b>\n'
+        answer += '<b>Общие команды:</b>\n'
+        answer += '/me - Присылает вашу запись в базе данных\n'
+        answer += '/anon - Прислать анонимное послание в админский чат (если таковой имеется)\n'
+        answer += '/members - Прислать в личку перечень участников (нынешних и бывших) и их ID\n\n'
+        # Helps
+        answer += '<b>Помощь и менюшки:</b>\n'
+        answer += '/help - Прислать это сообщение\n'
+        answer += '/money_help - Финансовый режим\n'
+        answer += '/chat - Показать настройки в чате\n'
+        answer += '/system - Показать настройки по умолчанию\n\n'
+        if feature_is_available(message.chat.id, system, 'standart_commands'):
+            answer += '<b>Развлекательные команды:</b>\n'
+            answer += '/minet - Делает приятно\n'
+            answer += '/drakken - Присылает арт с Доктором Драккеном\n'
+            answer += '/meme - Присылает мем\n\n'
+
+        if is_suitable(message, message.from_user, 'boss', loud=False):
+            answer += '<b>Базовые админские команды:</b>\n'
+            answer += '/messages [число сообщений] - Изменить количество сообщений от участника в этом чате\n'
+            answer += '/warn [число варнов]- Дать варн(ы) (3 варна = бан)\n'
+            answer += '/unwarn [число варнов]- Снять варн(ы)\n'
+            answer += '/mute [количество часов] - Запретить писать в чат\n'
+            answer += '/ban - Дать бан\n'
+            answer += '/guest - Снять ограничения, забрать админку\n\n'
+        if is_suitable(message, message.from_user, 'uber', loud=False):
+            answer += '<b>Продвинутые админские команды:</b>\n'
+            answer += '/admin - Снять ограничения, дать админку\n'
+            answer += '/senior_admin - Снять бан, дать продвинутую админку\n\n'
+        if is_suitable(message, message.from_user, 'chat_changer', loud=False):
+            answer += '<b>Настройщики чатов:</b>\n'
+            answer += '/add_chat [номер системы чатов] - Добавить чат в систему чатов\n'
+            answer += '/admin_place - Отметить чат как админский'
+    else:  # Command is used in PM
+        answer += '/help - Прислать это сообщение\n'
         answer += '/minet - Делает приятно\n'
         answer += '/drakken - Присылает арт с Доктором Драккеном\n'
         answer += '/meme - Присылает мем\n\n'
-
-    if message.chat.id > 0 or is_suitable(message, message.from_user, 'boss', loud=False):
-        answer += '<b>Базовые админские команды:</b>\n'
-        answer += '/messages [число сообщений] - Изменить количество сообщений от участника в этом чате\n'
-        answer += '/warn [число варнов]- Дать варн(ы) (3 варна = бан)\n'
-        answer += '/unwarn [число варнов]- Снять варн(ы)\n'
-        answer += '/mute [количество часов] - Запретить писать в чат\n'
-        answer += '/ban - Дать бан\n'
-        answer += '/guest - Снять ограничения, забрать админку\n\n'
-    if message.chat.id > 0 or is_suitable(message, message.from_user, 'uber', loud=False):
-        answer += '<b>Продвинутые админские команды:</b>\n'
-        answer += '/admin - Снять ограничения, дать админку\n'
-        answer += '/senior_admin - Снять бан, дать продвинутую админку\n\n'
-    if message.chat.id > 0 or is_suitable(message, message.from_user, 'chat_changer', loud=False):
-        answer += '<b>Настройщики чатов:</b>\n'
-        answer += '/add_chat [номер системы чатов] - Добавить чат в систему чатов\n'
-        answer += '/admin_place - Отметить чат как админский'
+        answer += 'В чате мой функционал значительно шире'
     reply(message, answer, parse_mode='HTML')
 
 
@@ -452,14 +458,16 @@ def system_check(message):
 
 
 def anon_message(message):
-    log.log_print(f'{__name__} invoked')
-    database = Database()
+    log.log_print('anon_message invoked')
+    database = Database(to_log=False)
     systems = [x['system'] for x in database.get_many('members', ('id', message.from_user.id))]
     system = None
+    system_specification_length = 0
     if len(systems) == 1:
         system = systems[0]
     elif int_check(message.text.split()[1], positive=True):
         system = message.text.split()[1]
+        system_specification_length += len(system) + 1
     else:
         read_file = open(systems_file, 'r', encoding='utf-8')
         data = json.load(read_file)
@@ -469,12 +477,16 @@ def anon_message(message):
         names = [f"{sys} — {data[sys]['name']}" for sys in systems]
         reply(message, text + '\n'.join(names))
     if system:
-        admin_chat = database.get('systems', ('id', system))
-        if admin_chat['admin_place']:
-            sent = send(admin_chat['admin_place'], "#anon\n\n" + ' '.join(message.text.split()[1:]))
-            if sent:
-                reply(message, "Сообщение успешно отправлено. Спасибо за ваше мнение!")
+        system_entry = database.get('systems', ('id', system))
+        if system_entry:
+            if system_entry['admin_place']:
+                anon_message_text = ' '.join(message.text.split()[1:])
+                sent = send(system_entry['admin_place'], "#anon\n\n" + anon_message_text[system_specification_length:])
+                if sent:
+                    reply(message, "Сообщение успешно отправлено. Спасибо за ваше мнение!")
+                else:
+                    reply(message, "Произошла ошибка!")
             else:
-                reply(message, "Произошла ошибка!")
+                reply(message, "У этой системы админосостав не отмечен")
         else:
-            reply(message, "У этой системы админосостав не отмечен")
+            reply(message, "Этой системы не существует!")
