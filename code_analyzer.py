@@ -42,7 +42,7 @@ for branch in tree:
         print(branch)
         for file in branch[2]:
             if file[-3:] == '.py':
-                files_list.append(branch[0] + '\\' + file)
+                files_list.append(os.path.join(branch[0], file))
 
 print(files_list)
 
