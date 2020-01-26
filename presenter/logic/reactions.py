@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
-from presenter.config.config_func import Database, time_replace, is_suitable, feature_is_available, get_system_configs
+from presenter.config.config_func import Database, time_replace, is_suitable, feature_is_available, get_system_configs,\
+    create_chat
 from view.output import delete, kick, send, promote, reply
 from presenter.config.log import Loger, log_to
 
@@ -88,3 +89,16 @@ def left_member(message):
     if admin_place:
         send(admin_place, '{} (@{}) [{}] теперь не в {}'.format(member.first_name, member.username, member.id,
                                                                 message.chat.title))
+
+
+def chat_id_update(message):
+    log.log_print("chat_id_update invoked")
+    database = Database()
+    old_chat = database.get('chats', ('id', message.migrate_from_chat_id))
+    if old_chat:
+        typee = 'private'
+        link = 'None'
+        if message.chat.username:
+            typee = 'public'
+            link = message.chat.username
+        create_chat(message, old_chat['system'], typee, link, database)

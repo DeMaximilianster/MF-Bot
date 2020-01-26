@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from view.output import reply, send_photo, send_sticker, send
 from presenter.config.config_func import time_replace, language_analyzer, case_analyzer, member_update, int_check, \
-    is_suitable, feature_is_available, get_system_configs, get_systems_json
+    is_suitable, feature_is_available, get_system_configs, get_systems_json, get_person
 from presenter.config.database_lib import Database
 from presenter.config.config_var import bot_id, admin_place, original_to_english, english_to_original, months,\
     features, features_texts
@@ -71,6 +71,7 @@ def helper(message):
             answer += '/unwarn [число варнов]- Снять варн(ы)\n'
             answer += '/mute [количество часов] - Запретить писать в чат\n'
             answer += '/ban - Дать бан\n'
+            answer += '/kick - Кикнуть (то есть чел сразу сможет вернуться)\n'
             answer += '/guest - Снять ограничения, забрать админку\n\n'
         if is_suitable(message, message.from_user, 'uber', loud=False):
             answer += '<b>Продвинутые админские команды:</b>\n'
@@ -93,7 +94,7 @@ def money_helper(message):
     answer = "<b>Финансовые команды:</b>\n\n"
     answer += "/money_off - Выключить финансовый режим\n\n"
     answer += '/money_on [Кол-во денег] - Включить финансовый режим с заданным бюджетом или обновить бюджет\n'
-    answer += '[Казна] = [Кол-вово денег] - [Деньги участников]\n'
+    answer += '[Казна] = [Кол-во денег] - [Деньги участников]\n'
     answer += 'Если кол-во денег не указано, будет установлена бесконечная казна\n\n'
     answer += '/m_emoji [Смайлик или короткий текст] - Поставить сокращение валюты\n'
     answer += '/m_name [Название] - Поставить название валюты\n'
@@ -104,6 +105,7 @@ def money_helper(message):
     answer += '/give [Кол-во] - Дать челу деньги из вашего личного счёта\n\n'
 
     # TODO answer += '/fund [Кол-во] - Заплатить в фонд чата'
+    # TODO сбрасывалка денег чата
     reply(message, answer, parse_mode='HTML')
 
 
@@ -192,7 +194,7 @@ def send_me(message, person):
     chat_config = get_system_configs(system)
     money_name = chat_config['money_name']
     member_update(system, person)  # Update person's messages, nickname and username
-    p = database.get('members', ('id', person.id), ('system', system))
+    p = get_person(person, system, database, system_configs=chat_config)
     appointments = [x['appointment'] for x in database.get_many('appointments', ('id', person.id), ('system', system))]
     if database.get('messages', ('person_id', person.id), ('chat_id', message.chat.id)):
         messages_here = database.get('messages', ('person_id', person.id), ('chat_id', message.chat.id))['messages']

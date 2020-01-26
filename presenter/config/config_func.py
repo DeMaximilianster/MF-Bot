@@ -160,6 +160,7 @@ def rank_superiority(message, person):
 
 
 def add_person(person, system, database, system_configs):
+    # TODO ранг зависит от статуса чела, при обнаружении ботом
     person_entry = (person.id, system, person.username, person.first_name, system_configs['ranks'][1], 0, 0, 0, 0, 0)
     database.append(person_entry, 'members')
 
@@ -182,7 +183,8 @@ def rank_required(message, person, system, min_rank, max_rank, loud=True):
     read_file.close()
     chat_configs = data[system]
     ranks = chat_configs['ranks']
-    your_rank = database.get('members', ('id', person.id), ('system', system))['rank']
+    you = get_person(person, system, database, system_configs=chat_configs)
+    your_rank = you['rank']
     your_rank_n = ranks.index(your_rank)
     min_rank_n = ranks.index(min_rank)
     max_rank_n = ranks.index(max_rank)
@@ -228,10 +230,7 @@ def is_suitable(inputed, person, command_type, system=None, loud=True):
     chat = database.get('chats', ('id', message.chat.id))
     if chat and not system:
         system = chat['system']
-    read_file = open(systems_file, 'r', encoding='utf-8')
-    data = json.load(read_file)
-    read_file.close()
-    chat_configs = data[str(system)]
+    chat_configs = get_system_configs(system)
     requirements = chat_configs['commands'][command_type]
     # check if requirement for this command type is a rank or appointment
     if isinstance(requirements, list):  # Requirement is a list
@@ -343,14 +342,12 @@ def in_system_commands(message):
     log.log_print("in_system_commands invoked")
     database = Database()
     chat = database.get('chats', ('id', message.chat.id))
+    print(message.json)
     if chat:
         system = chat['system']
-        read_file = open(systems_file, 'r', encoding='utf-8')
-        data = json.load(read_file)
-        read_file.close()
-        chat_configs = data[str(system)]
+        chat_configs = get_system_configs(system)
         if message.text:
-            command = message.text.split()[0]
+            command = message.text.split()[0].split(sep='@')[0]
             every = chat_configs["ranks_commands"] + chat_configs["appointment_adders"]
             every += chat_configs["appointment_removers"]
             return command in every
@@ -424,7 +421,7 @@ def update_systems_json(system, set_what, set_where):
 
 
 def create_system(message, system_id, database):
-    database.append((system_id, 0, 0, 1, 1, 0, 0, 2, 1, 1, 1), 'systems')
+    database.append((system_id, 0, 0, 1, 1, 1, 0, 2, 1, 1, 1), 'systems')
     data = get_systems_json()
     data[system_id] = {"name": message.chat.title, "money": False, "money_emoji": "💰", "money_name": "валюты",
                        "ranks": ["Забаненный", "Участник", "Админ", "Старший Админ", "Лидер"],

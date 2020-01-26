@@ -7,7 +7,7 @@ from presenter.logic.boss_commands import ban, add_chat, add_admin_place, chat_o
     warn, unwarn, message_change, money_pay, rank_changer, mute, money_mode_change, money_emoji, money_name
 from presenter.logic.complicated_commands import adequate, inadequate, response, insult, non_ironic, ironic, \
     place_here, mv, av, add_vote, vote
-from presenter.logic.reactions import deleter, new_member, left_member
+from presenter.logic.reactions import deleter, new_member, left_member, chat_id_update
 from presenter.logic.standart_commands import helper, send_drakken, send_me, send_meme, minet, show_id, \
     all_members, money_give, money_top, language_getter, month_set, day_set, birthday, admins, chat_check, \
     anon_message, system_check, money_helper
@@ -42,6 +42,12 @@ class MyThread(Thread):
 
 
 '''Реакции на медиа, новых участников и выход участников'''
+
+
+@bot.message_handler(content_types=['migrate_from_chat_id'])
+def chat_id_update_handler(message):
+    log.log_print("chat_id_update_handler invoked")
+    chat_id_update(message)
 
 
 @bot.message_handler(content_types=['document', 'photo', 'sticker', 'video', 'video_note'])
@@ -386,8 +392,9 @@ def add_vote_handler(call):
 def language_getter_handler(message):
     """Gets the language of the chat"""
     log.log_print("language_getter_handler invoked")  # TODO Более удобную ставилку языков
-    if in_mf(message, command_type=None, or_private=False) and is_suitable(message, message.from_user, 'boss'):
-        language_getter(message)
+    if in_mf(message, command_type=None, or_private=True):
+        if message.chat.id > 0 or is_suitable(message, message.from_user, 'boss'):
+            language_getter(message)
 
 
 @bot.message_handler(commands=['start'])
@@ -453,7 +460,8 @@ def send_me_handler(message):
     log.log_print(f"send_me_handler invoked")
     if in_mf(message, command_type=None, or_private=False):
         person = person_analyze(message, to_self=True)
-        send_me(message, person)
+        if person:
+            send_me(message, person)
 
 
 @bot.message_handler(commands=['members', 'database'])
@@ -561,7 +569,7 @@ def anon_message_handler(message):
         else:
             anon_message(message)
     else:
-        reply(message, "И как это может быть анонимно?")
+        reply(message, "Эта команда предназначена для лички")
 
 
 @bot.message_handler(commands=['test'])

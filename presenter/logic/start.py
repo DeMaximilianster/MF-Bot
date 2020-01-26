@@ -26,15 +26,15 @@ def starter(message):
     """Запуск бота в личке, в чате просто реагирует"""
     log.log_print(str(message.from_user.id) + ": starter invoked")
     if "full_rules" in message.text:
-        reply(message, open(full_rules).read(), parse_mode="Markdown")
+        reply(message, open(full_rules, encoding='utf-8').read(), parse_mode="Markdown")
     elif "elitocracy" in message.text:
-        reply(message, open(elitocracy).read(), parse_mode="Markdown")
+        reply(message, open(elitocracy, encoding='utf-8').read(), parse_mode="Markdown")
     elif "etiquette" in message.text:
-        reply(message, open(etiquette).read(), parse_mode="Markdown")
+        reply(message, open(etiquette, encoding='utf-8').read(), parse_mode="Markdown")
     elif "ranks" in message.text:
-        reply(message, open(ranks).read(), parse_mode="Markdown")
+        reply(message, open(ranks, encoding='utf-8').read(), parse_mode="Markdown")
     elif "appointments" in message.text:
-        reply(message, open(appointments).read(), parse_mode="Markdown")
+        reply(message, open(appointments, encoding='utf-8').read(), parse_mode="Markdown")
     elif "new_option" in message.text:
         vote_id = int(message.text.split('new_option')[1])
         sent = reply(message, "Введите ваш вариант ответа на голосовании")

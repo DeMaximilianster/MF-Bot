@@ -49,6 +49,7 @@ def warn(message, person):
 
 
 def unwarn(message, person):
+    # TODO Предохранитель на отрицательное количество варнов
     """Снимает с участника предупреждение"""
     log.log_print("unwarn invoked")
     database = Database()
@@ -62,12 +63,13 @@ def unwarn(message, person):
     database.change(value, 'warns', 'members', ('id', person.id), ('system', system))
     adm_place = admin_place(message, database)
     if adm_place:
-        send(adm_place, "Пользователь {} (@{}) [{}] получил(а) {} варн(а) и их стало {}".format(
+        send(adm_place, "Пользователь {} (@{}) [{}] потерял(а) {} варн(а) и их стало {}".format(
                          person.first_name, person.username, person.id, unwarns, value))
     reply(message, "Варн(ы) снят(ы). Теперь их {}".format(value))
     if 3 - unwarns <= value < 3:
         chat_configs = get_system_configs(system)
-        database.change(chat_configs['ranks'][0], 'rank', 'members', ('id', person.id), ('system', system))
+        unban_user(person)
+        database.change(chat_configs['ranks'][1], 'rank', 'members', ('id', person.id), ('system', system))
 
 
 def ban(message, person, comment=True, unban_then=False):
@@ -199,7 +201,7 @@ def give_admin(message, person, loud=True):
                 can_change_info=True, can_delete_messages=True, can_invite_users=True,
                 can_restrict_members=True, can_pin_messages=True, can_promote_members=False)
     for channel in channel_list(database):
-        promote(channel['id'], person.id, can_change_info=True, can_post_messages=True, can_invite_users=True)
+        promote(channel['id'], person.id, can_post_messages=True, can_invite_users=True)
     if loud:
         reply(message, "Теперь это админ!")
 
@@ -221,13 +223,14 @@ def del_admin(message, person, loud=True):
 
 
 def rank_changer(message, person):
+    # TODO Если у чела 3+ варна, то их нужно обнулить
     """Changes person's rank"""
     log.log_print(f"{__name__} invoked")
     database = Database()
     chat = database.get('chats', ('id', message.chat.id))
     system = chat['system']
     chat_configs = get_system_configs(system)
-    command = message.text.split()[0]
+    command = message.text.split()[0].split(sep='@')[0]
     adm_place = admin_place(message, database)
     if command in chat_configs["ranks_commands"]:
         rank_index = chat_configs["ranks_commands"].index(command)
@@ -311,7 +314,7 @@ def add_chat(message):
             if database.get('members', ('id', message.from_user.id), ('system', system)):
                 if is_suitable(message, message.from_user, "chat_changer", system=system):
                     create_chat(message, system, typee, link, database)
-                    reply(message, "Теперь я здесь работаю!")
+                    reply(message, "Теперь я здесь работаю! Проверьте /help")
                 else:
                     reply(message, "Произошла ошибка!")
             else:
@@ -322,7 +325,7 @@ def add_chat(message):
         all_systems = database.get_all('systems', 'id')
         ids = [int(sys['id']) for sys in all_systems]
         new_id = str(max(ids) + 1)
-        create_chat(message, system, typee, link, database)
+        create_chat(message, new_id, typee, link, database)
         create_system(message, new_id, database)
         reply(message, "Создана новая система чатов с ID {}".format(new_id))
     else:
@@ -411,6 +414,7 @@ def money_mode_change(message):
 
 
 def money_emoji(message):
+    # TODO Проверка на длину сообщения
     log.log_print("money_emoji invoked")
     database = Database()
     mode = message.text.split()[-1]
@@ -424,6 +428,8 @@ def money_emoji(message):
 
 
 def money_name(message):
+    # TODO Добавить поддержку многословных названий
+    # TODO Добавить проверку по падежам
     log.log_print("money_name invoked")
     database = Database()
     mode = message.text.split()[-1]
