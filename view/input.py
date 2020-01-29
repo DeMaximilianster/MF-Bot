@@ -7,7 +7,7 @@ from presenter.logic.boss_commands import ban, add_chat, add_admin_place, chat_o
     warn, unwarn, message_change, money_pay, rank_changer, mute, money_mode_change, money_emoji, money_name
 from presenter.logic.complicated_commands import adequate, inadequate, response, insult, non_ironic, ironic, \
     place_here, mv, av, add_vote, vote
-from presenter.logic.reactions import deleter, new_member, left_member, chat_id_update
+import presenter.logic.reactions as reactions
 from presenter.logic.standart_commands import helper, send_drakken, send_me, send_meme, minet, show_id, \
     all_members, money_give, money_top, language_getter, month_set, day_set, birthday, admins, chat_check, \
     anon_message, system_check, money_helper
@@ -47,7 +47,7 @@ class MyThread(Thread):
 @bot.message_handler(content_types=['migrate_from_chat_id'])
 def chat_id_update_handler(message):
     log.log_print("chat_id_update_handler invoked")
-    chat_id_update(message)
+    reactions.chat_id_update(message)
 
 
 @bot.message_handler(content_types=['document', 'photo', 'sticker', 'video', 'video_note'])
@@ -58,7 +58,7 @@ def deleter_handler(message):
     global new_dudes
     if in_mf(message, command_type=None, or_private=False, loud=False):
         dude_is_bad(message)
-        deleter(message)
+        reactions.deleter(message)
     print(new_dudes)
 
 
@@ -80,7 +80,7 @@ def new_member_handler(message):
             #      my_thread.start()
             #      new_dudes[person.id] = [message.message_id]
             #      print(new_dudes)
-            sent = new_member(message, person)
+            sent = reactions.new_member(message, person)
             if message.from_user.id in new_dudes and sent:
                 new_dudes[person.id].append(sent.message_id)
 
@@ -90,7 +90,7 @@ def left_member_handler(message):
     """Комментирует уход участника и прощается участником"""
     log.log_print("left_member_handler invoked")
     if in_mf(message, command_type=None, or_private=False, loud=False):
-        left_member(message)
+        reactions.left_member(message)
 
 
 '''Элитарные команды'''
@@ -574,6 +574,7 @@ def anon_message_handler(message):
 
 @bot.message_handler(commands=['test'])
 def database_send_handler(message):
+    log.log_print('database_send_handler invoked')
     if message.chat.id == 381279599:
         for FILE in (database_file, votes_file, adapt_votes_file, multi_votes_file, systems_file):
             file_send = open(FILE, 'rb')
@@ -584,12 +585,14 @@ def database_send_handler(message):
 '''Последний хэндлер. Просто считает сообщения, что не попали в другие хэндлеры'''
 
 
-@bot.message_handler(func=lambda message: True, content_types=None)
+# TODO Норм перечень контент_тайпов
+@bot.message_handler(func=lambda message: True, content_types=['text', 'voice'])
 def counter_handler(message):
     """Подсчитывает сообщения"""
     log.log_print("counter_handler invoked")
     global new_dudes
     if in_mf(message, command_type=None, loud=False):
+        reactions.trigger(message)
         if message.from_user.id in new_dudes:
             new_dudes[message.from_user.id].append(message.message_id)
             if len(new_dudes[message.from_user.id]) == 5:

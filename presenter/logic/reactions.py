@@ -7,6 +7,27 @@ from presenter.config.log import Loger, log_to
 log = Loger(log_to)
 
 
+def trigger(message):
+    database = Database()
+    chat_id = message.chat.id
+    chat = database.get('chats', ('id', chat_id))
+    system_id = chat['system']
+    content_type = 'text'
+    if message.voice:
+        content_type = 'voice'
+    trigger_entry = database.get('triggers', ('id', chat_id), ('sys_or_chat', 'chat'), ('content_type', content_type))
+    if not trigger_entry:
+        trigger_entry = database.get('triggers', ('id', system_id), ('sys_or_chat', 'system'),
+                                     ('content_type', content_type))
+    if trigger_entry:
+        if trigger_entry['to_delete']:
+            delete(chat_id, message.message_id)
+        user = message.from_user
+        print(user)
+        text = str(trigger_entry['text_ans']).format(username=user.username, nickname=user.first_name, user_id=user.id)
+        send(chat_id, text, parse_mode='HTML')
+
+
 def deleter(message):
     """Удаляет медиа ночью"""
     log.log_print("deleter invoked")
