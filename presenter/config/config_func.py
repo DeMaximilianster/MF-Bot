@@ -122,8 +122,9 @@ def person_analyze(message, to_self=False, to_bot=False):
     elif len(message.text.split()) > 1:
         par = message.text.split()[1]
         if int_check(par, positive=True) and 7 <= len(par) <= 10:
-            member = get_member(-1001408293838, par)
+            member = get_member(message.chat.id, par)
             if member:
+                print(member.status)
                 person = member.user
                 if person_check(message, person, to_self, to_bot):
                     return person
@@ -342,17 +343,16 @@ def in_system_commands(message):
     log.log_print("in_system_commands invoked")
     database = Database()
     chat = database.get('chats', ('id', message.chat.id))
-    print(message.json)
-    if chat:
-        system = chat['system']
-        chat_configs = get_system_configs(system)
-        if message.text:
+    if message.text:
+        if chat:
+            system = chat['system']
+            chat_configs = get_system_configs(system)
             command = message.text.split()[0].split(sep='@')[0]
             every = chat_configs["ranks_commands"] + chat_configs["appointment_adders"]
             every += chat_configs["appointment_removers"]
             return command in every
-    else:
-        return message.text.split()[0] in ("/guest", "/admin", "/senior_admin", "/leader")
+        else:
+            return message.text.split()[0] in ("/guest", "/admin", "/senior_admin", "/leader")
 
 
 def feature_is_available(chat_id, system, command_type):
@@ -384,6 +384,7 @@ def counter(message):
 
 
 def member_update(system, person):
+    log.log_print('member_update invoked')
     database = Database()
     chats_ids = [x['id'] for x in database.get_many('chats', ('messages_count', 2), ('system', system))]
     msg_count = 0

@@ -4,13 +4,14 @@ from presenter.config.config_func import in_mf, cooldown, person_analyze, rank_s
      int_check, person_check, is_suitable, in_system_commands, is_correct_message
 from presenter.logic.elite import elite
 from presenter.logic.boss_commands import ban, add_chat, add_admin_place, chat_options, system_options, \
-    warn, unwarn, message_change, money_pay, rank_changer, mute, money_mode_change, money_emoji, money_name
+    warn, unwarn, message_change, money_pay, rank_changer, mute, money_mode_change, money_emoji, money_name, \
+    update_all_members
 from presenter.logic.complicated_commands import adequate, inadequate, response, insult, non_ironic, ironic, \
     place_here, mv, av, add_vote, vote
 import presenter.logic.reactions as reactions
 from presenter.logic.standart_commands import helper, send_drakken, send_me, send_meme, minet, show_id, \
     all_members, money_give, money_top, language_getter, month_set, day_set, birthday, admins, chat_check, \
-    anon_message, system_check, money_helper
+    anon_message, system_check, money_helper, messages_top
 from presenter.logic.start import starter
 from presenter.config.log import Loger, log_to
 from presenter.config.config_var import features_defaulters, features_oners, features_offers, system_features_offers, \
@@ -114,6 +115,13 @@ def chat_search_handler(message):
     if in_mf(message) and rank_required(message, "Админ"):
         chat_search(message)
 """
+
+
+@bot.message_handler(commands=['update'])
+def update_all_members_handler(message):
+    log.log_print("update_all_members_handler invoked")
+    if in_mf(message, 'boss_commands', or_private=False) and is_suitable(message, message.from_user, 'boss'):
+        update_all_members(message)
 
 
 @bot.message_handler(commands=['warn'])
@@ -488,9 +496,17 @@ def money_give_handler(message):
 @bot.message_handler(commands=['top'])
 def money_top_handler(message):
     """Топ ЯМ"""
-    log.log_print(f"money_top_handler invoked")
+    log.log_print("money_top_handler invoked")
     if in_mf(message, 'financial_commands', or_private=False):
         money_top(message)
+
+
+@bot.message_handler(commands=['messages_top'])
+def messages_top_handler(message):
+    """Messages top"""
+    log.log_print("messages_top_handler invoked")
+    if in_mf(message, command_type=None, or_private=False):
+        messages_top(message)
 
 
 @bot.message_handler(commands=['month'])

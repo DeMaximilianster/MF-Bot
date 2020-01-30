@@ -51,7 +51,8 @@ def helper(message):
         answer += '<b>Общие команды:</b>\n'
         answer += '/me - Присылает вашу запись в базе данных\n'
         answer += '/anon - Прислать анонимное послание в админский чат (если таковой имеется)\n'
-        answer += '/members - Прислать в личку перечень участников (нынешних и бывших) и их ID\n\n'
+        answer += '/members - Прислать в личку перечень участников (нынешних и бывших) и их ID\n'
+        answer += '/messages_top - Прмслать в личку топ участников по сообщениям\n\n'
         # Helps
         answer += '<b>Помощь и менюшки:</b>\n'
         answer += '/help - Прислать это сообщение\n'
@@ -66,6 +67,7 @@ def helper(message):
 
         if is_suitable(message, message.from_user, 'boss', loud=False):
             answer += '<b>Базовые админские команды:</b>\n'
+            answer += '/update - Пересчитывает сообщения, никнеймы и юзернеймы всех участников чата\n'
             answer += '/messages [число сообщений] - Изменить количество сообщений от участника в этом чате\n'
             answer += '/warn [число варнов]- Дать варн(ы) (3 варна = бан)\n'
             answer += '/unwarn [число варнов]- Снять варн(ы)\n'
@@ -80,7 +82,10 @@ def helper(message):
         if is_suitable(message, message.from_user, 'chat_changer', loud=False):
             answer += '<b>Настройщики чатов:</b>\n'
             answer += '/add_chat [номер системы чатов] - Добавить чат в систему чатов\n'
-            answer += '/admin_place - Отметить чат как админский'
+            answer += '/admin_place - Отметить чат как админский\n\n'
+        answer += "<b>Примечание:</b> командами типа /me можно отвечать на сообщения других людей, тогда команда "
+        answer += "выполнится на выбранном человеке. Ещё вы можете после команды написать ID человека (можно достать "
+        answer += "в /members), чтобы не отвлекать его от дел :3"
     else:  # Command is used in PM
         answer += '/help - Прислать это сообщение\n'
         answer += '/minet - Делает приятно\n'
@@ -217,6 +222,7 @@ def send_me(message, person):
 
 def all_members(message):
     """Присылает человеку все записи в БД"""
+    # TODO Кто вышел из чата, а кто находится в чате
     log.log_print("all_members invoked")
     database = Database()
     system = database.get('chats', ('id', message.chat.id))['system']
@@ -294,7 +300,7 @@ def money_give(message, person):
 
 
 def money_top(message):
-    log.log_print(f"{__name__} invoked")
+    log.log_print("money_top invoked")
     database = Database()
     chat = database.get('chats', ('id', message.chat.id))
     system = chat['system']
@@ -313,6 +319,41 @@ def money_top(message):
                                                                 person['money'], emoji)
         i += 1
     reply(message, text, parse_mode='HTML', disable_web_page_preview=True)
+
+
+def messages_top(message):
+    # TODO Оптимизаця и рефакторинг функций-топов
+    log.log_print("money_top invoked")
+    database = Database(to_log=False)
+    chat = database.get('chats', ('id', message.chat.id))
+    system = chat['system']
+    members = list(database.get_many('members', ('system', system)))
+    members.sort(key=lambda x: -x['messages'])
+    sent = None
+    if len(members) % 50 == 0:
+        fiftys = len(members) // 50
+    else:
+        fiftys = len(members) // 50 + 1
+    for fifty in range(fiftys):
+        one_message_list = members[50 * (fifty - 1): 50 * fifty]
+        answer = ''
+        for member in one_message_list:
+            username = "[{}](tg://user?id={})".format(member['nickname'].replace('[', '').replace(']', ''),
+                                                      member['id'])
+            answer += username + '—' + str(member['messages']) + 'сообщ.' + '\n'
+        sent = send(message.from_user.id, answer, parse_mode='Markdown')
+    if len(members) < 50:
+        answer = ''
+        for member in members:
+            username = "[{}](tg://user?id={})".format(member['nickname'].replace('[', '').replace(']', ''),
+                                                      member['id'])
+            answer += username + ' — ' + str(member['messages']) + ' сообщ.\n'
+
+        sent = send(message.from_user.id, answer, parse_mode='Markdown')
+    if sent:
+        reply(message, "Выслал БД в личку")
+    else:
+        reply(message, "Сначала запусти меня в личных сообщениях")
 
 
 # TODO More comfortable way to insert birthday

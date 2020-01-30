@@ -3,17 +3,24 @@ from presenter.config.database_lib import Database
 from presenter.config.config_var import full_chat_list, channel_list, bot_id, admin_place, chat_list
 from presenter.config.log import Loger, log_to
 from presenter.config.config_func import unban_user, is_suitable, int_check, get_system_configs, \
-    update_systems_json, create_system, create_chat
-from view.output import kick, reply, promote, send, forward, restrict
+    update_systems_json, create_system, create_chat, member_update
+from view.output import kick, reply, promote, send, forward, restrict, get_member
 from time import time
 
 log = Loger(log_to)
 
-# TODO команда /kick, кикает и сразу разбанивает
 
-# TODO команда для делания гражданином, высшим гражданином
-# TODO команда для делания Членом Комитета
-# TODO сделать сменяемого зама автоматически (команда /vice)
+def update_all_members(message):
+    log.log_print("money_top invoked")
+    database = Database(to_log=False)
+    chat = database.get('chats', ('id', message.chat.id))
+    system = chat['system']
+    members = list(database.get_many('members', ('system', system)))
+    for member in members:
+        user = get_member(message.chat.id, member['id'])
+        if user:
+            member_update(system, user.user)
+    reply(message, "Теперь записи о людях максимально свежие!")
 
 
 def warn(message, person):
