@@ -1,11 +1,11 @@
 # -*- coding: utf-8 -*-
 from presenter.config.config_func import update_adapt_vote, update_multi_vote, create_adapt_vote, create_vote, \
-    create_multi_vote, appointment_required
+    create_multi_vote, remove_captcher
 from presenter.config.config_var import test_keyboard, ironic_keyboard, \
     vote_keyboard, admin_place
 from presenter.config.database_lib import Database
 from presenter.config.files_paths import multi_votes_file, adapt_votes_file, votes_file
-from view.output import edit_markup, answer_inline, reply, answer_callback, edit_text, delete, send
+from view.output import edit_markup, answer_inline, reply, answer_callback, edit_text, delete, send, restrict
 from presenter.config.log import Loger, log_to
 
 from telebot.types import InlineQueryResultArticle, InputTextMessageContent, InlineKeyboardButton, InlineKeyboardMarkup
@@ -13,6 +13,17 @@ from time import time
 
 log = Loger(log_to)
 work = True
+
+
+def captcha_completed(call):
+    log.log_print("captcha_completed invoked")
+    if remove_captcher(call):
+        restrict(call.message.chat.id, call.from_user.id, can_send_messages=True, can_send_other_messages=True,
+                 can_send_media_messages=True, can_add_web_page_previews=True)
+        answer_callback(call.id, text='Испытание креветкой пройдено!')
+        edit_markup(call.message.chat.id, call.message.message_id)
+    else:
+        answer_callback(call.id, text='Это не ваша креветка 👀')
 
 
 def adequate(call):

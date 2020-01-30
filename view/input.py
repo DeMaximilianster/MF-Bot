@@ -7,7 +7,7 @@ from presenter.logic.boss_commands import ban, add_chat, add_admin_place, chat_o
     warn, unwarn, message_change, money_pay, rank_changer, mute, money_mode_change, money_emoji, money_name, \
     update_all_members
 from presenter.logic.complicated_commands import adequate, inadequate, response, insult, non_ironic, ironic, \
-    place_here, mv, av, add_vote, vote
+    place_here, mv, av, add_vote, vote, captcha_completed
 import presenter.logic.reactions as reactions
 from presenter.logic.standart_commands import helper, send_drakken, send_me, send_meme, minet, show_id, \
     all_members, money_give, money_top, language_getter, month_set, day_set, birthday, admins, chat_check, \
@@ -18,28 +18,11 @@ from presenter.config.config_var import features_defaulters, features_oners, fea
     system_features_oners
 from presenter.config.files_paths import votes_file, database_file, adapt_votes_file, multi_votes_file,  systems_file
 from requests import get
-import time
-from threading import Thread
+
 # TODO Убрать этот ебучий срач
 log = Loger(log_to)
 trash = []
 new_dudes = {}
-
-
-class MyThread(Thread):
-    """
-    A threading example
-    """
-
-    def __init__(self, message):
-        """Инициализация потока"""
-        Thread.__init__(self)
-        self.message = message
-
-    def run(self):
-        """Запуск потока"""
-        time.sleep(60)
-        dude_is_bad(self.message)
 
 
 '''Реакции на медиа, новых участников и выход участников'''
@@ -73,17 +56,9 @@ def new_member_handler(message):
         # TODO Добавить в игнор не только меня, но и просто хорошо поактивывших
         if get(f"https://api.cas.chat/check?user_id={person.id}").json()["ok"]:
             # TODO Additional layer of anti-spam protection
-            # TODO Deletion of spammer's messages and bots' greeting to it
             ban(message, person)
         else:
-            #  if person.id != 381279599:
-            #      my_thread = MyThread(message)
-            #      my_thread.start()
-            #      new_dudes[person.id] = [message.message_id]
-            #      print(new_dudes)
-            sent = reactions.new_member(message, person)
-            if message.from_user.id in new_dudes and sent:
-                new_dudes[person.id].append(sent.message_id)
+            reactions.new_member(message, person)
 
 
 @bot.message_handler(content_types=['left_chat_member'])
@@ -295,6 +270,12 @@ def database_changer_handler(message):
 '''
 
 '''Составные команды'''
+
+
+@bot.callback_query_handler(func=lambda call: call.data == 'captcha')
+def captcha_completed_handler(call):
+    log.log_print("captcha_completed_handler invoked")
+    captcha_completed(call)
 
 
 @bot.callback_query_handler(func=lambda call: 'adequate' in call.data and call.data != 'inadequate')
@@ -607,7 +588,7 @@ def counter_handler(message):
     """Подсчитывает сообщения"""
     log.log_print("counter_handler invoked")
     global new_dudes
-    if in_mf(message, command_type=None, loud=False):
+    if in_mf(message, command_type=None, loud=False, or_private=False):
         reactions.trigger(message)
         if message.from_user.id in new_dudes:
             new_dudes[message.from_user.id].append(message.message_id)

@@ -1,8 +1,10 @@
 # -*- coding: utf-8 -*-
 from presenter.config.config_func import Database, time_replace, is_suitable, feature_is_available, get_system_configs,\
-    create_chat
-from view.output import delete, kick, send, promote, reply
+    create_chat, CaptchaBan
+from view.output import delete, kick, send, promote, reply, restrict
 from presenter.config.log import Loger, log_to
+from telebot.types import InlineKeyboardButton, InlineKeyboardMarkup
+from time import time
 
 log = Loger(log_to)
 
@@ -52,7 +54,12 @@ def new_member(message, member):
     """Реагирует на вход в чат"""
     log.log_print(f"{__name__} invoked")
     database = Database()
+    # Declaring variables
     answer = ''
+    keyboard = None
+    captcha = False
+    sent = None
+
     chat = database.get('chats', ('id', message.chat.id))
     system = chat['system']
     chat_configs = get_system_configs(system)
@@ -71,19 +78,29 @@ def new_member(message, member):
                 can_change_info=False, can_delete_messages=True, can_invite_users=True,
                 can_restrict_members=True, can_pin_messages=True, can_promote_members=False)
         answer += "О, добро пожаловать, держи админку"
-    else:  # У нового участника нет особенностей
+    elif feature_is_available(message.chat.id, system, 'newbies_captched'):
+        answer = 'Добро пожаловать, {}. Прошу пройти капчу за 5 минут'.format(member.first_name)
+        keyboard = InlineKeyboardMarkup()
+        keyboard.add(InlineKeyboardButton("🦐", callback_data="captcha"))
+        keyboard.row_width = 1
+        captcha = True
+    else:
         answer = 'Добро пожаловать, {}'.format(member.first_name)
-    sent = None
-    if feature_is_available(message.chat.id, system, 'moves_delete'):
+    # TODO Немнжко по быдлокодерски устроено неудаление сообщения о входе
+    if feature_is_available(message.chat.id, system, 'moves_delete') and not feature_is_available(
+            message.chat.id, system, 'newbies_captched'):
         delete(message.chat.id, message.message_id)
     else:
-        sent = reply(message, answer)
+        sent = reply(message, answer, reply_markup=keyboard)
     # Notify admins if admin's chat exists
     admin_place = database.get('systems', ('id', system))['admin_place']
     if admin_place:
         send(admin_place, '{} (@{}) [{}] теперь в {}'.format(member.first_name, member.username, member.id,
                                                              message.chat.title))
-    return sent
+    if captcha:
+        restrict(chat['id'], member.id, until_date=time() + 300)
+        captcha_ban = CaptchaBan(message, sent)
+        captcha_ban.start()
 
 
 def left_member(message):

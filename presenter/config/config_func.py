@@ -10,8 +10,35 @@ from presenter.config.files_paths import adapt_votes_file, multi_votes_file, vot
 from presenter.config.log import Loger
 from presenter.config.log import log_to
 from view.output import *
+import time
+from threading import Thread
 
 log = Loger(log_to)
+captchers = []
+
+
+class CaptchaBan(Thread):
+    def __init__(self, message, bots_message):
+        Thread.__init__(self)
+        log.log_print("CaptchaBan invoked")
+        self.message = message
+        self.bots_message = bots_message
+
+    def run(self):
+        global captchers
+        captchers.append((self.message.new_chat_members[0].id, self.message.chat.id))
+        time.sleep(300)
+        if (self.message.new_chat_members[0].id, self.message.chat.id) in captchers:
+            kick(self.message.chat.id, self.message.new_chat_members[0].id)
+            unban(self.message.chat.id, self.message.new_chat_members[0].id)
+            edit_text("Испытание креветкой провалено!", self.bots_message.chat.id, self.bots_message.message_id)
+
+
+def remove_captcher(call):
+    global captchers
+    if (call.from_user.id, call.message.chat.id) in captchers:
+        captchers.remove((call.from_user.id, call.message.chat.id))
+        return True
 
 
 def int_check(string, positive):
