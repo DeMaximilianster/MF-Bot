@@ -73,12 +73,14 @@ a_adequate_keyboard.row_width = 1
 # Список всех ролей и их подтипы
 roles = [None, 'Violator', 'Guest', 'Citizen', 'Senior Citizen', 'The Committee Member', 'Deputy', 'Leader']
 # TODO Эту переменную отсюда надо нахуй убрать
-features = ('standart_commands', 'boss_commands', 'financial_commands',
-            'mutual_invites', 'messages_count', 'violators_ban', 'admins_promote', 'moves_delete')
+
+features = ('standart_commands', 'erotic_commands', 'boss_commands', 'financial_commands',
+            'mutual_invites', 'messages_count', 'violators_ban', 'admins_promote', 'moves_delete', 'newbies_captched')
 features_texts = dict()
-features_texts['Russian'] = ['Стандартные команды', 'Админские команды', 'Денежные команды', 'Ссылка учитывается',
+features_texts['Russian'] = ['Разлекательные команды', 'Эротические команды (работа в процессе)',
+                             'Админские команды', 'Денежные команды', 'Ссылка учитывается',
                              'Сообщения считаются', 'Нарушители банятся', 'Админы получают админку',
-                             'Сообщения о входе и выходе удаляются']
+                             'Сообщения о входе и выходе удаляются', 'Новички проходят капчу (работа в процессе)']
 features_texts['English'] = ['Standart commands', 'Admin commands', 'Financial commands',
                              'Invites links', 'Messages are count for citizenship',
                              'MF2 violators are automatically banned', 'MF2 admins are automatically promoted']

@@ -422,7 +422,21 @@ def update_systems_json(system, set_what, set_where):
 
 
 def create_system(message, system_id, database):
-    database.append((system_id, 0, 0, 1, 1, 1, 0, 2, 1, 1, 1), 'systems')
+    system_tuple = (system_id,
+                    0,  # money in the system
+                    0,  # admin places of the system
+                    1,  # standart commands
+                    1,  # erotic commands
+                    1,  # boss commands
+                    1,  # financial commands
+                    0,  # mutual invites
+                    2,  # messages count
+                    1,  # violators_ban
+                    1,  # admins_promote
+                    1,  # moves delete
+                    1,  # newbies captched
+                    )
+    database.append(system_tuple, 'systems')
     data = get_systems_json()
     data[system_id] = {"name": message.chat.title, "money": False, "money_emoji": "💰", "money_name": "валюты",
                        "ranks": ["Забаненный", "Участник", "Админ", "Старший Админ", "Лидер"],
@@ -439,7 +453,23 @@ def create_system(message, system_id, database):
 
 
 def create_chat(message, system_id, typee, link, database):
-    database.append((message.chat.id, system_id, message.chat.title, typee, link, 2, 2, 2, 2, 2, 2, 2, 2), 'chats')
+    chat_tuple = (message.chat.id,
+                  system_id,
+                  message.chat.title,
+                  typee,
+                  link,
+                  2,  # standart commands
+                  2,  # erotic commands
+                  2,  # boss commands
+                  2,  # financial commands
+                  2,  # mutual invites
+                  2,  # messages count
+                  2,  # violators_ban
+                  2,  # admins_promote
+                  2,  # moves delete
+                  2,  # newbies captched
+                  )
+    database.append(chat_tuple, 'chats')
 
 
 # TODO перенести все голосовашки в базу данных или ещё куда-то (JSON)
