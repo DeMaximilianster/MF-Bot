@@ -17,7 +17,6 @@ from presenter.config.log import Loger, log_to
 from presenter.config.config_var import features_defaulters, features_oners, features_offers, system_features_offers, \
     system_features_oners
 from presenter.config.files_paths import votes_file, database_file, adapt_votes_file, multi_votes_file,  systems_file
-from requests import get
 
 # TODO Убрать этот ебучий срач
 log = Loger(log_to)
@@ -53,12 +52,7 @@ def new_member_handler(message):
     global new_dudes
     person = message.new_chat_members[0]
     if in_mf(message, command_type=None, or_private=False):
-        # TODO Добавить в игнор не только меня, но и просто хорошо поактивывших
-        if get(f"https://api.cas.chat/check?user_id={person.id}").json()["ok"]:
-            # TODO Additional layer of anti-spam protection
-            ban(message, person)
-        else:
-            reactions.new_member(message, person)
+        reactions.new_member(message, person)
 
 
 @bot.message_handler(content_types=['left_chat_member'])
