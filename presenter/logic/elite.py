@@ -1,8 +1,9 @@
-from presenter.config.config_func import Database, shuffle
+from presenter.config.config_func import Database
 from telebot.types import ReplyKeyboardMarkup, ReplyKeyboardRemove
 from view.output import send, register_handler, reply
 from random import choice
 from presenter.config.log import Loger, log_to
+from random import shuffle
 
 log = Loger(log_to)
 elite_work = True
@@ -16,7 +17,7 @@ def ask_question(message, question):
     note = database.get('basic_logic', ('text', ask))  # Получаем полную инфу о вопросе
     # Получаем варианты ответов на вопрос
     answers = [note['right'], note['wrong_1'], note['wrong_2']]
-    answers = shuffle(answers)  # Перемешиваем ответы
+    shuffle(answers)  # Перемешиваем ответы
     markup = ReplyKeyboardMarkup(row_width=3)  # Создаём клавиатуру для ответов
     for i in answers:  # Заполняем клавиатуру кнопками
         markup.add(i)

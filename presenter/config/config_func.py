@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-from random import choice
 import json
 
 from telebot.types import InlineKeyboardButton, InlineKeyboardMarkup, CallbackQuery
@@ -128,18 +127,6 @@ def case_analyzer(word, language):
             return word + 'е'
     else:
         return word
-
-
-def shuffle(old_list):
-    """Перемешивает список или кортеж"""
-    log.log_print("shuffle invoked")
-    old_list = list(old_list)
-    new_list = []
-    while old_list:
-        element = choice(old_list)
-        new_list.append(element)
-        old_list.remove(element)
-    return new_list
 
 
 def person_check(message, person, to_self=False, to_bot=False):
