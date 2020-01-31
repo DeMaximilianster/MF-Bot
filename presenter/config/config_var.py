@@ -84,8 +84,21 @@ features_texts['Russian'] = ['Разлекательные команды', 'Э�
 features_texts['English'] = ['Standart commands', 'Admin commands', 'Financial commands',
                              'Invites links', 'Messages are count for citizenship',
                              'MF2 violators are automatically banned', 'MF2 admins are automatically promoted']
+
 features_oners = tuple(map(lambda x: x+'_on', features))
 features_offers = tuple(map(lambda x: x+'_off', features))
 features_defaulters = tuple(map(lambda x: x+'_default', features))
 system_features_oners = tuple(map(lambda x: 's_'+x+'_on', features))
 system_features_offers = tuple(map(lambda x: 's_'+x+'_off', features))
+
+new_system_json_entry = {"name": "", "money": False, "money_emoji": "💰", "money_name": "валюты",
+                         "ranks": ["Забаненный", "Участник", "Админ", "Старший Админ", "Лидер"],
+                         "ranks_commands": [None, "/guest", "/admin", "/senior_admin", "/leader"],
+                         "appointments": [],
+                         "appointment_adders": [],
+                         "appointment_removers": [],
+                         "commands": {"standart": ["Участник", "Лидер"],
+                                      "advanced": ["Участник", "Лидер"],
+                                      "boss": ["Админ", "Лидер"],
+                                      "uber": ["Старший Админ", "Лидер"],
+                                      "chat_changer": ["Старший Админ", "Лидер"]}}

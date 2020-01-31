@@ -2,8 +2,7 @@
 import json
 
 from telebot.types import InlineKeyboardButton, InlineKeyboardMarkup, CallbackQuery
-
-from presenter.config.config_var import bot_id
+from presenter.config.config_var import bot_id, new_system_json_entry
 from presenter.config.database_lib import Database
 from presenter.config.files_paths import adapt_votes_file, multi_votes_file, votes_file, systems_file
 from presenter.config.log import Loger
@@ -302,6 +301,7 @@ def cooldown(message, command, timeout=3600):
 
 
 def time_replace(seconds):
+    # TODO Убрать отсюда этот велосипед
     seconds += 3 * 60 * 60
     minutes = seconds // 60
     seconds %= 60
@@ -463,17 +463,17 @@ def create_system(message, system_id, database):
                     )
     database.append(system_tuple, 'systems')
     data = get_systems_json()
-    data[system_id] = {"name": message.chat.title, "money": False, "money_emoji": "💰", "money_name": "валюты",
-                       "ranks": ["Забаненный", "Участник", "Админ", "Старший Админ", "Лидер"],
-                       "ranks_commands": [None, "/guest", "/admin", "/senior_admin", "/leader"],
-                       "appointments": [],
-                       "appointment_adders": [],
-                       "appointment_removers": [],
-                       "commands": {"standart": ["Участник", "Лидер"],
-                                    "advanced": ["Участник", "Лидер"],
-                                    "boss": ["Админ", "Лидер"],
-                                    "uber": ["Старший Админ", "Лидер"],
-                                    "chat_changer": ["Старший Админ", "Лидер"]}}
+    data[system_id] = dict(new_system_json_entry)
+    data[system_id]['name'] = message.chat.title
+    write_systems_json(data)
+
+
+def update_old_systems_json():
+    data = get_systems_json()
+    for system in data.keys():
+        for prop in new_system_json_entry.keys():
+            if prop not in data[system].keys():
+                data[system][prop] = new_system_json_entry[prop]
     write_systems_json(data)
 
 

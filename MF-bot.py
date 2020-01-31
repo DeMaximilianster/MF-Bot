@@ -2,9 +2,11 @@
 from view.input import *
 from presenter.config.token import inf_mode
 from presenter.config.log import Loger, log_to
+from presenter.config.config_func import update_old_systems_json
 
 log = Loger(log_to)
 
+update_old_systems_json()
 if inf_mode:
     bot.infinity_polling()  # Запуск бота
 else:
