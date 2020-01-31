@@ -2,12 +2,33 @@
 from presenter.config.database_lib import Database
 from presenter.config.config_var import full_chat_list, channel_list, bot_id, admin_place, chat_list
 from presenter.config.log import Loger, log_to
-from presenter.config.config_func import unban_user, is_suitable, int_check, get_system_configs, \
-    update_systems_json, create_system, create_chat, SystemUpdate
+from presenter.config.config_func import unban_user, is_suitable, int_check, get_system_configs, photo_video_gif_get, \
+    update_systems_json, create_system, create_chat, SystemUpdate, write_storage_json, get_storage_json
 from view.output import kick, reply, promote, send, forward, restrict
 from time import time
 
 log = Loger(log_to)
+
+
+def add_stuff_to_storage(message, stuff):
+    log.log_print("add_stuff_to_storage")
+    rep = message.reply_to_message
+    data = get_storage_json()
+    if rep:
+        insert = photo_video_gif_get(rep)
+        if insert:
+            if list(insert) in data[stuff]:
+                reply(message, "У меня это уже есть)")
+            else:
+                data[stuff].append(insert)
+                forward(381279599, message.chat.id, rep.message_id)
+                send(381279599, f"Норм контент?) user={message.from_user.id}, text={message.text}, id={insert[0]}")
+                write_storage_json(data)
+                reply(message, "ОК!")
+        else:
+            reply(message, "Ответить надо на гифку, фотографию или видео")
+    else:
+        reply(message, "Надо ответить на медиа, которое нужно добавить")
 
 
 def update_all_members(message):

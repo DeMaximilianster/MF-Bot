@@ -71,27 +71,27 @@ def new_member(message, member):
         promote(message.chat.id, member.id,
                 can_change_info=True, can_delete_messages=True, can_invite_users=True,
                 can_restrict_members=True, can_pin_messages=True, can_promote_members=True)
-        answer += "О, добро пожаловать, держи полную админку"
+        answer += chat_configs['greetings']['full_admin'].format(name=member.first_name)
     elif is_suitable(message, member, 'boss', loud=False) and feature_is_available(
             message.chat.id, system, 'admins_promote'):
         promote(message.chat.id, member.id,
                 can_change_info=False, can_delete_messages=True, can_invite_users=True,
                 can_restrict_members=True, can_pin_messages=True, can_promote_members=False)
-        answer += "О, добро пожаловать, держи админку"
+        answer += chat_configs['greetings']['admin'].format(name=member.first_name)
     elif feature_is_available(message.chat.id, system, 'newbies_captched'):
-        answer = 'Добро пожаловать, {}. Прошу пройти капчу за 5 минут'.format(member.first_name)
+        answer = chat_configs['greetings']['captcha'].format(name=member.first_name)
         keyboard = InlineKeyboardMarkup()
         keyboard.add(InlineKeyboardButton("🦐", callback_data="captcha"))
         keyboard.row_width = 1
         captcha = True
     else:
-        answer = 'Добро пожаловать, {}'.format(member.first_name)
+        answer = chat_configs['greetings']['standart'].format(name=member.first_name)
     # TODO Немнжко по быдлокодерски устроено неудаление сообщения о входе
     if feature_is_available(message.chat.id, system, 'moves_delete') and not feature_is_available(
             message.chat.id, system, 'newbies_captched'):
         delete(message.chat.id, message.message_id)
     else:
-        sent = reply(message, answer, reply_markup=keyboard)
+        sent = reply(message, answer, reply_markup=keyboard, parse_mode='HTML', disable_web_page_preview=True)
     # Notify admins if admin's chat exists
     admin_place = database.get('systems', ('id', system))['admin_place']
     if admin_place:

@@ -1,7 +1,8 @@
 # -*- coding: utf-8 -*-
-from view.output import reply, send_photo, send_sticker, send
+from view.output import reply, send_photo, send_sticker, send, send_video, send_document
 from presenter.config.config_func import time_replace, language_analyzer, case_analyzer, member_update, int_check, \
-    is_suitable, feature_is_available, get_system_configs, get_systems_json, get_person
+    is_suitable, feature_is_available, get_system_configs, get_systems_json, get_person, get_list_from_storage,\
+    entities_saver, get_text_and_entities
 from presenter.config.database_lib import Database
 from presenter.config.config_var import bot_id, admin_place, original_to_english, english_to_original, months,\
     features, features_texts
@@ -63,8 +64,12 @@ def helper(message):
             answer += '<b>Развлекательные команды:</b>\n'
             answer += '/minet - Делает приятно\n'
             answer += '/drakken - Присылает арт с Доктором Драккеном\n'
-            answer += '/meme - Присылает мем\n\n'
-
+            answer += '/meme - Присылает мем\n'
+            answer += '/art - Присылает картину\n\n'
+        if feature_is_available(message.chat.id, system, 'erotic_commands'):
+            answer += '<b>Эротические команды:</b>\n'
+            answer += '/breasts - Присылает грудь\n'
+            answer += '/ass - Присылает задницу\n\n'
         if is_suitable(message, message.from_user, 'boss', loud=False):
             answer += '<b>Базовые админские команды:</b>\n'
             answer += '/update - Пересчитывает сообщения, никнеймы и юзернеймы всех участников чата\n'
@@ -105,6 +110,8 @@ def money_helper(message):
     answer += '/m_name [Название] - Поставить название валюты\n'
     answer += 'Если она, к примеру называется доллар, пишите \n"/m_name долларов"\n\n'
 
+    answer += '/top - Получить топ людей по валюте\n\n'
+
     answer += '/pay [Кол-во] - Заплатить челу. Если деньги не вечны, то берутся из казны. Забрать деньги тоже можно\n\n'
 
     answer += '/give [Кол-во] - Дать челу деньги из вашего личного счёта\n\n'
@@ -114,6 +121,7 @@ def money_helper(message):
     reply(message, answer, parse_mode='HTML')
 
 
+# TODO Модуль для команд для разработчиков
 def show_id(message):
     """Присылает различные ID'шники, зачастую бесполезные"""
     log.log_print(str(message.from_user.id) + ": show_id invoked")
@@ -150,6 +158,28 @@ def show_id(message):
     reply(message, answer, parse_mode='Markdown')
 
 
+def echo_message(message):
+    target_message = message
+    if message.reply_to_message:
+        target_message = message.reply_to_message
+    text, entities = get_text_and_entities(target_message)
+    if text:
+        reply(message, entities_saver(text, entities), parse_mode='HTML')
+    else:
+        reply(message, "У этого сообщения нет текста")
+
+
+def clear_echo_message(message):
+    target_message = message
+    if message.reply_to_message:
+        target_message = message.reply_to_message
+    text, entities = get_text_and_entities(target_message)
+    if text:
+        reply(message, entities_saver(text, entities))
+    else:
+        reply(message, "У этого сообщения нет текста")
+
+
 def minet(message):
     """Приносит удовольствие"""
     log.log_print(str(message.from_user.id) + ": minet invoked")
@@ -166,17 +196,20 @@ def minet(message):
             send_sticker(message.chat.id, rep, reply_to_message_id=message.message_id)
 
 
-def send_drakken(message):
-    """Присылает арт с Доктором Драккеном"""
-    log.log_print(str(message.from_user.id) + ": send_drakken invoked")
-    drakken = choice(('AgADAgADpqsxG3J5-Urrn-mZkdvjs1SnhQ8ABAEAAwIAA20AA9QNBAABFgQ',
-                      'AgADAgADtaoxG3L2eUns8mJ7X9gm893qtw8ABAEAAwIAA20AA-gnAQABFgQ',
-                      'AgADAgAD8asxG4SzgUm_RXHcgE4jd26xUQ8ABAEAAwIAA20AAzHIBQABFgQ',
-                      'AgADAgAD06wxG6uiUEkjcLfrDsigh339tw8ABAEAAwIAA20AA8f_AAIWBA',
-                      'AgADAgAD36oxG0ImAUvzgBI4oR5C9J_RuQ8ABAEAAwIAA20AA9FGAQABFgQ',
-                      'AgADAgADRKoxG1QCQUmlG28vrK8o_avCtw8ABAEAAwIAA20AA8v1AAIWBA'))
-    send_photo(message.chat.id, drakken, reply_to_message_id=message.message_id)
-    # TODO Функция добавления большего количества Докторов Драккенов
+def send_stuff_from_storage(message, stuff):
+    log.log_print("send_stuff_from_storage invoked")
+    result = choice(get_list_from_storage(stuff))
+    if result[1] == 'photo':
+        send_photo(message.chat.id, result[0], reply_to_message_id=message.message_id, caption=result[2],
+                   parse_mode='HTML')
+    elif result[1] == 'video':
+        send_video(message.chat.id, result[0], reply_to_message_id=message.message_id, caption=result[2],
+                   parse_mode='HTML')
+    elif result[1] == 'gif':
+        send_document(message.chat.id, result[0], reply_to_message_id=message.message_id, caption=result[2],
+                      parse_mode='HTML')
+    else:
+        reply(message, "Произошла ошибка!")
 
 
 def send_meme(message):

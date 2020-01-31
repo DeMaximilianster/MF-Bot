@@ -4,7 +4,7 @@ import json
 from telebot.types import InlineKeyboardButton, InlineKeyboardMarkup, CallbackQuery
 from presenter.config.config_var import bot_id, new_system_json_entry
 from presenter.config.database_lib import Database
-from presenter.config.files_paths import adapt_votes_file, multi_votes_file, votes_file, systems_file
+from presenter.config.files_paths import adapt_votes_file, multi_votes_file, votes_file, systems_file, storage_file
 from presenter.config.log import Loger
 from presenter.config.log import log_to
 from view.output import *
@@ -56,6 +56,76 @@ def remove_captcher(call):
         return True
 
 
+def get_text_and_entities(target_message):
+    if target_message.text:
+        text = target_message.text
+        entities = target_message.entities
+    else:
+        text = target_message.caption
+        entities = target_message.caption_entities
+    return text, entities
+
+
+def entities_saver(text, entities):
+    points = set()
+    entities_blocks = []
+    if entities and set([e.type for e in entities]) & {'bold', 'italic', 'underline', 'strikethrough', 'code',
+                                                       'text_link'}:
+        for entity in entities:
+            if entity.type in ('bold', 'italic', 'underline', 'strikethrough', 'code'):
+                points.add(entity.offset)
+                points.add(entity.offset+entity.length)
+                entities_blocks.append((entity.offset, entity.offset+entity.length, entity.type))
+            elif entity.type == 'text_link':
+                points.add(entity.offset)
+                points.add(entity.offset + entity.length)
+                entities_blocks.append((entity.offset, entity.offset + entity.length, entity.type, entity.url))
+        points = list(points)
+        points.sort()
+        start_text = text[:points[0]]
+        end_text = text[points[-1]:]
+        points_blocks = []
+        for i in range(len(points)-1):
+            start = points[i]
+            end = points[i+1]
+            points_blocks.append([start, end, html_cleaner(text[start:end])])
+        for point_block in points_blocks:
+            for entity_block in entities_blocks:
+                if entity_block[0] <= point_block[0] and point_block[1] <= entity_block[1]:
+                    if entity_block[2] == 'bold':
+                        point_block[2] = "<b>" + point_block[2] + "</b>"
+                    elif entity_block[2] == 'italic':
+                        point_block[2] = "<i>" + point_block[2] + "</i>"
+                    elif entity_block[2] == 'underline':
+                        point_block[2] = "<u>" + point_block[2] + "</u>"
+                    elif entity_block[2] == 'strikethrough':
+                        point_block[2] = "<s>" + point_block[2] + "</s>"
+                    elif entity_block[2] == 'code':
+                        point_block[2] = "<code>" + point_block[2] + "</code>"
+                    elif entity_block[2] == 'text_link':
+                        point_block[2] = f'<a href="{entity_block[3]}">{point_block[2]}</a>'
+        text_blocks = [point_block[2] for point_block in points_blocks]
+        return start_text + ''.join(text_blocks) + end_text
+    else:
+        return text
+
+
+def html_cleaner(text):
+    #  < with &lt;, > with &gt; and & with &amp;
+    return text.replace('&', '&amp').replace('<', '&lt').replace('>', '&gt')
+
+
+def photo_video_gif_get(target_message):
+    text, entities = get_text_and_entities(target_message)
+    final_text = entities_saver(text, entities)
+    if target_message.photo:
+        return target_message.photo[0].file_id, 'photo', final_text
+    elif target_message.video:
+        return target_message.video.file_id, 'video', final_text
+    elif target_message.document:
+        return target_message.document.file_id, 'gif', final_text
+
+
 def int_check(string, positive):
     if positive:
         if set(string) & set('0123456789') == set(string):
@@ -69,7 +139,7 @@ def int_check(string, positive):
 
 
 def language_analyzer(message, only_one):
-    log.log_print(f"{__name__} invoked")
+    log.log_print(f"language_analyzer invoked")
     database = Database()
     entry = database.get('languages', ('id', message.chat.id))
     languages = {"Russian": False, "English": False}
@@ -431,6 +501,21 @@ def get_systems_json():
 def get_system_configs(system):
     data = get_systems_json()
     return data[system]
+
+
+def get_list_from_storage(storage):
+    with open(storage_file, 'r', encoding='utf-8') as read_file:
+        return json.load(read_file)[storage]
+
+
+def get_storage_json():
+    with open(storage_file, 'r', encoding='utf-8') as read_file:
+        return json.load(read_file)
+
+
+def write_storage_json(data):
+    with open(storage_file, 'w', encoding='utf-8') as write_file:
+        json.dump(data, write_file, indent=4, ensure_ascii=False)
 
 
 def write_systems_json(data):

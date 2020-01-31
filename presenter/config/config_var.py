@@ -7,6 +7,8 @@ from presenter.config.texts import january, february, march, april, may, june, j
 log = Loger(log_to)
 
 bot_id = 575704111
+porn_adders = (918715899, 381279599, 711157379)
+stuff_adders = (918715899, 381279599, 432348248)
 
 original_to_english = {'Русский': 'Russian', 'English': 'English'}
 english_to_original = {'Russian': 'Русский', 'English': 'English'}
@@ -77,10 +79,11 @@ roles = [None, 'Violator', 'Guest', 'Citizen', 'Senior Citizen', 'The Committee 
 features = ('standart_commands', 'erotic_commands', 'boss_commands', 'financial_commands',
             'mutual_invites', 'messages_count', 'violators_ban', 'admins_promote', 'moves_delete', 'newbies_captched')
 features_texts = dict()
-features_texts['Russian'] = ['Разлекательные команды', 'Эротические команды (работа в процессе)',
+features_texts['Russian'] = ['Разлекательные команды', 'Эротические команды',
                              'Админские команды', 'Денежные команды', 'Ссылка учитывается',
                              'Сообщения считаются', 'Нарушители банятся', 'Админы получают админку',
-                             'Сообщения о входе и выходе удаляются', 'Новички проходят капчу (работа в процессе)']
+                             'Сообщения о входе и выходе удаляются (если вкл, а капча выкл, бот не будет здороваться)',
+                             'Новички проходят капчу']
 features_texts['English'] = ['Standart commands', 'Admin commands', 'Financial commands',
                              'Invites links', 'Messages are count for citizenship',
                              'MF2 violators are automatically banned', 'MF2 admins are automatically promoted']
@@ -101,4 +104,8 @@ new_system_json_entry = {"name": "", "money": False, "money_emoji": "💰", "mon
                                       "advanced": ["Участник", "Лидер"],
                                       "boss": ["Админ", "Лидер"],
                                       "uber": ["Старший Админ", "Лидер"],
-                                      "chat_changer": ["Старший Админ", "Лидер"]}}
+                                      "chat_changer": ["Старший Админ", "Лидер"]},
+                         "greetings": {"standart": "Добро пожаловать, {name}",
+                                       "captcha": "Добро пожаловать, {name}. Прошу пройти капчу за 5 минут",
+                                       "admin": "О, добро пожаловать, держи админку",
+                                       "full_admin": "О, добро пожаловать, держи полную админку"}}

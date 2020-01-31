@@ -9,3 +9,4 @@ appointments = 'model/texts/appointments.txt'
 database_file = 'model/MF.db'
 log_files = ["model/log.txt"]
 systems_file = 'model/systems.json'
+storage_file = 'model/storage.json'

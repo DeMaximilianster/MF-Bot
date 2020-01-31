@@ -1,22 +1,23 @@
 from presenter.config.token import bot
-from view.output import reply, answer_callback, delete, send_document
+from view.output import reply, answer_callback, send_document
 from presenter.config.config_func import in_mf, cooldown, person_analyze, rank_superiority, \
      int_check, person_check, is_suitable, in_system_commands, is_correct_message
 from presenter.logic.elite import elite
 from presenter.logic.boss_commands import ban, add_chat, add_admin_place, chat_options, system_options, \
     warn, unwarn, message_change, money_pay, rank_changer, mute, money_mode_change, money_emoji, money_name, \
-    update_all_members
+    update_all_members, add_stuff_to_storage
 from presenter.logic.complicated_commands import adequate, inadequate, response, insult, non_ironic, ironic, \
     place_here, mv, av, add_vote, vote, captcha_completed
 import presenter.logic.reactions as reactions
-from presenter.logic.standart_commands import helper, send_drakken, send_me, send_meme, minet, show_id, \
+from presenter.logic.standart_commands import helper, send_me, send_meme, minet, show_id, \
     all_members, money_give, money_top, language_getter, month_set, day_set, birthday, admins, chat_check, \
-    anon_message, system_check, money_helper, messages_top
+    anon_message, system_check, money_helper, messages_top, send_stuff_from_storage, echo_message, clear_echo_message
 from presenter.logic.start import starter
 from presenter.config.log import Loger, log_to
 from presenter.config.config_var import features_defaulters, features_oners, features_offers, system_features_offers, \
-    system_features_oners
-from presenter.config.files_paths import votes_file, database_file, adapt_votes_file, multi_votes_file,  systems_file
+    system_features_oners, porn_adders, stuff_adders
+from presenter.config.files_paths import votes_file, database_file, adapt_votes_file, multi_votes_file,  systems_file, \
+    storage_file
 
 # TODO Убрать этот ебучий срач
 log = Loger(log_to)
@@ -34,15 +35,12 @@ def chat_id_update_handler(message):
 
 
 @bot.message_handler(content_types=['document', 'photo', 'sticker', 'video', 'video_note'])
-#  @bot.message_handler(func=lambda message: message.entities and message.from_user.id in new_dudes)
 def deleter_handler(message):
     """Удаляет медиа ночью"""
     log.log_print(f"deleter_handler invoked")
     global new_dudes
     if in_mf(message, command_type=None, or_private=False, loud=False):
-        dude_is_bad(message)
         reactions.deleter(message)
-    print(new_dudes)
 
 
 @bot.message_handler(content_types=['new_chat_members'])
@@ -84,6 +82,22 @@ def chat_search_handler(message):
     if in_mf(message) and rank_required(message, "Админ"):
         chat_search(message)
 """
+
+
+@bot.message_handler(commands=['breasts_add', 'ass_add'])
+def send_vulgar_stuff_from_storage_handler(message):
+    log.log_print("send_vulgar_stuff_from_storage_handler invoked")
+    command = (message.text.split()[0].split(sep='@')[0].split(sep='_add')[0])[1:]
+    if in_mf(message, 'erotic_commands') and message.from_user.id in porn_adders:
+        add_stuff_to_storage(message, command)
+
+
+@bot.message_handler(commands=['drakken_add', 'art_add'])
+def send_vulgar_stuff_from_storage_handler(message):
+    log.log_print("send_vulgar_stuff_from_storage_handler invoked")
+    command = (message.text.split()[0].split(sep='@')[0].split(sep='_add')[0])[1:]
+    if in_mf(message, command_type=None) and message.from_user.id in stuff_adders:
+        add_stuff_to_storage(message, command)
 
 
 @bot.message_handler(commands=['update'])
@@ -412,6 +426,20 @@ def show_id_handler(message):
         show_id(message)
 
 
+@bot.message_handler(commands=['echo'])
+def echo_message_handler(message):
+    log.log_print(f"echo_message_handler invoked")
+    if in_mf(message, command_type=None):
+        echo_message(message)
+
+
+@bot.message_handler(commands=['clear'])
+def echo_message_handler(message):
+    log.log_print(f"clear_echo_message_handler invoked")
+    if in_mf(message, command_type=None):
+        clear_echo_message(message)
+
+
 @bot.message_handler(commands=['minet', 'french_style_sex', 'blowjob'])
 def minet_handler(message):
     """Приносит удовольствие"""
@@ -420,12 +448,21 @@ def minet_handler(message):
         minet(message)
 
 
-@bot.message_handler(commands=['drakken'])
-def send_drakken_handler(message):
-    """Присылает арт с Доктором Драккеном"""
-    log.log_print(f"send_drakken_handler invoked")
-    if in_mf(message, 'standart_commands') and cooldown(message, 'drakken'):
-        send_drakken(message)
+@bot.message_handler(commands=['drakken', 'art'])
+def send_stuff_from_storage_handler(message):
+    """Send random media from the storage"""
+    log.log_print("send_stuff_from_storage_handler invoked")
+    command = (message.text.split()[0].split(sep='@')[0])[1:]
+    if in_mf(message, 'standart_commands') and cooldown(message, command):
+        send_stuff_from_storage(message, command)
+
+
+@bot.message_handler(commands=['breasts', 'ass'])
+def send_vulgar_stuff_from_storage_handler(message):
+    log.log_print("send_vulgar_stuff_from_storage_handler invoked")
+    command = (message.text.split()[0].split(sep='@')[0])[1:]
+    if in_mf(message, 'erotic_commands') and cooldown(message, command, timeout=60):
+        send_stuff_from_storage(message, command)
 
 
 @bot.message_handler(regexp='есть один мем')
@@ -567,7 +604,7 @@ def anon_message_handler(message):
 def database_send_handler(message):
     log.log_print('database_send_handler invoked')
     if message.chat.id == 381279599:
-        for FILE in (database_file, votes_file, adapt_votes_file, multi_votes_file, systems_file):
+        for FILE in (database_file, votes_file, adapt_votes_file, multi_votes_file, systems_file, storage_file):
             file_send = open(FILE, 'rb')
             send_document(message.chat.id, file_send)
             file_send.close()
@@ -589,14 +626,3 @@ def counter_handler(message):
             if len(new_dudes[message.from_user.id]) == 5:
                 new_dudes.pop(message.from_user.id)
             print(new_dudes)
-
-
-def dude_is_bad(message, unban_then=True):
-    global new_dudes
-    if message.from_user.id in new_dudes:
-        if len(new_dudes[message.from_user.id]) < 3:
-            ban(message, message.from_user, comment=False, unban_then=unban_then)
-            for msg in new_dudes[message.from_user.id]:
-                delete(message.chat.id, msg)
-            delete(message.chat.id, message.message_id)
-            new_dudes.pop(message.from_user.id)
