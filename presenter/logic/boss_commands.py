@@ -3,8 +3,8 @@ from presenter.config.database_lib import Database
 from presenter.config.config_var import full_chat_list, channel_list, bot_id, admin_place, chat_list
 from presenter.config.log import Loger, log_to
 from presenter.config.config_func import unban_user, is_suitable, int_check, get_system_configs, \
-    update_systems_json, create_system, create_chat, member_update
-from view.output import kick, reply, promote, send, forward, restrict, get_member
+    update_systems_json, create_system, create_chat, SystemUpdate
+from view.output import kick, reply, promote, send, forward, restrict
 from time import time
 
 log = Loger(log_to)
@@ -12,15 +12,13 @@ log = Loger(log_to)
 
 def update_all_members(message):
     log.log_print("money_top invoked")
+    sent = reply(message, "Начинаю обновление...")
     database = Database(to_log=False)
     chat = database.get('chats', ('id', message.chat.id))
     system = chat['system']
     members = list(database.get_many('members', ('system', system)))
-    for member in members:
-        user = get_member(message.chat.id, member['id'])
-        if user:
-            member_update(system, user.user)
-    reply(message, "Теперь записи о людях максимально свежие!")
+    system_update = SystemUpdate(message.chat.id, system, members, sent)
+    system_update.start()
 
 
 def warn(message, person):

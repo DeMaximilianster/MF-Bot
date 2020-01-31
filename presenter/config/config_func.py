@@ -34,6 +34,23 @@ class CaptchaBan(Thread):
             edit_text("Испытание креветкой провалено!", self.bots_message.chat.id, self.bots_message.message_id)
 
 
+class SystemUpdate(Thread):
+    def __init__(self, chat_id, system_id, members, sent):
+        Thread.__init__(self)
+        log.log_print("SystemUpdate invoked")
+        self.chat_id = chat_id
+        self.system_id = system_id
+        self.members = members
+        self.sent = sent
+
+    def run(self):
+        for member in self.members:
+            user = get_member(self.chat_id, member['id'])
+            if user:
+                member_update(self.system_id, user.user)
+        reply(self.sent, "Теперь записи о людях максимально свежие!")
+
+
 def remove_captcher(call):
     global captchers
     if (call.from_user.id, call.message.chat.id) in captchers:
