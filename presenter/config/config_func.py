@@ -338,7 +338,7 @@ def in_mf(message, command_type, or_private=True, loud=True):
         system = chat['system']
         chat_configs = get_system_configs(system)
         get_person(person, system, database, system_configs=chat_configs)
-        counter(message)  # Отправляем сообщение на учёт в БД
+        counter(message, person)  # Отправляем сообщение на учёт в БД
         if command_type == 'financial_commands':
             if not chat_configs['money']:
                 reply(message, "В этом чате система денег не включена. Смотрите /money_help")
@@ -397,16 +397,10 @@ def feature_is_available(chat_id, system, command_type):
     return False
 
 
-def counter(message):
+def counter(message, person):
     """Подсчитывает сообщения, отправленные челом"""
     log.log_print("counter invoked")
     database = Database()
-    if message.new_chat_members:
-        person = message.new_chat_members[0]
-    elif message.left_chat_member:
-        person = message.left_chat_member
-    else:
-        person = message.from_user
     if not database.get('messages', ('person_id', person.id), ('chat_id', message.chat.id)):
         database.append((person.id, message.chat.id, 0), 'messages')
     value = database.get('messages', ('person_id', person.id), ('chat_id', message.chat.id))['messages'] + 1
