@@ -72,10 +72,6 @@ a_adequate_keyboard.add(InlineKeyboardButton("Адекватно", callback_data
 a_adequate_keyboard.add(InlineKeyboardButton("Неадекватно", callback_data="inadequate"))
 a_adequate_keyboard.row_width = 1
 
-# Список всех ролей и их подтипы
-roles = [None, 'Violator', 'Guest', 'Citizen', 'Senior Citizen', 'The Committee Member', 'Deputy', 'Leader']
-# TODO Эту переменную отсюда надо нахуй убрать
-
 features = ('standart_commands', 'erotic_commands', 'boss_commands', 'financial_commands',
             'mutual_invites', 'messages_count', 'violators_ban', 'admins_promote', 'moves_delete', 'newbies_captched')
 features_texts = dict()

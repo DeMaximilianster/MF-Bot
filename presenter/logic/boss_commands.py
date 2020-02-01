@@ -441,13 +441,14 @@ def money_mode_change(message):
 
 
 def money_emoji(message):
-    # TODO Проверка на длину сообщения
     log.log_print("money_emoji invoked")
     database = Database()
-    mode = message.text.split()[-1]
+    mode = ' '.join(m.text.split()[1:])
     chat = database.get('chats', ('id', message.chat.id))
     system = chat['system']
-    if mode:
+    if len(mode) > 10:
+        reply(message, "Смайлик-сокращение валюты не должен превышать 10 символов")
+    elif mode:
         update_systems_json(system, mode, 'money_emoji')
         reply(message, "OK!")
     else:
@@ -455,11 +456,10 @@ def money_emoji(message):
 
 
 def money_name(message):
-    # TODO Добавить поддержку многословных названий
     # TODO Добавить проверку по падежам
     log.log_print("money_name invoked")
     database = Database()
-    mode = message.text.split()[-1]
+    mode = ' '.join(m.text.split()[1:])
     chat = database.get('chats', ('id', message.chat.id))
     system = chat['system']
     if mode:

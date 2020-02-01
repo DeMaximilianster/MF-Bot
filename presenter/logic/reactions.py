@@ -53,7 +53,7 @@ def deleter(message):
 
 def new_member(message, member):
     """Реагирует на вход в чат"""
-    log.log_print(f"{__name__} invoked")
+    log.log_print(f"new_member invoked")
     database = Database()
     # Declaring variables
     answer = ''
@@ -105,9 +105,9 @@ def new_member(message, member):
     # Notify admins if admin's chat exists
     admin_place = database.get('systems', ('id', system))['admin_place']
     if admin_place:
-        send(admin_place, '{} (@{}) [{}] теперь в {}'.format(member.first_name, member.username, member.id,
-                                                             message.chat.title))
-        # TODO Красивые ссылки на челов без юзерки
+        send(admin_place, f'<a href="tg://user?id={member.id}">{html_cleaner(member.first_name)}</a>'\
+        f' (@{html_cleaner(member.username)}) [{member.id}] теперь в {html_cleaner(message.chat.title)}',
+        parse_mode="HTML")
     if captcha:
         restrict(chat['id'], member.id, until_date=time() + 300)
         captcha_ban = CaptchaBan(message, sent)
