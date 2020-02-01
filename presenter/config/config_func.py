@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import json
+import time
 
 from telebot.types import InlineKeyboardButton, InlineKeyboardMarkup, CallbackQuery
 from presenter.config.config_var import bot_id, new_system_json_entry
@@ -11,7 +12,7 @@ from view.output import *
 import time
 from threading import Thread
 
-log = Loger(log_to)
+log = Loger()
 captchers = []
 
 
@@ -371,14 +372,7 @@ def cooldown(message, command, timeout=3600):
 
 
 def time_replace(seconds):
-    # TODO Убрать отсюда этот велосипед
-    seconds += 3 * 60 * 60
-    minutes = seconds // 60
-    seconds %= 60
-    hours = minutes // 60
-    minutes %= 60
-    days = hours // 60
-    hours %= 24
+    _, _, days, hours, minutes, seconds, *_ = time.gmtime(int(time.time()) + 3600*3)
     return days, hours, minutes, seconds
 
 

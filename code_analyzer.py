@@ -2,6 +2,16 @@ from tkinter import *  # Первым делом импортируем tkinter
 import os
 
 
+def write_in_bufer(text):
+    root.clipboard_clear()
+    root.clipboard_append(text)
+
+
+def copy_button(text):
+    func = lambda:os.system(f'"C:\Windows\explorer.exe" {text}')
+    return Button(text='Open', command=func, bg='#503872', fg=fg)
+
+
 def smth_in(target, *args):
     for arg in args:
         if arg in target:
@@ -21,12 +31,13 @@ def analyze(event=None):
             for line in f:
                 if search in line:
                     counter += 1
-                    text.insert(END, 'File: {}\n'.format(FILE))
-                    text.insert(END, 'Строка: {}\n'.format(string))
+                    text.insert(END, 'File: {} '.format(FILE))
+                    text.window_create(END, window=copy_button(FILE))
+                    text.insert(END, '\nСтрока: {}\n'.format(string))
                     try:
                         text.insert(END, line + '\n')
                     except Exception as e:
-                        print(e)
+                        print(repr(e))
                         text.insert(END, 'This line is not available')
                 string += 1
     label['text'] = "{} items are found".format(counter)
@@ -40,28 +51,31 @@ tree = os.walk(path)
 for branch in tree:
     if not smth_in(branch[0], '.git', '.idea', '__pycache__'):
         print(branch)
-        for file in branch[2]:
-            if file[-3:] == '.py':
-                files_list.append(os.path.join(branch[0], file))
+        for path in branch[2]:
+            if path[-3:] == '.py':
+                files_list.append(os.path.join(branch[0], path))
 
-print(files_list)
+print(*files_list, sep='\n')
+
+bg = '#002240'
+fg = '#eeeeee'
+font = 'Consolas 11'
 
 root = Tk()
+root.configure(bg='')
 
-entry = Entry(root)
-button = Button(root, text='Анализировать', command=analyze)
-label = Label(root)
-frame = Frame()
-text = Text(frame, wrap=WORD)
-scrollbar = Scrollbar(frame, command=text.yview)
+entry = Entry(root, bg=bg, fg=fg, insertbackground=fg, justify="center", font=font)
+button = Button(root, text='Анализировать', command=analyze, bg=bg, fg=fg, font=font)
+label = Label(root, bg=bg, fg=fg, font=font)
+text = Text(wrap=WORD, bg=bg, fg=fg, insertbackground=fg, font=font)
+scrollbar = Scrollbar(command=text.yview, bg=bg, troughcolor=fg)
 
 entry.bind('<Return>', analyze)
 
-entry.pack()
-button.pack()
-label.pack()
-frame.pack()
-text.pack(side=LEFT)
+entry.pack(fill=X)
+button.pack(fill=X)
+label.pack(fill=X)
+text.pack(side=LEFT, fill=BOTH, expand=1)
 scrollbar.pack(side=RIGHT, fill=Y)
 
 text['yscrollcommand'] = scrollbar.set
