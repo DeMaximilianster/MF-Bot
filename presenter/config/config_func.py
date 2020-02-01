@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import json
 import time
+from threading import Thread
 
 from telebot.types import InlineKeyboardButton, InlineKeyboardMarkup, CallbackQuery
 from presenter.config.config_var import bot_id, new_system_json_entry
@@ -9,8 +10,6 @@ from presenter.config.files_paths import adapt_votes_file, multi_votes_file, vot
 from presenter.config.log import Loger
 from presenter.config.log import log_to
 from view.output import *
-import time
-from threading import Thread
 
 log = Loger()
 captchers = []
@@ -212,7 +211,7 @@ def person_check(message, person, to_self=False, to_bot=False):
 
 
 def person_analyze(message, to_self=False, to_bot=False):
-    log.log_print(f"{__name__} invoked")
+    log.log_print("person_analyze invoked")
     if message.reply_to_message:  # Сообщение является ответом
         if message.reply_to_message.new_chat_members:
             person = message.reply_to_message.new_chat_members[0]
@@ -360,7 +359,7 @@ def cooldown(message, command, timeout=3600):
         minutes = seconds // 60
         seconds %= 60
         answer = "Воу, придержи коней, ковбой. Ты сможешь воспользоваться этой командой только "
-        answer += "через {} минут и {} секунд 🤠".format(minutes, seconds)
+        answer += f"через {minutes} минут и {seconds} секунд 🤠"
         reply(message, answer)
 
         return False

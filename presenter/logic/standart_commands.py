@@ -2,16 +2,16 @@
 from view.output import reply, send_photo, send_sticker, send, send_video, send_document
 from presenter.config.config_func import time_replace, language_analyzer, case_analyzer, member_update, int_check, \
     is_suitable, feature_is_available, get_system_configs, get_systems_json, get_person, get_list_from_storage,\
-    entities_saver, get_text_and_entities
+    entities_saver, get_text_and_entities, html_cleaner
 from presenter.config.database_lib import Database
 from presenter.config.config_var import bot_id, admin_place, original_to_english, english_to_original, months,\
     features, features_texts
 from random import choice
 from time import ctime, time
-from presenter.config.log import Loger, log_to
+from presenter.config.log import Loger
 from presenter.config.texts import minets
 
-log = Loger(log_to)
+log = Loger()
 
 
 def language_getter(message):
@@ -128,37 +128,47 @@ def money_helper(message):
 def show_id(message):
     """Присылает различные ID'шники, зачастую бесполезные"""
     log.log_print(str(message.from_user.id) + ": show_id invoked")
-    answer = 'Время отправки вашего сообщения: ` ' + ctime(message.date) + '`\n\n'
-    answer += 'Переводя, выходит: ` ' + str(time_replace(message.date)) + '`\n\n'
-    answer += 'Время отправки моего сообщения: ` ' + ctime(time()) + '`\n\n'
-    answer += 'ID этого чата: `' + str(message.chat.id) + '`\n\n'
-    answer += 'Ваш ID: `' + str(message.from_user.id) + '`\n\n'
-    answer += 'Ваш language code:  `{}`\n\n'.format(message.from_user.language_code)
-    answer += 'ID вашего сообщения: `' + str(message.message_id) + '`\n\n'
+
+    cd = lambda s:f'<code>{s}</code>'
+
+    answer = f'Время отправки вашего сообщения: {cd(ctime(message.date))}\n\n'\
+    f'Переводя, выходит: {cd(time_replace(message.date))}\n\n'\
+    f'Время отправки моего сообщения: {cd(ctime(time()))}\n\n'\
+    f'ID этого чата: {cd(message.chat.id)}\n\n'\
+    f'Ваш ID: {cd(message.from_user.id)}\n\n'\
+    f'Ваш language code: {cd(message.from_user.language_code)}\n\n'\
+    f'ID вашего сообщения: {cd(message.message_id)}\n\n'
+
     reply_msg = message.reply_to_message
-    if reply_msg:  # Сообщение является ответом
-        answer += 'ID человека, на сообщение которого ответили: `' + str(reply_msg.from_user.id) + '`\n\n'
-        answer += 'Его/её language code:  `{}`\n\n'.format(reply_msg.from_user.language_code)
-        answer += 'ID сообщения, на которое ответили: `' + str(reply_msg.message_id) + '`\n\n'
-        if reply_msg.forward_from:  # Сообщение, на которое ответили, является форвардом
-            answer += 'ID человека, написавшего пересланное сообщение: `' + str(reply_msg.forward_from.id) + '`\n\n'
-            answer += 'Его/её language code:  `{}`\n\n'.format(reply_msg.forward_from.language_code)
+    if reply_msg is not None:  # Сообщение является ответом
+
+        answer += f'ID человека, на сообщение которого ответили: {cd(reply_msg.from_user.id)}\n\n'\
+        f'Его/её language code: {cd(reply_msg.from_user.language_code)}\n\n'\
+        f'ID сообщения, на которое ответили: {cd(reply_msg.message_id)}\n\n'
+
+        if reply_msg.forward_from is not None:  # Сообщение, на которое ответили, является форвардом
+            answer += f'ID человека, написавшего пересланное сообщение: {cd(reply_msg.forward_from.id)}\n\n'\
+            f'Его/её language code: {cd(reply_msg.forward_from.language_code)}\n\n'
+
         elif reply_msg.forward_from_chat:  # Сообщение, на которое ответили, является форвардом из канала
-            answer += 'ID канала, из которого переслали сообщение: `' + str(reply_msg.forward_from_chat.id) + '`\n\n'
-        if reply_msg.sticker:
-            answer += 'ID стикера: `' + reply_msg.sticker.file_id + '`\n\n'
+            answer += f'ID канала, из которого переслали сообщение: {cd(reply_msg.forward_from_chat.id)}\n\n'
+
+        if reply_msg.sticker is not None:
+            answer += f'ID стикера: {cd(reply_msg.sticker.file_id)}\n\n'
             # answer += 'Ссылка на набор с этим стикером: https://telegram.me/addstickers/'
             # answer += reply_msg.sticker.set_name + '\n\n'
-        elif reply_msg.photo:
-            answer += 'ID фотографии `' + reply_msg.photo[0].file_id + '`'
+
+        elif reply_msg.photo is not None:
+            answer += f'ID фотографии: {cd(reply_msg.photo[0].file_id)}'
             for i in reply_msg.photo[1:]:
-                answer += ',\n' + '`' + i.file_id + '`'
+                answer += f',\n{cd(i.file_id)}'
             answer += '\n\n'
+
         for media in (reply_msg.video, reply_msg.voice, reply_msg.video_note, reply_msg.audio, reply_msg.document):
             if media:
-                answer += 'ID медиа: `' + media.file_id + '`\n\n'
+                answer += f'ID медиа: {cd(media.file_id)}\n\n'
                 break
-    reply(message, answer, parse_mode='Markdown')
+    reply(message, answer, parse_mode='HTML')
 
 
 def echo_message(message):
@@ -259,6 +269,7 @@ def send_me(message, person):
 def all_members(message):
     """Присылает человеку все записи в БД"""
     # TODO Кто вышел из чата, а кто находится в чате
+    #f'<a href="tg://user?id={}">{html_cleaner()}</a>'
     log.log_print("all_members invoked")
     database = Database()
     system = database.get('chats', ('id', message.chat.id))['system']
@@ -272,18 +283,16 @@ def all_members(message):
         one_message_list = members[50 * (fifty - 1): 50 * fifty]
         answer = ''
         for member in one_message_list:
-            username = "[{}](tg://user?id={})".format(member['nickname'].replace('[', '').replace(']', ''),
-                                                      member['id'])
-            answer += '`' + str(member['id']) + '` ' + username + '\n'
-        sent = send(message.from_user.id, answer, parse_mode='Markdown')
+            username = f'<a href="tg://user?id={member["id"]}">{html_cleaner(member["nickname"])}</a>'
+            answer += f'<code>{member["id"]}</code> {username}\n'
+        sent = send(message.from_user.id, answer, parse_mode='HTML')
     if len(members) < 50:
         answer = ''
         for member in members:
-            username = "[{}](tg://user?id={})".format(member['nickname'].replace('[', '').replace(']', ''),
-                                                      member['id'])
-            answer += '`' + str(member['id']) + '` ' + username + '\n'
+            username = f'<a href="tg://user?id={member["id"]}">{html_cleaner(member["nickname"])}</a>'
+            answer += f'<code>{member["id"]}</code> {username}\n'
 
-        sent = send(message.from_user.id, answer, parse_mode='Markdown')
+        sent = send(message.from_user.id, answer, parse_mode='HTML')
     if sent:
         reply(message, "Выслал БД в личку")
     else:
