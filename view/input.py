@@ -7,7 +7,7 @@ from presenter.logic.boss_commands import ban, add_chat, add_admin_place, chat_o
     warn, unwarn, message_change, money_pay, rank_changer, mute, money_mode_change, money_emoji, money_name, \
     update_all_members, add_stuff_to_storage
 from presenter.logic.complicated_commands import adequate, inadequate, response, insult, non_ironic, ironic, \
-    place_here, mv, av, add_vote, vote, captcha_completed
+    place_here, mv, av, add_vote, vote, captcha_completed, captcha_failed
 import presenter.logic.reactions as reactions
 from presenter.logic.standart_commands import helper, send_me, send_meme, minet, show_id, \
     all_members, money_give, money_top, language_getter, month_set, day_set, birthday, admins, chat_check, \
@@ -84,6 +84,7 @@ def chat_search_handler(message):
 """
 
 
+# TODO Вариативность команд-добавлялок
 @bot.message_handler(commands=['breasts_add', 'ass_add'])
 def send_vulgar_stuff_from_storage_handler(message):
     log.log_print("send_vulgar_stuff_from_storage_handler invoked")
@@ -292,6 +293,12 @@ def captcha_completed_handler(call):
     captcha_completed(call)
 
 
+@bot.callback_query_handler(func=lambda call: call.data == 'captcha_fail')
+def captcha_failed_handler(call):
+    log.log_print("captcha_failed_handler invoked")
+    captcha_failed(call)
+
+
 @bot.callback_query_handler(func=lambda call: 'adequate' in call.data and call.data != 'inadequate')
 def adequate_handler(call):
     """Вариант адекватен"""
@@ -314,7 +321,8 @@ def response_handler(inline_query):
 
 
 @bot.message_handler(regexp='Признаю оскорблением')
-def insult_handler(message):
+def insult_handler(message):  # TODO В частных чатах бот не умеет указать ссылку нормально
+    # TODO Проверка на наличие админосостава
     """Спращивает, иронично ли признание оскорблением"""
     log.log_print(f"insult_handler invoked")
     if in_mf(message, command_type=None, or_private=False) and is_suitable(message, message.from_user, "standart"):

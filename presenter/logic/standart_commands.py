@@ -98,7 +98,7 @@ def helper(message):
         answer += '/meme - Присылает мем\n'
         answer += '/art - Присылает картину\n'
         answer += '/breasts - Присылает грудь\n'
-        answer += '/ass - Присылает задницу\n'
+        answer += '/ass - Присылает задницу\n\n'
         answer += 'В чате мой функционал значительно шире'
     reply(message, answer, parse_mode='HTML')
 

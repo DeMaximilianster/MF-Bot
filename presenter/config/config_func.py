@@ -703,8 +703,9 @@ def update_adapt_vote(vote_id):
 
 def unban_user(person):
     """Remove ban from user"""
-    log.log_print(f"{__name__} invoked")
+    log.log_print("unban_user invoked")
     database = Database()
+    # TODO Уточнить систему
     chats_to_unban = database.get_many('chats', ('violators_ban', 2))
     for chat in chats_to_unban:
         if get_member(chat['id'], person.id).status in ('left', 'kicked'):

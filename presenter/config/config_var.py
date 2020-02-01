@@ -16,7 +16,7 @@ months = ['No Month', january, february, march, april, may, june, july, august, 
 
 
 def admin_place(message, database):
-    log.log_print(f"{__name__} invoked")
+    log.log_print(f"admin_place invoked")
     chat = database.get('chats', ('id', message.chat.id))
     system = chat['system']
     return database.get('systems', ('id', system))['admin_place']
@@ -24,14 +24,14 @@ def admin_place(message, database):
 
 def chat_list(database, system):  # TODO Сделать приличную чатоискалку
     """Список всех МФ2-чатов, кроме Админосостава и Комитета"""
-    log.log_print(f"{__name__} invoked")
+    log.log_print(f"chat_list invoked")
     ch_list = database.get_many('chats', ('system', system))
     return ch_list
 
 
 def full_chat_list(database, system):
     """Список всех МФ2-чатов"""
-    log.log_print(f"{__name__} invoked")
+    log.log_print(f"full_chat_list invoked")
     return database.get_many('chats', ('system', system))
 
 
@@ -106,6 +106,7 @@ new_system_json_entry = {"name": "", "money": False, "money_emoji": "💰", "mon
                                       "uber": ["Старший Админ", "Лидер"],
                                       "chat_changer": ["Старший Админ", "Лидер"]},
                          "greetings": {"standart": "Добро пожаловать, {name}",
-                                       "captcha": "Добро пожаловать, {name}. Прошу пройти капчу за 5 минут",
+                                       "captcha":
+                                       "Добро пожаловать, {name}. Докажите, что не бот, нажмите на КРЕВЕТКУ за 5 минут",
                                        "admin": "О, добро пожаловать, держи админку",
                                        "full_admin": "О, добро пожаловать, держи полную админку"}}

@@ -123,7 +123,7 @@ def restrict(chat_id, user_id, until_date=None, can_send_messages=None, can_send
 
 def unban(chat_id, user_id):
     """Unban member"""
-    log.log_print(f"{__name__} invoked")
+    log.log_print(f"unban invoked")
     try:
         return bot.unban_chat_member(chat_id, user_id)
     except Exception as e:
@@ -134,7 +134,7 @@ def promote(chat_id, user_id, can_change_info=False, can_post_messages=False, ca
             can_delete_messages=False, can_invite_users=False, can_restrict_members=False, can_pin_messages=False,
             can_promote_members=False):
     """Изменить админские полномочия"""
-    log.log_print("promote invoked")
+    log.log_print(f"promote invoked chat_id={chat_id}, user_id={user_id}")
     try:
         return bot.promote_chat_member(chat_id, user_id,
                                        can_change_info=can_change_info, can_post_messages=can_post_messages,

@@ -5,6 +5,7 @@ from view.output import delete, kick, send, promote, reply, restrict
 from presenter.config.log import Loger, log_to
 from telebot.types import InlineKeyboardButton, InlineKeyboardMarkup
 from time import time
+from random import shuffle
 
 log = Loger(log_to)
 
@@ -80,9 +81,18 @@ def new_member(message, member):
         answer += chat_configs['greetings']['admin'].format(name=member.first_name)
     elif feature_is_available(message.chat.id, system, 'newbies_captched'):
         answer = chat_configs['greetings']['captcha'].format(name=member.first_name)
+        wrong_animals_string = '🦀🦞🦑🐡🐶🐱🐭🐹🐰🦊🐻🐼🐵🐸🐷🐮🦁🐯🐨🙈🙉🙊🐒🐔🐧🐦🐤🐗🐺🦇🦉🦅🦆🐥🐣🐴🦄'
+        wrong_animals_string += '🐝🐛🦋🐌🐞🐜🦎🐍🐢🦂🕷🦗🦟🐆🦓🦍🐘🦛🦏🐪🐫🐏🐖🐎🦔🐈'
+        wrong_animals_buttons = []
+        for wrong_animal in wrong_animals_string:
+            wrong_animals_buttons.append(InlineKeyboardButton(wrong_animal, callback_data="captcha_fail"))
+        buttons = [InlineKeyboardButton("🦐", callback_data="captcha")] + wrong_animals_buttons
+        shuffle(buttons)
+        buttons_rows = list([buttons[i:i+8] for i in range(0, len(buttons), 8)])
         keyboard = InlineKeyboardMarkup()
-        keyboard.add(InlineKeyboardButton("🦐", callback_data="captcha"))
-        keyboard.row_width = 1
+        keyboard.row_width = 8
+        for buttons_row in buttons_rows:
+            keyboard.add(*buttons_row)
         captcha = True
     else:
         answer = chat_configs['greetings']['standart'].format(name=member.first_name)
@@ -97,6 +107,7 @@ def new_member(message, member):
     if admin_place:
         send(admin_place, '{} (@{}) [{}] теперь в {}'.format(member.first_name, member.username, member.id,
                                                              message.chat.title))
+        # TODO Красивые ссылки на челов без юзерки
     if captcha:
         restrict(chat['id'], member.id, until_date=time() + 300)
         captcha_ban = CaptchaBan(message, sent)

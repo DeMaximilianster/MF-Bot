@@ -5,7 +5,7 @@ from presenter.config.config_var import test_keyboard, ironic_keyboard, \
     vote_keyboard, admin_place
 from presenter.config.database_lib import Database
 from presenter.config.files_paths import multi_votes_file, adapt_votes_file, votes_file
-from view.output import edit_markup, answer_inline, reply, answer_callback, edit_text, delete, send, restrict
+from view.output import edit_markup, answer_inline, reply, answer_callback, edit_text, delete, send, restrict, unban
 from presenter.config.log import Loger, log_to
 
 from telebot.types import InlineQueryResultArticle, InputTextMessageContent, InlineKeyboardButton, InlineKeyboardMarkup
@@ -24,6 +24,17 @@ def captcha_completed(call):
         edit_markup(call.message.chat.id, call.message.message_id)
     else:
         answer_callback(call.id, text='Это не ваша креветка 👀')
+
+
+def captcha_failed(call):
+    log.log_print("captcha_failed invoked")
+    if remove_captcher(call):
+        unban(call.message.chat.id, call.from_user.id)
+        answer_callback(call.id)
+        edit_text("Испытание креветкой провалено! (нажата неверная кнопка)", call.message.chat.id,
+                  call.message.message_id)
+    else:
+        answer_callback(call.id, text='Это не ваша животинка 👀')
 
 
 def adequate(call):
@@ -69,7 +80,7 @@ def response(inline_query):
 def insult(message):
     """Спращивает, иронично ли признание оскорблением"""
     log.log_print("insult invoked")
-    text = "Иронично? \n\n(В случае нажатия 'Нет' в админосостав будет послана жалоба. Будьте добры не пользоваться каналом жалоб, если вас не оскорбили)"
+    text = "Иронично? \n\n(В случае нажатия 'Неиронично' в админосостав будет послана жалоба. Будьте добры не пользоваться каналом жалоб, если вас не оскорбили)"
     reply(message, text, reply_markup=ironic_keyboard)
 
 
