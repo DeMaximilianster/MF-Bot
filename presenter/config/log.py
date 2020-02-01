@@ -2,14 +2,15 @@ import time
 from traceback import print_exc
 from io import StringIO
 
-#from presenter.config.files_paths import log_files
-log_files = []
+from presenter.config.files_paths import log_files
 
 LOG_TO_FILE = 1  # Записать только в файл
 LOG_TO_CONSOLE = 2  # Записать только в консоль
 LOG_BOTH = 0  # Записать и в файл, и в консоль
 
 log_to = LOG_BOTH
+
+
 
 class Loger:
     def __init__(self, log_place=2):
