@@ -1,36 +1,49 @@
 import time
+from traceback import print_exc
+from io import StringIO
+
 from presenter.config.files_paths import log_files
 
 LOG_TO_FILE = 1  # Записать только в файл
 LOG_TO_CONSOLE = 2  # Записать только в консоль
 LOG_BOTH = 0  # Записать и в файл, и в консоль
 
-# Константы для логинга
 log_to = LOG_BOTH
 
 
-class Loger:
-    LOG_FILES = [el for el in log_files]
-    method = 2
 
-    def __init__(self, default_log_method=2):
-        self.method = default_log_method
+class Loger:
+    def __init__(self, log_place=2):
+        self.log_place = log_place
+        self.log_files = log_files
+        self.gmt = 3
+
+    def time_now(self):
+        return time.gmtime(int(time.time()) + 3600*self.gmt) # Время записи лога
+
+    def log_strings(self, args):
+        year, month, day, hour, minute, second, *_ = self.time_now()
+
+        for arg in args:
+            date = f'[{day}.{month}.{year}|{hour:0>2}:{minute:0>2}:{second:0>2}]'
+            if isinstance(arg, Exception):
+                temp = StringIO()
+                print_exc(file=temp)
+                yield f'{date} Exception detected:\n{temp.getvalue()}'
+            else:
+                yield f'{date} {arg}'
 
     def log_print(self, *args):
-        time_now = time.gmtime(int(time.time()) + 10800)  # Время записи лога
-        if self.method % 2 == 0:  # Запись в консоль
-            for arg in args:
-                print("[{}] {}".format("{}.{}.{}|{}:{}:{}".format(time_now[2],
-                                                                  time_now[1], time_now[0], time_now[3], time_now[4],
-                                                                  time_now[5]), arg))
-        if self.method <= 1:  # Запись в файл
-            for fname in self.LOG_FILES:
-                with open(fname, 'a+', encoding='utf-8') as logFile:
-                    for arg in args:
-                        logFile.write("[{}] {}".format("{}.{}.{}|{}:{}:{}".format(time_now[2],
-                                                                                  time_now[1], time_now[0], time_now[3],
-                                                                                  time_now[4], time_now[5]),
-                                                       arg) + '\n')
+        all_logs = '\n'.join(self.log_strings(args))+'\n'
 
-    def add_log_file(self, fname):
-        self.LOG_FILES.append(fname)
+        if self.log_place in (0, 2):
+            print(all_logs, end='')
+
+        if self.log_place in (0, 1):
+            for path in self.log_files:
+                with open(path, 'a+', encoding='utf-8') as f:
+                    f.write(all_logs)
+
+    def add_log_file(self, path):
+        self.log_files.append(path)
+
