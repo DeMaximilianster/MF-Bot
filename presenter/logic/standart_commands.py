@@ -95,7 +95,10 @@ def helper(message):
         answer += '/help - Прислать это сообщение\n'
         answer += '/minet - Делает приятно\n'
         answer += '/drakken - Присылает арт с Доктором Драккеном\n'
-        answer += '/meme - Присылает мем\n\n'
+        answer += '/meme - Присылает мем\n'
+        answer += '/art - Присылает картину\n'
+        answer += '/breasts - Присылает грудь\n'
+        answer += '/ass - Присылает задницу\n'
         answer += 'В чате мой функционал значительно шире'
     reply(message, answer, parse_mode='HTML')
 

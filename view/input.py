@@ -88,16 +88,22 @@ def chat_search_handler(message):
 def send_vulgar_stuff_from_storage_handler(message):
     log.log_print("send_vulgar_stuff_from_storage_handler invoked")
     command = (message.text.split()[0].split(sep='@')[0].split(sep='_add')[0])[1:]
-    if in_mf(message, 'erotic_commands') and message.from_user.id in porn_adders:
-        add_stuff_to_storage(message, command)
+    if in_mf(message, 'erotic_commands'):
+        if message.from_user.id in porn_adders:
+            add_stuff_to_storage(message, command)
+        else:
+            reply(message, "Не-а, вы не числитесь в рядах добавлятелей 'контента'")
 
 
 @bot.message_handler(commands=['drakken_add', 'art_add'])
 def send_vulgar_stuff_from_storage_handler(message):
     log.log_print("send_vulgar_stuff_from_storage_handler invoked")
     command = (message.text.split()[0].split(sep='@')[0].split(sep='_add')[0])[1:]
-    if in_mf(message, command_type=None) and message.from_user.id in stuff_adders:
-        add_stuff_to_storage(message, command)
+    if in_mf(message, command_type=None):
+        if message.from_user.id in stuff_adders:
+            add_stuff_to_storage(message, command)
+        else:
+            reply(message, "Не-а, вы не числитесь в рядах добавлятелей контента")
 
 
 @bot.message_handler(commands=['update'])
