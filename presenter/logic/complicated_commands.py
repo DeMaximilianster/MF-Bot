@@ -5,7 +5,8 @@ from presenter.config.config_var import test_keyboard, ironic_keyboard, \
     vote_keyboard, admin_place
 from presenter.config.database_lib import Database
 from presenter.config.files_paths import multi_votes_file, adapt_votes_file, votes_file
-from view.output import edit_markup, answer_inline, reply, answer_callback, edit_text, delete, send, restrict, unban
+from view.output import edit_markup, answer_inline, reply, answer_callback, edit_text, delete, send, restrict, unban, \
+    kick
 from presenter.config.log import Loger, log_to
 
 from telebot.types import InlineQueryResultArticle, InputTextMessageContent, InlineKeyboardButton, InlineKeyboardMarkup
@@ -29,6 +30,7 @@ def captcha_completed(call):
 def captcha_failed(call):
     log.log_print("captcha_failed invoked")
     if remove_captcher(call):
+        kick(call.message.chat.id, call.from_user.id)
         unban(call.message.chat.id, call.from_user.id)
         answer_callback(call.id)
         edit_text("Испытание креветкой провалено! (нажата неверная кнопка)", call.message.chat.id,
