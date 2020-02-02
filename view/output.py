@@ -98,7 +98,7 @@ def delete(chat_id, message_id):
         log.log_print(e)
 
 
-def kick(chat_id, user_id, until_date=None):
+def kick(chat_id, user_id, until_date=60):
     """Кикнуть участника"""
     log.log_print("kick invoked")
     try:
