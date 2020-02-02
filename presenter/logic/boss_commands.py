@@ -459,7 +459,7 @@ def money_name(message):
     # TODO Добавить проверку по падежам
     log.log_print("money_name invoked")
     database = Database()
-    mode = ' '.join(m.text.split()[1:])
+    mode = ' '.join(message.text.split()[1:])
     chat = database.get('chats', ('id', message.chat.id))
     system = chat['system']
     if mode:
