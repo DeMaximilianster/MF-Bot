@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 from presenter.config.config_func import Database, time_replace, is_suitable, feature_is_available, get_system_configs,\
-    create_chat, CaptchaBan
+    create_chat, CaptchaBan, html_cleaner
 from view.output import delete, kick, send, promote, reply, restrict
 from presenter.config.log import Loger, log_to
 from telebot.types import InlineKeyboardButton, InlineKeyboardMarkup
@@ -81,16 +81,17 @@ def new_member(message, member):
         answer += chat_configs['greetings']['admin'].format(name=member.first_name)
     elif feature_is_available(message.chat.id, system, 'newbies_captched'):
         answer = chat_configs['greetings']['captcha'].format(name=member.first_name)
+        # TODO Регулятор сложности капчи
         wrong_animals_string = '🦀🦞🦑🐡🐶🐱🐭🐹🐰🦊🐻🐼🐵🐸🐷🐮🦁🐯🐨🙈🙉🙊🐒🐔🐧🐦🐤🐗🐺🦇🦉🦅🦆🐥🐣🐴🦄'
         wrong_animals_string += '🐝🐛🦋🐌🐞🐜🦎🐍🐢🦂🕷🦗🦟🐆🦓🦍🐘🦛🦏🐪🐫🐏🐖🐎🦔🐈'
         wrong_animals_buttons = []
-        for wrong_animal in wrong_animals_string:
+        for wrong_animal in wrong_animals_string[:24]:
             wrong_animals_buttons.append(InlineKeyboardButton(wrong_animal, callback_data="captcha_fail"))
         buttons = [InlineKeyboardButton("🦐", callback_data="captcha")] + wrong_animals_buttons
         shuffle(buttons)
-        buttons_rows = list([buttons[i:i+8] for i in range(0, len(buttons), 8)])
+        buttons_rows = list([buttons[i:i+5] for i in range(0, len(buttons), 5)])
         keyboard = InlineKeyboardMarkup()
-        keyboard.row_width = 8
+        keyboard.row_width = 5
         for buttons_row in buttons_rows:
             keyboard.add(*buttons_row)
         captcha = True
@@ -105,9 +106,9 @@ def new_member(message, member):
     # Notify admins if admin's chat exists
     admin_place = database.get('systems', ('id', system))['admin_place']
     if admin_place:
-        send(admin_place, f'<a href="tg://user?id={member.id}">{html_cleaner(member.first_name)}</a>'\
-        f' (@{html_cleaner(member.username)}) [{member.id}] теперь в {html_cleaner(message.chat.title)}',
-        parse_mode="HTML")
+        send(admin_place, f'<a href="tg://user?id={member.id}">{html_cleaner(member.first_name)}</a>'
+             f' (@{html_cleaner(member.username)}) [{member.id}] теперь в {html_cleaner(message.chat.title)}',
+             parse_mode="HTML")
     if captcha:
         restrict(chat['id'], member.id, until_date=time() + 300)
         captcha_ban = CaptchaBan(message, sent)
@@ -131,7 +132,7 @@ def left_member(message):
         else:
             reply(message, "Минус чувачок")
         send(member.id, 'До встречи в ' + chat)
-    else:  # Чела забанили
+    elif feature_is_available(message.chat.id, system, 'moves_delete'):  # Чела забанили
         delete(message.chat.id, message.message_id)
     # Notify admins if admin's chat exists
     admin_place = database.get('systems', ('id', system))['admin_place']
