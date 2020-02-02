@@ -8,7 +8,6 @@ from presenter.config.config_var import bot_id, new_system_json_entry
 from presenter.config.database_lib import Database
 from presenter.config.files_paths import adapt_votes_file, multi_votes_file, votes_file, systems_file, storage_file
 from presenter.config.log import Loger
-from presenter.config.log import log_to
 from view.output import *
 
 log = Loger()
