@@ -39,6 +39,9 @@ def channel_list(database):
     """Список всех МФ2-каналов"""
     return database.get_all('channels')
 
+#список всех content_types для подсчёта сообщений
+all_content_types = ['text', 'audio', 'document', 'photo', 'sticker', 'video',
+'video_note', 'voice', 'location', 'contact']
 
 # Клавиатура для вопроса, иронично ли признание оскорбления/провокации
 ironic_keyboard = InlineKeyboardMarkup()

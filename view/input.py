@@ -15,7 +15,7 @@ from presenter.logic.standart_commands import helper, send_me, send_meme, minet,
 from presenter.logic.start import starter
 from presenter.config.log import Loger, log_to
 from presenter.config.config_var import features_defaulters, features_oners, features_offers, system_features_offers, \
-    system_features_oners, porn_adders, stuff_adders
+    system_features_oners, porn_adders, stuff_adders, all_content_types
 from presenter.config.files_paths import votes_file, database_file, adapt_votes_file, multi_votes_file,  systems_file, \
     storage_file
 
@@ -627,8 +627,7 @@ def database_send_handler(message):
 '''Последний хэндлер. Просто считает сообщения, что не попали в другие хэндлеры'''
 
 
-# TODO Норм перечень контент_тайпов
-@bot.message_handler(func=lambda message: True, content_types=['text', 'voice'])
+@bot.message_handler(func=lambda message: True, content_types=all_content_types)
 def counter_handler(message):
     """Подсчитывает сообщения"""
     log.log_print("counter_handler invoked")
