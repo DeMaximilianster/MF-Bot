@@ -127,6 +127,14 @@ def code_text_wrapper(text):
     return f'<code>{text}</code>'
 
 
+def id_link_text_wrapper(text, person_id):
+    return f'<a href="tg://user?id={person_id}">{text}</a>'
+
+
+def link_text_wrapper(text, url):
+    return f'<a href="{url}">{text}</a>'
+
+
 def photo_video_gif_get(target_message):
     text, entities = get_text_and_entities(target_message)
     final_text = entities_saver(text, entities)
@@ -383,7 +391,7 @@ def cooldown(message, command, timeout=3600):
 
 
 def time_replace(seconds):
-    _, _, days, hours, minutes, seconds, *_ = time.gmtime(int(time.time()) + 3600*3)
+    _, _, days, hours, minutes, seconds, *_ = time.gmtime(seconds + 3600*3)
     return days, hours, minutes, seconds
 
 

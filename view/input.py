@@ -10,8 +10,8 @@ from presenter.logic.complicated_commands import adequate, inadequate, response,
     place_here, mv, av, add_vote, vote, captcha_completed, captcha_failed
 import presenter.logic.reactions as reactions
 from presenter.logic.standart_commands import helper, send_me, send_meme, minet, \
-    all_members, money_give, money_top, language_getter, month_set, day_set, birthday, admins, chat_check, \
-    anon_message, system_check, money_helper, messages_top, send_stuff_from_storage
+    money_give, language_getter, month_set, day_set, birthday, admins, chat_check, \
+    anon_message, system_check, money_helper, send_stuff_from_storage, send_some_top
 from presenter.logic.start import starter
 from presenter.config.log import Loger, log_to
 from presenter.config.config_var import features_defaulters, features_oners, features_offers, system_features_offers, \
@@ -511,7 +511,7 @@ def all_members_handler(message):
     """Присылает человеку все записи в БД"""
     log.log_print(f"all_members_handler invoked")
     if in_mf(message, command_type=None, or_private=False):
-        all_members(message)
+        send_some_top(message, '{index}. <code>{p_id}</code> {p_link}\n')
 
 
 @bot.message_handler(commands=['give'])
@@ -532,7 +532,8 @@ def money_top_handler(message):
     """Топ ЯМ"""
     log.log_print("money_top_handler invoked")
     if in_mf(message, 'financial_commands', or_private=False):
-        money_top(message)
+        send_some_top(message, '{index}. {p_link} — {money} {m_emo}\n', start='Бюджет: {bot_money} {m_emo}\n\n',
+                      sort_by_what='money', to_private=False)
 
 
 @bot.message_handler(commands=['messages_top'])
@@ -540,7 +541,8 @@ def messages_top_handler(message):
     """Messages top"""
     log.log_print("messages_top_handler invoked")
     if in_mf(message, command_type=None, or_private=False):
-        messages_top(message)
+        # messages_top(message)
+        send_some_top(message, '{index}. {p_link} — {messages} сообщ.\n', sort_by_what='messages', min_value=10)
 
 
 @bot.message_handler(commands=['month'])

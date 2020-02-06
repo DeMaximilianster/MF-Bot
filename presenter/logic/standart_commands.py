@@ -2,9 +2,9 @@
 from view.output import reply, send_photo, send_sticker, send, send_video, send_document
 from presenter.config.config_func import language_analyzer, case_analyzer, member_update, int_check, \
     is_suitable, feature_is_available, get_system_configs, get_systems_json, get_person, get_list_from_storage,\
-    html_cleaner
+    html_cleaner, link_text_wrapper
 from presenter.config.database_lib import Database
-from presenter.config.config_var import bot_id, admin_place, original_to_english, english_to_original, months,\
+from presenter.config.config_var import admin_place, original_to_english, english_to_original, months,\
     features, features_texts
 from random import choice
 from presenter.config.log import Loger
@@ -196,37 +196,40 @@ def send_me(message, person):
     reply(message, msg)
 
 
-def all_members(message):
-    """Присылает человеку все записи в БД"""
+def send_some_top(message, format_string, start='', sort_by_what=None, min_value=0, to_private=True):
     # TODO Кто вышел из чата, а кто находится в чате
-    # f'<a href="tg://user?id={}">{html_cleaner()}</a>'
-    log.log_print("all_members invoked")
+    log.log_print("send_some_top invoked")
     database = Database()
+    # Declaring variables
+    sent = False
     system = database.get('chats', ('id', message.chat.id))['system']
+    bot_money = database.get('systems', ('id', system))['money']
+    chat_configs = get_system_configs(system)
+    emoji = chat_configs['money_emoji']
+    text = start.format(bot_money=bot_money, m_emo=emoji)
     members = database.get_many('members', ('system', system))
-    sent = None
-    if len(members) % 50 == 0:
-        fiftys = len(members) // 50
+    if to_private:
+        target_chat = message.from_user.id
     else:
-        fiftys = len(members) // 50 + 1
-    for fifty in range(fiftys):
-        one_message_list = members[50 * (fifty - 1): 50 * fifty]
-        answer = ''
-        for member in one_message_list:
-            username = f'<a href="tg://user?id={member["id"]}">{html_cleaner(member["nickname"])}</a>'
-            answer += f'<code>{member["id"]}</code> {username}\n'
-        sent = send(message.from_user.id, answer, parse_mode='HTML')
-    if len(members) < 50:
-        answer = ''
-        for member in members:
-            username = f'<a href="tg://user?id={member["id"]}">{html_cleaner(member["nickname"])}</a>'
-            answer += f'<code>{member["id"]}</code> {username}\n'
-
-        sent = send(message.from_user.id, answer, parse_mode='HTML')
-    if sent:
-        reply(message, "Выслал БД в личку")
-    else:
-        reply(message, "Сначала запусти меня в личных сообщениях")
+        target_chat = message.chat.id
+    if sort_by_what:
+        members = list(filter(lambda x: x[sort_by_what] > min_value and x['username'] != 'None', members))
+        members.sort(key=lambda x: -x[sort_by_what])
+    # Main loop
+    for index in range(1, len(members)+1):
+        member = members[index-1]
+        p_link = link_text_wrapper(html_cleaner(member["nickname"]), f't.me/{member["username"]}')
+        text += format_string.format(index=index, p_id=member['id'], p_link=p_link, messages=member['messages'],
+                                     money=member['money'], m_emo=emoji)
+        if index % 50 == 0:
+            sent = send(target_chat, text, parse_mode='HTML', disable_web_page_preview=True)
+            text = ''
+    sent = send(target_chat, text, parse_mode='HTML', disable_web_page_preview=True) or sent
+    if to_private:
+        if sent:
+            reply(message, "Выслал инфу в личку")
+        else:
+            reply(message, "Сначала запусти меня в личных сообщениях")
 
 
 def money_give(message, person):
@@ -272,63 +275,6 @@ def money_give(message, person):
                                                  f"ID {giver} [{value_giver + money} --> {value_giver}] {giv_m}\n")
     database.change(value_getter, 'money', 'members', ('id', getter), ('system', system))
     database.change(value_giver, 'money', 'members', ('id', giver), ('system', system))
-
-
-def money_top(message):
-    log.log_print("money_top invoked")
-    database = Database()
-    chat = database.get('chats', ('id', message.chat.id))
-    system = chat['system']
-    bot_money = database.get('systems', ('id', system))['money']
-    people = list(database.get_many('members', ('system', system)))
-    people = list(filter(lambda x: x['money'] != 0 and x['id'] != bot_id, people))
-    people.sort(key=lambda x: -x['money'])
-    chat_configs = get_system_configs(system)
-    emoji = chat_configs['money_emoji']
-    i = 1
-    text = ''
-    if bot_money != 'inf':
-        text = "Бюджет: {} {}\n".format(bot_money, emoji)
-    for person in people:
-        text += "\n{}. <a href='t.me/{}'>{}</a> — {} {}".format(i, person['username'], person['nickname'],
-                                                                person['money'], emoji)
-        i += 1
-    reply(message, text, parse_mode='HTML', disable_web_page_preview=True)
-
-
-def messages_top(message):
-    # TODO Оптимизаця и рефакторинг функций-топов
-    log.log_print("money_top invoked")
-    database = Database(to_log=False)
-    chat = database.get('chats', ('id', message.chat.id))
-    system = chat['system']
-    members = list(database.get_many('members', ('system', system)))
-    members.sort(key=lambda x: -x['messages'])
-    sent = None
-    if len(members) % 50 == 0:
-        fiftys = len(members) // 50
-    else:
-        fiftys = len(members) // 50 + 1
-    for fifty in range(fiftys):
-        one_message_list = members[50 * (fifty - 1): 50 * fifty]
-        answer = ''
-        for member in one_message_list:
-            username = "[{}](tg://user?id={})".format(member['nickname'].replace('[', '').replace(']', ''),
-                                                      member['id'])
-            answer += username + '—' + str(member['messages']) + 'сообщ.' + '\n'
-        sent = send(message.from_user.id, answer, parse_mode='Markdown')
-    if len(members) < 50:
-        answer = ''
-        for member in members:
-            username = "[{}](tg://user?id={})".format(member['nickname'].replace('[', '').replace(']', ''),
-                                                      member['id'])
-            answer += username + ' — ' + str(member['messages']) + ' сообщ.\n'
-
-        sent = send(message.from_user.id, answer, parse_mode='Markdown')
-    if sent:
-        reply(message, "Выслал БД в личку")
-    else:
-        reply(message, "Сначала запусти меня в личных сообщениях")
 
 
 # TODO More comfortable way to insert birthday
