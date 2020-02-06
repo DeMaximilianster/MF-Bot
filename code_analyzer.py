@@ -6,9 +6,13 @@ def write_in_bufer(text):
     root.clipboard_clear()
     root.clipboard_append(text)
 
+def open_file(path):
+    if os.system(f'xdg-open "{path}"'):
+        os.system(f'"C:\Windows\explorer.exe" {path}')
+
 def open_button(text):
     l = Label(text='[Open file]', **bdict)
-    l.bind('<Button-1>',lambda x:os.system(f'"C:\Windows\explorer.exe" {text}'))
+    l.bind('<Button-1>',lambda e:open_file(text) )
     return l
 
 def copy_button(btext ,text):
