@@ -106,12 +106,25 @@ def entities_saver(text, entities):
         text_blocks = [point_block[2] for point_block in points_blocks]
         return start_text + ''.join(text_blocks) + end_text
     else:
-        return text
+        print(html_cleaner(text))
+        return html_cleaner(text)
 
 
 def html_cleaner(text):
     #  < with &lt;, > with &gt; and & with &amp;
-    return text.replace('&', '&amp').replace('<', '&lt').replace('>', '&gt')
+    return text.replace('&', '&amp;').replace('<', '&lt;').replace('>', '&gt;')
+
+
+def get_target_message(message):
+    reply_to = message.reply_to_message
+    if reply_to:
+        return reply_to
+    else:
+        return message
+
+
+def code_text_wrapper(text):
+    return f'<code>{text}</code>'
 
 
 def photo_video_gif_get(target_message):

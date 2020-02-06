@@ -9,15 +9,16 @@ from presenter.logic.boss_commands import ban, add_chat, add_admin_place, chat_o
 from presenter.logic.complicated_commands import adequate, inadequate, response, insult, non_ironic, ironic, \
     place_here, mv, av, add_vote, vote, captcha_completed, captcha_failed
 import presenter.logic.reactions as reactions
-from presenter.logic.standart_commands import helper, send_me, send_meme, minet, show_id, \
+from presenter.logic.standart_commands import helper, send_me, send_meme, minet, \
     all_members, money_give, money_top, language_getter, month_set, day_set, birthday, admins, chat_check, \
-    anon_message, system_check, money_helper, messages_top, send_stuff_from_storage, echo_message, clear_echo_message
+    anon_message, system_check, money_helper, messages_top, send_stuff_from_storage
 from presenter.logic.start import starter
 from presenter.config.log import Loger, log_to
 from presenter.config.config_var import features_defaulters, features_oners, features_offers, system_features_offers, \
     system_features_oners, porn_adders, stuff_adders, all_content_types
 from presenter.config.files_paths import votes_file, database_file, adapt_votes_file, multi_votes_file,  systems_file, \
     storage_file
+import presenter.logic.developer_commands as developer_commands
 
 # TODO Убрать этот ебучий срач
 log = Loger(log_to)
@@ -437,21 +438,28 @@ def show_id_handler(message):
     """Присылает различные ID'шники, зачастую бесполезные"""
     log.log_print(f"show_id_handler invoked")
     if in_mf(message, command_type=None):
-        show_id(message)
+        developer_commands.show_id(message)
 
 
 @bot.message_handler(commands=['echo'])
 def echo_message_handler(message):
     log.log_print(f"echo_message_handler invoked")
     if in_mf(message, command_type=None):
-        echo_message(message)
+        developer_commands.echo_message(message)
 
 
 @bot.message_handler(commands=['clear'])
 def echo_message_handler(message):
     log.log_print(f"clear_echo_message_handler invoked")
     if in_mf(message, command_type=None):
-        clear_echo_message(message)
+        developer_commands.clear_echo_message(message)
+
+
+@bot.message_handler(commands=['html'])
+def echo_message_handler(message):
+    log.log_print("html_echo_message_handler invoked")
+    if in_mf(message, command_type=None):
+        developer_commands.html_echo_message(message)
 
 
 @bot.message_handler(commands=['minet', 'french_style_sex', 'blowjob'])

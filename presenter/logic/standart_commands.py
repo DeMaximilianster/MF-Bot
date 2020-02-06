@@ -1,13 +1,12 @@
 # -*- coding: utf-8 -*-
 from view.output import reply, send_photo, send_sticker, send, send_video, send_document
-from presenter.config.config_func import time_replace, language_analyzer, case_analyzer, member_update, int_check, \
+from presenter.config.config_func import language_analyzer, case_analyzer, member_update, int_check, \
     is_suitable, feature_is_available, get_system_configs, get_systems_json, get_person, get_list_from_storage,\
-    entities_saver, get_text_and_entities, html_cleaner
+    html_cleaner
 from presenter.config.database_lib import Database
 from presenter.config.config_var import bot_id, admin_place, original_to_english, english_to_original, months,\
     features, features_texts
 from random import choice
-from time import ctime, time
 from presenter.config.log import Loger
 from presenter.config.texts import minets
 
@@ -124,75 +123,6 @@ def money_helper(message):
     reply(message, answer, parse_mode='HTML')
 
 
-# TODO Модуль для команд для разработчиков
-def show_id(message):
-    """Присылает различные ID'шники, зачастую бесполезные"""
-    log.log_print(str(message.from_user.id) + ": show_id invoked")
-
-    cd = lambda s:f'<code>{s}</code>'
-
-    answer = f'Время отправки вашего сообщения: {cd(ctime(message.date))}\n\n'\
-    f'Переводя, выходит: {cd(time_replace(message.date))}\n\n'\
-    f'Время отправки моего сообщения: {cd(ctime(time()))}\n\n'\
-    f'ID этого чата: {cd(message.chat.id)}\n\n'\
-    f'Ваш ID: {cd(message.from_user.id)}\n\n'\
-    f'Ваш language code: {cd(message.from_user.language_code)}\n\n'\
-    f'ID вашего сообщения: {cd(message.message_id)}\n\n'
-
-    reply_msg = message.reply_to_message
-    if reply_msg is not None:  # Сообщение является ответом
-
-        answer += f'ID человека, на сообщение которого ответили: {cd(reply_msg.from_user.id)}\n\n'\
-        f'Его/её language code: {cd(reply_msg.from_user.language_code)}\n\n'\
-        f'ID сообщения, на которое ответили: {cd(reply_msg.message_id)}\n\n'
-
-        if reply_msg.forward_from is not None:  # Сообщение, на которое ответили, является форвардом
-            answer += f'ID человека, написавшего пересланное сообщение: {cd(reply_msg.forward_from.id)}\n\n'\
-            f'Его/её language code: {cd(reply_msg.forward_from.language_code)}\n\n'
-
-        elif reply_msg.forward_from_chat:  # Сообщение, на которое ответили, является форвардом из канала
-            answer += f'ID канала, из которого переслали сообщение: {cd(reply_msg.forward_from_chat.id)}\n\n'
-
-        if reply_msg.sticker is not None:
-            answer += f'ID стикера: {cd(reply_msg.sticker.file_id)}\n\n'
-            # answer += 'Ссылка на набор с этим стикером: https://telegram.me/addstickers/'
-            # answer += reply_msg.sticker.set_name + '\n\n'
-
-        elif reply_msg.photo is not None:
-            answer += f'ID фотографии: {cd(reply_msg.photo[0].file_id)}'
-            for i in reply_msg.photo[1:]:
-                answer += f',\n{cd(i.file_id)}'
-            answer += '\n\n'
-
-        for media in (reply_msg.video, reply_msg.voice, reply_msg.video_note, reply_msg.audio, reply_msg.document):
-            if media:
-                answer += f'ID медиа: {cd(media.file_id)}\n\n'
-                break
-    reply(message, answer, parse_mode='HTML')
-
-
-def echo_message(message):
-    target_message = message
-    if message.reply_to_message:
-        target_message = message.reply_to_message
-    text, entities = get_text_and_entities(target_message)
-    if text:
-        reply(message, entities_saver(text, entities), parse_mode='HTML')
-    else:
-        reply(message, "У этого сообщения нет текста")
-
-
-def clear_echo_message(message):
-    target_message = message
-    if message.reply_to_message:
-        target_message = message.reply_to_message
-    text, entities = get_text_and_entities(target_message)
-    if text:
-        reply(message, entities_saver(text, entities))
-    else:
-        reply(message, "У этого сообщения нет текста")
-
-
 def minet(message):
     """Приносит удовольствие"""
     log.log_print(str(message.from_user.id) + ": minet invoked")
@@ -269,7 +199,7 @@ def send_me(message, person):
 def all_members(message):
     """Присылает человеку все записи в БД"""
     # TODO Кто вышел из чата, а кто находится в чате
-    #f'<a href="tg://user?id={}">{html_cleaner()}</a>'
+    # f'<a href="tg://user?id={}">{html_cleaner()}</a>'
     log.log_print("all_members invoked")
     database = Database()
     system = database.get('chats', ('id', message.chat.id))['system']
