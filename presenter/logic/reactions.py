@@ -79,7 +79,7 @@ def new_member(message, member):
                 can_change_info=False, can_delete_messages=True, can_invite_users=True,
                 can_restrict_members=True, can_pin_messages=True, can_promote_members=False)
         answer += chat_configs['greetings']['admin'].format(name=member.first_name)
-    elif feature_is_available(message.chat.id, system, 'newbies_captched'):
+    elif feature_is_available(message.chat.id, system, 'newbies_captched') and member.id == message.from_user.id:
         answer = chat_configs['greetings']['captcha'].format(name=member.first_name)
         # TODO Регулятор сложности капчи
         wrong_animals_string = '🦀🦞🦑🐡🐶🐱🐭🐹🐰🦊🐻🐼🐵🐸🐷🐮🦁🐯🐨🙈🙉🙊🐒🐔🐧🐦🐤🐗🐺🦇🦉🦅🦆🐥🐣🐴🦄'
