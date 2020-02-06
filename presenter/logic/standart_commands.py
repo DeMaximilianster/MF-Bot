@@ -1,11 +1,11 @@
 # -*- coding: utf-8 -*-
 from view.output import reply, send_photo, send_sticker, send, send_video, send_document
-from presenter.config.config_func import language_analyzer, case_analyzer, member_update, int_check, \
+from presenter.config.config_func import language_analyzer, member_update, int_check, \
     is_suitable, feature_is_available, get_system_configs, get_systems_json, get_person, get_list_from_storage,\
     html_cleaner, link_text_wrapper
 from presenter.config.database_lib import Database
-from presenter.config.config_var import admin_place, original_to_english, english_to_original, months,\
-    features, features_texts
+from presenter.config.config_var import admin_place, original_to_english, english_to_original, \
+    months, months_genitive, months_prepositional, features, features_texts
 from random import choice
 from presenter.config.log import Loger
 from presenter.config.texts import minets
@@ -283,14 +283,14 @@ def money_give(message, person):
 
 # TODO More comfortable way to insert birthday
 def month_set(message, month):
-    log.log_print(f"{__name__} invoked")
+    log.log_print(f"month_set invoked")
     database = Database()
     reply(message, "Ставлю человеку с ID {} месяц рождения {}".format(message.from_user.id, month))
     database.change(month, 'month_birthday', 'members', ('id', message.from_user.id))
 
 
 def day_set(message, day):
-    log.log_print(f"{__name__} invoked")
+    log.log_print(f"day_set invoked")
     days = (31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31)
     database = Database()
     month = database.get('members', ('id', message.from_user.id))['month_birthday']
@@ -298,8 +298,7 @@ def day_set(message, day):
     if not month:
         reply(message, "Сначала поставь месяц рождения")
     elif day > days[month - 1]:
-        month = months[month][lang]
-        month = case_analyzer(month, 'Russian')
+        month = months_prepositional[month][lang]
         reply(message, "В {} нет столько дней".format(month.lower()))
     else:
         reply(message, "Ставлю человеку с ID {} день рождения {}".format(message.from_user.id, day))
@@ -307,18 +306,18 @@ def day_set(message, day):
 
 
 def birthday(message):
-    log.log_print(f"{__name__} invoked")
+    log.log_print(f"birthday invoked")
     database = Database()
     people = list(database.get_all("members", "month_birthday", how_sort='ASC'))
-    # TODO Better sorting algorithm
-    people = filter(lambda x: x['month_birthday'] and x['day_birthday'], people)
+    
+    people = filter(lambda x: (x['month_birthday'], x['day_birthday']), people)
     lang = language_analyzer(message, only_one=True)
     i = 1
     text = ""
     for person in people:
         text += "\n{}. <a href='t.me/{}'>{}</a> — {} {} ".format(i, person['username'], person['nickname'],
-                                                                 months[person['month_birthday']][lang],
-                                                                 person['day_birthday'])
+                                                                 person['day_birthday'],
+                                                                 months_genitive[person['month_birthday']][lang])
         i += 1
     reply(message, text, parse_mode='HTML', disable_web_page_preview=True)
 

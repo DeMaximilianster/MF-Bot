@@ -16,8 +16,9 @@ minets['Russian'] = {'text':
                      #     )
 
                      }
-minets['English'] = {'text': ('oaoaoaoaooa mmmmmm)))))', 'No, this button is not for you',
+minets['English'] = {'text': ('oaoaoaoaooa mmmmmm)))))', 'No, this button is not for you', '😏🤤',
                               'So open your mouth)', 'One fellation\nNo frustration')}
+
 january = {'Russian': 'Январь', 'English': 'January'}
 february = {'Russian': 'Февраль', 'English': 'February'}
 march = {'Russian': 'Март', 'English': 'March'}

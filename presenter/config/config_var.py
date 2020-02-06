@@ -14,6 +14,26 @@ original_to_english = {'Русский': 'Russian', 'English': 'English'}
 english_to_original = {'Russian': 'Русский', 'English': 'English'}
 months = ['No Month', january, february, march, april, may, june, july, august, september, october, november, december]
 
+def month_to_genitive(month):
+    if type(month)==str:
+        return month
+    if month['Russian'][-1] in ('й', 'ь'):
+        nrm = month['Russian'][:-1].lower()+'я'
+        return {'Russian': nrm, 'English': month['English']}
+    nrm = month['Russian'].lower()+'а'
+    return {'Russian': nrm, 'English': month['English']}
+
+def month_to_prepositional(month):
+    if type(month)==str:
+        return month
+    if month['Russian'][-1] in ('й', 'ь'):
+        nrm = month['Russian'][:-1].lower()+'е'
+        return {'Russian': nrm, 'English': month['English']}
+    nrm = month['Russian'].lower()+'е'
+    return {'Russian': nrm, 'English': month['English']}
+
+months_genitive = [month_to_genitive(i) for i in months]
+months_prepositional = [month_to_prepositional(i) for i in months]
 
 def admin_place(message, database):
     log.log_print(f"admin_place invoked")
