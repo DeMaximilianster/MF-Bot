@@ -234,7 +234,16 @@ def language_analyzer(message, only_one):
     else:
         return languages
 
-
+def case_analyzer(word, language):
+    if language == 'Russian':
+        if word[-1] in ('ь', 'й'):
+            return word[:-1] + 'е'
+        else:
+            return word + 'е'
+    else:
+        return word
+    
+    
 def left_new_or_else_member(target_message):
     if target_message.new_chat_members:
         return target_message.new_chat_members[0]
