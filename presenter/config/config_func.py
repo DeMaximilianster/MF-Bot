@@ -26,8 +26,7 @@ class CaptchaBan(Thread):
         captchers.append((self.message.new_chat_members[0].id, self.message.chat.id))
         time.sleep(300)
         if (self.message.new_chat_members[0].id, self.message.chat.id) in captchers:
-            kick(self.message.chat.id, self.message.new_chat_members[0].id)
-            unban(self.message.chat.id, self.message.new_chat_members[0].id)
+            kick_and_unban(self.message.chat.id, self.message.new_chat_members[0].id)
             edit_text("Испытание креветкой провалено!", self.bots_message.chat.id, self.bots_message.message_id)
 
 
@@ -48,11 +47,29 @@ class SystemUpdate(Thread):
         reply(self.sent, "Теперь записи о людях максимально свежие!")
 
 
+class WaitAndUnban(Thread):
+    def __init__(self, chat_id, user_id):
+        Thread.__init__(self)
+        log.log_print("SystemUpdate invoked")
+        self.chat_id = chat_id
+        self.user_id = user_id
+
+    def run(self):
+        time.sleep(1)
+        unban(self.chat_id, self.user_id)
+
+
 def remove_captcher(call):
     global captchers
     if (call.from_user.id, call.message.chat.id) in captchers:
         captchers.remove((call.from_user.id, call.message.chat.id))
         return True
+
+
+def kick_and_unban(chat_id, user_id):
+    kick(chat_id, user_id)
+    wait_and_unban = WaitAndUnban(chat_id, user_id)
+    wait_and_unban.start()
 
 
 def get_text_and_entities(target_message):
