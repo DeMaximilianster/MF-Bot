@@ -27,7 +27,8 @@ class CaptchaBan(Thread):
         time.sleep(300)
         if (self.message.new_chat_members[0].id, self.message.chat.id) in captchers:
             kick_and_unban(self.message.chat.id, self.message.new_chat_members[0].id)
-            edit_text("Испытание креветкой провалено!", self.bots_message.chat.id, self.bots_message.message_id)
+            edit_text("Испытание креветкой провалено! (время истекло)", self.bots_message.chat.id,
+                      self.bots_message.message_id)
 
 
 class SystemUpdate(Thread):
@@ -50,7 +51,7 @@ class SystemUpdate(Thread):
 class WaitAndUnban(Thread):
     def __init__(self, chat_id, user_id):
         Thread.__init__(self)
-        log.log_print("SystemUpdate invoked")
+        log.log_print("WaitAndUnban invoked")
         self.chat_id = chat_id
         self.user_id = user_id
 
@@ -123,12 +124,10 @@ def entities_saver(text, entities):
         text_blocks = [point_block[2] for point_block in points_blocks]
         return start_text + ''.join(text_blocks) + end_text
     else:
-        print(html_cleaner(text))
         return html_cleaner(text)
 
 
 def html_cleaner(text):
-    #  < with &lt;, > with &gt; and & with &amp;
     return text.replace('&', '&amp;').replace('<', '&lt;').replace('>', '&gt;')
 
 
@@ -138,6 +137,22 @@ def get_target_message(message):
         return reply_to
     else:
         return message
+
+
+def person_info_in_html(user) -> str:
+    """Converts information about user to pretty string
+
+    :param user
+    :type user: User
+
+    :returns: string like 'link_to a person (@username) [id]'
+    """
+    name = html_cleaner(user.first_name)
+    return f'{id_link_text_wrapper(name, user.id)} (@{user.username}), [{code_text_wrapper(user.id)}]'
+
+
+def chat_info_in_html(chat) -> str:
+    return f'{html_cleaner(chat.title)} (@{chat.username}) [{code_text_wrapper(chat.id)}]'
 
 
 def code_text_wrapper(text):
@@ -167,12 +182,8 @@ def int_check(string, positive):
     if positive:
         if set(string) & set('0123456789') == set(string):
             return int(string)
-        else:
-            return None
     elif set(string[1:]) & set('0123456789') == set(string[1:]) and string[0] in '-0123456789':
         return int(string)
-    else:
-        return None
 
 
 def language_analyzer(message, only_one):
@@ -180,7 +191,6 @@ def language_analyzer(message, only_one):
     database = Database()
     entry = database.get('languages', ('id', message.chat.id))
     languages = {"Russian": False, "English": False}
-
     if entry:
         if only_one:
             return entry['language']
@@ -235,6 +245,15 @@ def case_analyzer(word, language):
         return word
 
 
+def left_new_or_else_member(target_message):
+    if target_message.new_chat_members:
+        return target_message.new_chat_members[0]
+    elif target_message.left_chat_member:
+        return target_message.left_chat_member
+    else:
+        return target_message.from_user
+
+
 def person_check(message, person, to_self=False, to_bot=False):
     log.log_print(f"{__name__} invoked")
     if person.id == message.from_user.id and not to_self:
@@ -250,10 +269,7 @@ def person_check(message, person, to_self=False, to_bot=False):
 def person_analyze(message, to_self=False, to_bot=False):
     log.log_print("person_analyze invoked")
     if message.reply_to_message:  # Сообщение является ответом
-        if message.reply_to_message.new_chat_members:
-            person = message.reply_to_message.new_chat_members[0]
-        else:
-            person = message.reply_to_message.from_user
+        person = left_new_or_else_member(message.reply_to_message)
         if person_check(message, person, to_self, to_bot):
             return person
     elif len(message.text.split()) > 1:
@@ -292,9 +308,7 @@ def rank_superiority(message, person):
     their_rank_n = ranks.index(their_rank)
     if their_rank_n >= your_rank_n:
         reply(message, "Для этого ваше звание ({}) должно превосходить звание цели ({})".format(your_rank, their_rank))
-        return False
-    else:
-        return True
+    return your_rank_n > their_rank_n
 
 
 def add_person(person, system, database, system_configs):
@@ -316,10 +330,7 @@ def get_person(person, system, database, system_configs=None):
 def rank_required(message, person, system, min_rank, max_rank, loud=True):
     log.log_print("rank_required invoked from userID {}".format(message.from_user.id))
     database = Database()
-    read_file = open(systems_file, 'r', encoding='utf-8')
-    data = json.load(read_file)
-    read_file.close()
-    chat_configs = data[system]
+    chat_configs = get_system_configs(system)
     ranks = chat_configs['ranks']
     you = get_person(person, system, database, system_configs=chat_configs)
     your_rank = you['rank']
@@ -416,19 +427,11 @@ def in_mf(message, command_type, or_private=True, loud=True):
     """Позволяет регулировать использование команл вне чатов и в личке"""
     log.log_print("in_mf invoked")
     database = Database()
-
-    if message.new_chat_members:
-        person = message.new_chat_members[0]
-    elif message.left_chat_member:
-        person = message.left_chat_member
-    else:
-        person = message.from_user
-
+    person = left_new_or_else_member(message)
     if message.chat.id > 0:
         if loud and not or_private:
-            person = message.from_user
-            send(381279599, "Некто {} ({}) [{}] попыталcя использовать команду {} в личке"
-                 .format(person.first_name, person.username, person.id, message.text))
+            send(381279599, "Некто {} попыталcя использовать команду {} в личке".format(person_info_in_html(
+                 message.from_user), message.text), parse_mode='HTML')
             reply(message, "Эта команда отключена в ЛС")
         return or_private
 
@@ -453,14 +456,11 @@ def in_mf(message, command_type, or_private=True, loud=True):
         else:
             return True
     if loud:
-        text = "Люди из чата с ID {} и названием {}, в частности {} (@{}) [{}] "
-        text += "попытались мной воспользоваться"
-        send(381279599, text.format(message.chat.id, message.chat.title, message.from_user.first_name,
-                                    message.from_user.username, message.from_user.id))
-        rep_text = ""
-        rep_text += "Hmm, I don't know this chat. Call @DeMaximilianster for help\n\n"
-        rep_text += "Хмм, я не знаю этот чат. Обратитесь к @DeMaximilianster за помощью\n\n"
-        reply(message, rep_text)
+        text = "Люди из чата {}, в частности {} попытались мной воспользоваться"
+        send(381279599, text.format(chat_info_in_html(message.chat), person_info_in_html(message.from_user)),
+             parse_mode='HTML')
+        reply(message, "Hmm, I don't know this chat. Call @DeMaximilianster for help\n\n"
+                       "Хмм, я не знаю этот чат. Обратитесь к @DeMaximilianster за помощью\n\n")
 
 
 def is_correct_message(message):

@@ -3,7 +3,8 @@ from presenter.config.database_lib import Database
 from presenter.config.config_var import full_chat_list, channel_list, bot_id, admin_place, chat_list
 from presenter.config.log import Loger, log_to
 from presenter.config.config_func import unban_user, is_suitable, int_check, get_system_configs, photo_video_gif_get, \
-    update_systems_json, create_system, create_chat, SystemUpdate, write_storage_json, get_storage_json
+    update_systems_json, create_system, create_chat, SystemUpdate, write_storage_json, get_storage_json,\
+    person_info_in_html, chat_info_in_html
 from view.output import kick, reply, promote, send, forward, restrict
 from time import time
 
@@ -60,17 +61,18 @@ def warn(message, person):
     reply(message, "Варн(ы) выдан(ы). Теперь их {}".format(value))
     adm_place = admin_place(message, database)
     if adm_place:
-        send(adm_place, "Пользователь {} (@{}) [{}] получил(а) {} варн(а) и их стало {}".format(
-                         person.first_name, person.username, person.id, warns, value))
+        send(adm_place, "Пользователь {} получил(а) {} варн(а) и их стало {}".format(
+                         person_info_in_html(person), warns, value), parse_mode='HTML')
     blowout = database.get('channels', ('name', 'Проколы'))['id']
+    # TODO каждому чату своё хранилище преступлений
     how_many = 10  # Сколько пересылает сообщений
     end_forwarding = message.reply_to_message.message_id
     start_forwarding = end_forwarding - how_many
-    send(blowout, "В чате '{}' случилось нарушение участником {} (@{}) [{}]. Прысылаю {} сообщений".
-         format(message.chat.title, person.first_name, person.username, person.id, how_many))
+    send(blowout, "В чате {} случилось нарушение участником {} Прысылаю {} сообщений".
+         format(chat_info_in_html(message.chat), person_info_in_html(person), how_many), parse_mode='HTML')
     for msg_id in range(start_forwarding, end_forwarding + 1):
         forward(blowout, message.chat.id, msg_id)
-    if value >= 3:
+    if value >= 3:  # TODO Выборочное количество варнов для бана для каждой системы
         ban(message, person)
 
 
@@ -89,8 +91,8 @@ def unwarn(message, person):
     database.change(value, 'warns', 'members', ('id', person.id), ('system', system))
     adm_place = admin_place(message, database)
     if adm_place:
-        send(adm_place, "Пользователь {} (@{}) [{}] потерял(а) {} варн(а) и их стало {}".format(
-                         person.first_name, person.username, person.id, unwarns, value))
+        send(adm_place, "Пользователь {} потерял(а) {} варн(а) и их стало {}".format(
+                         person_info_in_html(person), unwarns, value), parse_mode='HTML')
     reply(message, "Варн(ы) снят(ы). Теперь их {}".format(value))
     if 3 - unwarns <= value < 3:
         chat_configs = get_system_configs(system)
@@ -111,8 +113,8 @@ def ban(message, person, comment=True, unban_then=False):
             target = message.reply_to_message
         end_forwarding = target.message_id
         start_forwarding = end_forwarding - how_many
-        send(blowout, "В чате '{}' забанили участника {} (@{}) [{}]. Прысылаю {} сообщений".
-             format(message.chat.title, person.first_name, person.username, person.id, how_many))
+        send(blowout, "В чате {} забанили участника {}. Прысылаю {} сообщений".
+             format(chat_info_in_html(message.chat), person_info_in_html(person), how_many), parse_mode='HTML')
         for msg_id in range(start_forwarding, end_forwarding + 1):
             forward(blowout, message.chat.id, msg_id)
     if comment:
@@ -128,8 +130,8 @@ def ban(message, person, comment=True, unban_then=False):
         kick(channel['id'], person.id)
     adm_place = admin_place(message, database)
     if adm_place:
-        send(adm_place, "Пользователь {} (@{}) [{}] получил(а) бан".format(
-            person.first_name, person.username, person.id)+', но сразу и разбан'*unban_then)
+        send(adm_place, "Пользователь {} получил(а) бан".format(
+            person_info_in_html(person)+', но сразу и разбан'*unban_then), parse_mode='HTML')
     if unban_then:
         unban_user(person)
 
@@ -145,8 +147,8 @@ def mute(message, person):
         restrict(chat['id'], person.id, until_date=time()+hours*3600)
     adm_place = admin_place(message, database)
     if adm_place:
-        send(adm_place, "Пользователь {} (@{}) [{}] получил(а) мут на {} час(ов)".format(
-            person.first_name, person.username, person.id, hours))
+        send(adm_place, "Пользователь {} получил(а) мут на {} час(ов)".format(person_info_in_html(person), hours),
+             parse_mode='HTML')
     reply(message, "Мут выдан")
 
 
@@ -175,6 +177,7 @@ def money_pay(message, person):
                 bot_money += money
             sent = send(p_id, f"#Финансы\n\n"
                               f"С вашего счёта было снято {money} денег в фонд чата. У вас осталось {value} денег")
+            # TODO Уточнять чат
             if sent:
                 sent = "🔔 уведомлён(а)"
             else:
@@ -265,8 +268,8 @@ def rank_changer(message, person):
         database.change(rank, "rank", 'members', ('id', person.id), ('system', system))
         reply(message, f"Теперь это {rank} по званию!")
         if adm_place:
-            send(adm_place, "Пользователь {} (@{}) [{}] получил(а) звание {}".format(
-                person.first_name, person.username, person.id, rank))
+            send(adm_place, "Пользователь {} получил(а) звание {}".format(person_info_in_html(person), rank),
+                 parse_mode='HTML')
     elif command in chat_configs["appointment_adders"]:
         appointment_index = chat_configs["appointment_adders"].index(command)
         appointment = chat_configs["appointments"][appointment_index]
@@ -274,8 +277,8 @@ def rank_changer(message, person):
             database.append((person.id, system, appointment), "appointments")
             reply(message, f"Теперь это {appointment}. Поздравим человека с назначением на должность!")
             if adm_place:
-                send(adm_place, "Пользователь {} (@{}) [{}] получил(а) должность {}".format(
-                    person.first_name, person.username, person.id, appointment))
+                send(adm_place, "Пользователь {} получил(а) должность {}".format(
+                    person_info_in_html(person), appointment), parse_mode='HTML')
         else:
             reply(message, "У этого человека и так есть эта должность")
     elif command in chat_configs["appointment_removers"]:
@@ -284,8 +287,8 @@ def rank_changer(message, person):
         database.remove("appointments", ('id', person.id), ('system', system), ('appointment', appointment))
         reply(message, f"Теперь это не {appointment}")
         if adm_place:
-            send(adm_place, "Пользователь {} (@{}) [{}] потерял(а) должность {}".format(
-                person.first_name, person.username, person.id, appointment))
+            send(adm_place, "Пользователь {} потерял(а) должность {}".format(person_info_in_html(person), appointment),
+                 parse_mode='HTML')
     unban_user(person)
     if is_suitable(message, person, 'boss', loud=False):
         give_admin(message, person, loud=False)

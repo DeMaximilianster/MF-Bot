@@ -44,6 +44,7 @@ def submit(message):  # TODO возможность отменить свои о
              .format(success), reply_markup=markup)
         send(-1001233124059, '#тест_на_логику {} ({}) [{}] осилил(а) тест со счётом {}'
              .format(person.first_name, person.username, person.id, success))
+        # TODO вырубить повторные присылания сообщений о прохождении теста на логику
     else:
         send(person.id, "К сожалению, количество ваших правильных ответов ({}) недостаточно для прохождения"
              .format(success), reply_markup=markup)

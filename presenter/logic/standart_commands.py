@@ -15,7 +15,7 @@ log = Loger()
 
 def language_getter(message):
     """Gets the language of the chat"""
-    log.log_print(f"{__name__} invoked")
+    log.log_print("language_getter invoked")
     original_languages = ['Русский', 'English']
     english_languages = ['Russian', 'English']
     language = message.text[6:].title()
@@ -216,6 +216,8 @@ def send_some_top(message, format_string, start='', sort_by_what=None, min_value
         members = list(filter(lambda x: x[sort_by_what] > min_value and x['username'] != 'None', members))
         members.sort(key=lambda x: -x[sort_by_what])
     # Main loop
+    # TODO если у челиков одинаковое значение сортировки, то они занимают несколько общих мест, например
+    #  17—19. Новакид, Готлер, Генерал — 20 🍎
     for index in range(1, len(members)+1):
         member = members[index-1]
         p_link = link_text_wrapper(html_cleaner(member["nickname"]), f't.me/{member["username"]}')
@@ -230,6 +232,8 @@ def send_some_top(message, format_string, start='', sort_by_what=None, min_value
             reply(message, "Выслал инфу в личку")
         else:
             reply(message, "Сначала запусти меня в личных сообщениях")
+    elif not sent:
+        reply(message, "Ничего нет!")
 
 
 def money_give(message, person):

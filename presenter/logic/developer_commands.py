@@ -83,3 +83,5 @@ def html_echo_message(message):
             reply(message, "Не могу распарсить это сообщение")
     else:
         reply(message, "У этого сообщения нет текста")
+
+# TODO Команда для просмотра админских полномочий бота

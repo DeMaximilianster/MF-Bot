@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 from presenter.config.config_func import Database, time_replace, is_suitable, feature_is_available, get_system_configs,\
-    create_chat, CaptchaBan, html_cleaner
+    create_chat, CaptchaBan, person_info_in_html, chat_info_in_html, html_cleaner
 from view.output import delete, kick, send, promote, reply, restrict
 from presenter.config.log import Loger, log_to
 from telebot.types import InlineKeyboardButton, InlineKeyboardMarkup
@@ -60,7 +60,7 @@ def new_member(message, member):
     keyboard = None
     captcha = False
     sent = None
-
+    name = html_cleaner(member.first_name)
     chat = database.get('chats', ('id', message.chat.id))
     system = chat['system']
     chat_configs = get_system_configs(system)
@@ -72,15 +72,15 @@ def new_member(message, member):
         promote(message.chat.id, member.id,
                 can_change_info=True, can_delete_messages=True, can_invite_users=True,
                 can_restrict_members=True, can_pin_messages=True, can_promote_members=True)
-        answer += chat_configs['greetings']['full_admin'].format(name=member.first_name)
+        answer += chat_configs['greetings']['full_admin'].format(name=name)
     elif is_suitable(message, member, 'boss', loud=False) and feature_is_available(
             message.chat.id, system, 'admins_promote'):
         promote(message.chat.id, member.id,
                 can_change_info=False, can_delete_messages=True, can_invite_users=True,
                 can_restrict_members=True, can_pin_messages=True, can_promote_members=False)
-        answer += chat_configs['greetings']['admin'].format(name=member.first_name)
+        answer += chat_configs['greetings']['admin'].format(name=name)
     elif feature_is_available(message.chat.id, system, 'newbies_captched') and member.id == message.from_user.id:
-        answer = chat_configs['greetings']['captcha'].format(name=member.first_name)
+        answer = chat_configs['greetings']['captcha'].format(name=name)
         # TODO Регулятор сложности капчи
         wrong_animals_string = '🦀🦞🦑🐡🐶🐱🐭🐹🐰🦊🐻🐼🐵🐸🐷🐮🦁🐯🐨🙈🙉🙊🐒🐔🐧🐦🐤🐗🐺🦇🦉🦅🦆🐥🐣🐴🦄'
         wrong_animals_string += '🐝🐛🦋🐌🐞🐜🦎🐍🐢🦂🕷🦗🦟🐆🦓🦍🐘🦛🦏🐪🐫🐏🐖🐎🦔🐈'
@@ -96,7 +96,7 @@ def new_member(message, member):
             keyboard.add(*buttons_row)
         captcha = True
     else:
-        answer = chat_configs['greetings']['standart'].format(name=member.first_name)
+        answer = chat_configs['greetings']['standart'].format(name=name)
     # TODO Немнжко по быдлокодерски устроено неудаление сообщения о входе
     if feature_is_available(message.chat.id, system, 'moves_delete') and not feature_is_available(
             message.chat.id, system, 'newbies_captched'):
@@ -106,8 +106,7 @@ def new_member(message, member):
     # Notify admins if admin's chat exists
     admin_place = database.get('systems', ('id', system))['admin_place']
     if admin_place:
-        send(admin_place, f'<a href="tg://user?id={member.id}">{html_cleaner(member.first_name)}</a>'
-             f' (@{html_cleaner(member.username)}) [{member.id}] теперь в {html_cleaner(message.chat.title)}',
+        send(admin_place, f'{person_info_in_html(member)} теперь в {chat_info_in_html(message.chat)}',
              parse_mode="HTML")
     if captcha:
         restrict(chat['id'], member.id, until_date=time() + 300)
@@ -137,8 +136,8 @@ def left_member(message):
     # Notify admins if admin's chat exists
     admin_place = database.get('systems', ('id', system))['admin_place']
     if admin_place:
-        send(admin_place, '{} (@{}) [{}] теперь не в {}'.format(member.first_name, member.username, member.id,
-                                                                message.chat.title))
+        send(admin_place, f'{person_info_in_html(member)} теперь не в {chat_info_in_html(message.chat)}',
+             parse_mode='HTML')
 
 
 def chat_id_update(message):
