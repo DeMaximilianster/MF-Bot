@@ -443,7 +443,7 @@ def money_mode_change(message):
 def money_emoji(message):
     log.log_print("money_emoji invoked")
     database = Database()
-    mode = ' '.join(m.text.split()[1:])
+    mode = ' '.join(message.text.split()[1:])
     chat = database.get('chats', ('id', message.chat.id))
     system = chat['system']
     if len(mode) > 10:
