@@ -365,7 +365,7 @@ def rank_superiority(message, person):
 
 def add_person(person, system, database, system_configs):
     # TODO ранг зависит от статуса чела, при обнаружении ботом
-    # TODO часть данных должна браться
+    # TODO часть данных должна браться из других записей, например день и месяц рождения
     person_entry = (person.id, system, person.username, person.first_name, system_configs['ranks'][1], 0, 0, 0, 0, 0)
     database.append(person_entry, 'members')
 
@@ -571,8 +571,8 @@ def member_update(system, person):
             msg_entry = database.get('messages', ('person_id', person.id), ('chat_id', chat_id))
             if msg_entry:
                 msg_count += msg_entry['messages']
-    database.change(person.username, 'username', 'members', ('id', person.id), ('system', system))
-    database.change(person.first_name, 'nickname', 'members', ('id', person.id), ('system', system))
+    database.change(person.username, 'username', 'members', ('id', person.id))
+    database.change(person.first_name, 'nickname', 'members', ('id', person.id))
     database.change(msg_count, 'messages', 'members', ('id', person.id), ('system', system))
 
 

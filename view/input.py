@@ -540,6 +540,16 @@ def money_top_handler(message):
                           filter_f=lambda x: x['money'] > 0, to_private=False)
 
 
+@bot.message_handler(commands=['warns'])
+def warns_top_handler(message):
+    log.log_print('warns_top_handler invoked')
+    if in_mf(message, command_type=None, or_private=False):
+        language = language_analyzer(message, only_one=True)
+        if language:
+            send_some_top(message, language, '{index}. {p_link} — {warns} ⛔️\n', start='Количество варнов:\n\n',
+                          sort_key=lambda x: x['warns'], filter_f=lambda x: x['warns'] > 0, to_private=False)
+
+
 @bot.message_handler(commands=['messages_top'])
 def messages_top_handler(message):
     """Messages top"""

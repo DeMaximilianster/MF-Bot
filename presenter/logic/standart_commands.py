@@ -222,7 +222,8 @@ def send_some_top(message, language, format_string, start='', sort_key=lambda x:
         member = members[index-1]
         p_link = link_text_wrapper(html_cleaner(member["nickname"]), f't.me/{member["username"]}')
         formating_dict = {'index': index, 'p_id': member['id'], 'p_link': p_link, 'messages': member['messages'],
-                          'money': member['money'], 'm_emo': emoji, 'day': member['day_birthday']}
+                          'money': member['money'], 'm_emo': emoji, 'day': member['day_birthday'],
+                          'warns': member['warns']}
         if '{month}' in format_string:
             formating_dict['month'] = months_genitive[member['month_birthday']][language]
         text += format_string.format(**formating_dict)
