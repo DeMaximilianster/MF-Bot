@@ -210,6 +210,15 @@ def link_text_wrapper(text, url):
     return f'<a href="{url}">{text}</a>'
 
 
+def function_worked_correctly(function, *args, **kwargs):
+    try:
+        function(*args, **kwargs)
+        return True
+    except Exception as e:
+        print(e)
+        return False
+
+
 def photo_video_gif_get(target_message):
     text, entities = get_text_and_entities(target_message)
     final_text = entities_saver(text, entities)
@@ -335,7 +344,7 @@ def person_analyze(message, to_self=False, to_bot=False):
 
 
 def rank_superiority(message, person):
-    log.log_print(f"{__name__} invoked")
+    log.log_print("rank_superiority invoked")
     database = Database()
     chat = database.get('chats', ('id', message.chat.id))
     system = chat['system']
@@ -356,6 +365,7 @@ def rank_superiority(message, person):
 
 def add_person(person, system, database, system_configs):
     # TODO ранг зависит от статуса чела, при обнаружении ботом
+    # TODO часть данных должна браться
     person_entry = (person.id, system, person.username, person.first_name, system_configs['ranks'][1], 0, 0, 0, 0, 0)
     database.append(person_entry, 'members')
 

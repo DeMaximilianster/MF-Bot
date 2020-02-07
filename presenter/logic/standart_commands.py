@@ -2,7 +2,7 @@
 from view.output import reply, send_photo, send_sticker, send, send_video, send_document
 from presenter.config.config_func import member_update, int_check, \
     is_suitable, feature_is_available, get_system_configs, get_systems_json, get_person, get_list_from_storage,\
-    html_cleaner, link_text_wrapper
+    html_cleaner, link_text_wrapper, function_worked_correctly
 from presenter.config.database_lib import Database
 from presenter.config.config_var import admin_place, original_to_english, english_to_original, \
     months_genitive, months_prepositional, features, features_texts
@@ -195,7 +195,8 @@ def send_me(message, person):
     reply(message, msg)
 
 
-def send_some_top(message, format_string, start='', sort_by_what=None, min_value=0, to_private=True):
+def send_some_top(message, language, format_string, start='', sort_key=lambda x: True, filter_f=lambda x: True,
+                  to_private=True, reverse=True):
     # TODO Кто вышел из чата, а кто находится в чате
     log.log_print("send_some_top invoked")
     database = Database()
@@ -211,17 +212,20 @@ def send_some_top(message, format_string, start='', sort_by_what=None, min_value
         target_chat = message.from_user.id
     else:
         target_chat = message.chat.id
-    if sort_by_what:
-        members = list(filter(lambda x: x[sort_by_what] > min_value and x['username'] != 'None', members))
-        members.sort(key=lambda x: -x[sort_by_what])
+    members = filter(lambda x: function_worked_correctly(sort_key, x), members)
+    members = list(filter(lambda x: filter_f(x) and x['username'] != 'None', members))
+    members.sort(key=sort_key, reverse=reverse)
     # Main loop
     # TODO если у челиков одинаковое значение сортировки, то они занимают несколько общих мест, например
     #  17—19. Новакид, Готлер, Генерал — 20 🍎
     for index in range(1, len(members)+1):
         member = members[index-1]
         p_link = link_text_wrapper(html_cleaner(member["nickname"]), f't.me/{member["username"]}')
-        text += format_string.format(index=index, p_id=member['id'], p_link=p_link, messages=member['messages'],
-                                     money=member['money'], m_emo=emoji)
+        formating_dict = {'index': index, 'p_id': member['id'], 'p_link': p_link, 'messages': member['messages'],
+                          'money': member['money'], 'm_emo': emoji, 'day': member['day_birthday']}
+        if '{month}' in format_string:
+            formating_dict['month'] = months_genitive[member['month_birthday']][language]
+        text += format_string.format(**formating_dict)
         if index % 50 == 0:
             sent = send(target_chat, text, parse_mode='HTML', disable_web_page_preview=True)
             text = ''
@@ -301,22 +305,6 @@ def day_set(message, day, language):
     else:
         reply(message, "Ставлю человеку с ID {} день рождения {}".format(message.from_user.id, day))
         database.change(day, 'day_birthday', 'members', ('id', message.from_user.id))
-
-
-def birthday(message, language):
-    log.log_print(f"birthday invoked")
-    database = Database()
-    people = list(database.get_all("members", "month_birthday", how_sort='ASC'))
-    people = filter(lambda x: (x['month_birthday'] and x['day_birthday']), people)
-    # TODO улучшить сортировщик в send_some_top и заменить им эту функцию
-    i = 1
-    text = ""
-    for person in people:
-        text += "\n{}. <a href='t.me/{}'>{}</a> — {} {} ".format(i, person['username'], person['nickname'],
-                                                                 person['day_birthday'],
-                                                                 months_genitive[person['month_birthday']][language])
-        i += 1
-    reply(message, text, parse_mode='HTML', disable_web_page_preview=True)
 
 
 def admins(message):

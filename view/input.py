@@ -11,7 +11,7 @@ from presenter.logic.complicated_commands import adequate, inadequate, response,
     place_here, mv, av, add_vote, vote, captcha_completed, captcha_failed
 import presenter.logic.reactions as reactions
 from presenter.logic.standart_commands import helper, send_me, send_meme, minet, \
-    money_give, language_getter, month_set, day_set, birthday, admins, chat_check, \
+    money_give, language_getter, month_set, day_set, admins, chat_check, \
     anon_message, system_check, money_helper, send_stuff_from_storage, send_some_top
 from presenter.logic.start import starter
 from presenter.config.log import Loger, log_to
@@ -24,8 +24,6 @@ import presenter.logic.developer_commands as developer_commands
 
 # TODO Убрать этот ебучий срач
 log = Loger(log_to)
-trash = []
-new_dudes = {}
 
 
 '''Реакции на медиа, новых участников и выход участников'''
@@ -41,7 +39,6 @@ def chat_id_update_handler(message):
 def deleter_handler(message):
     """Удаляет медиа ночью"""
     log.log_print(f"deleter_handler invoked")
-    global new_dudes
     if in_mf(message, command_type=None, or_private=False, loud=False):
         reactions.deleter(message)
 
@@ -50,7 +47,6 @@ def deleter_handler(message):
 def new_member_handler(message):
     """Реагирует на вход в чат"""
     log.log_print("new_member_handler invoked")
-    global new_dudes
     person = message.new_chat_members[0]
     if in_mf(message, command_type=None, or_private=False):
         reactions.new_member(message, person)
@@ -514,7 +510,9 @@ def all_members_handler(message):
     """Присылает человеку все записи в БД"""
     log.log_print(f"all_members_handler invoked")
     if in_mf(message, command_type=None, or_private=False):
-        send_some_top(message, '{index}. <code>{p_id}</code> {p_link}\n')
+        language = language_analyzer(message, only_one=True)
+        if language:
+            send_some_top(message, language, '{index}. <code>{p_id}</code> {p_link}\n')
 
 
 @bot.message_handler(commands=['give'])
@@ -535,8 +533,11 @@ def money_top_handler(message):
     """Топ ЯМ"""
     log.log_print("money_top_handler invoked")
     if in_mf(message, 'financial_commands', or_private=False):
-        send_some_top(message, '{index}. {p_link} — {money} {m_emo}\n', start='Бюджет: {bot_money} {m_emo}\n\n',
-                      sort_by_what='money', to_private=False)
+        language = language_analyzer(message, only_one=True)
+        if language:
+            send_some_top(message, language, '{index}. {p_link} — {money} {m_emo}\n',
+                          start='Бюджет: {bot_money} {m_emo}\n\n', sort_key=lambda x: x['money'],
+                          filter_f=lambda x: x['money'] > 0, to_private=False)
 
 
 @bot.message_handler(commands=['messages_top'])
@@ -544,8 +545,10 @@ def messages_top_handler(message):
     """Messages top"""
     log.log_print("messages_top_handler invoked")
     if in_mf(message, command_type=None, or_private=False):
-        # messages_top(message)
-        send_some_top(message, '{index}. {p_link} — {messages} сообщ.\n', sort_by_what='messages', min_value=10)
+        language = language_analyzer(message, only_one=True)
+        if language:
+            send_some_top(message, language, '{index}. {p_link} — {messages} сообщ.\n',
+                          sort_key=lambda x: x['messages'], filter_f=lambda x: x['messages'] > 10)
 
 
 @bot.message_handler(commands=['month'])
@@ -581,7 +584,10 @@ def birthday_handler(message):
     if in_mf(message, command_type=None):
         language = language_analyzer(message, only_one=True)
         if language:
-            birthday(message, language)
+            send_some_top(message, language, '{index}. {p_link} — {day} {month}\n',
+                          sort_key=lambda x: 100 * x['month_birthday'] + x['day_birthday'],
+                          filter_f=lambda x: x['month_birthday'] > 0 and x['day_birthday'] > 0,
+                          to_private=False, reverse=False)
 
 
 @bot.message_handler(commands=['admins', 'report'])
@@ -648,11 +654,5 @@ def database_send_handler(message):
 def counter_handler(message):
     """Подсчитывает сообщения"""
     log.log_print("counter_handler invoked")
-    global new_dudes
     if in_mf(message, command_type=None, loud=False, or_private=False):
         reactions.trigger(message)
-        if message.from_user.id in new_dudes:
-            new_dudes[message.from_user.id].append(message.message_id)
-            if len(new_dudes[message.from_user.id]) == 5:
-                new_dudes.pop(message.from_user.id)
-            print(new_dudes)
