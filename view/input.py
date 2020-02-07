@@ -2,7 +2,7 @@ from presenter.config.token import bot
 from view.output import reply, answer_callback, send_document
 from presenter.config.config_func import in_mf, cooldown, person_analyze, rank_superiority, \
      int_check, person_check, is_suitable, in_system_commands, is_correct_message, remove_slash_and_bot_mention, \
-     convert_command_to_storage_content
+     convert_command_to_storage_content, language_analyzer
 from presenter.logic.elite import elite
 from presenter.logic.boss_commands import ban, add_chat, add_admin_place, chat_options, system_options, \
     warn, unwarn, message_change, money_pay, rank_changer, mute, money_mode_change, money_emoji, money_name, \
@@ -467,8 +467,10 @@ def echo_message_handler(message):
 def minet_handler(message):
     """Приносит удовольствие"""
     log.log_print(f"minet_handler invoked")
-    if is_correct_message(message) and in_mf(message, 'standart_commands') and cooldown(message, 'minet'):
-        minet(message)
+    if is_correct_message(message) and in_mf(message, 'standart_commands'):
+        language = language_analyzer(message, only_one=True)
+        if language and cooldown(message, 'minet'):
+            minet(message, language)
 
 
 @bot.message_handler(commands=['drakken', 'art'])
@@ -565,7 +567,9 @@ def day_set_handler(message):
     if in_mf(message, command_type=None):
         day = int_check(message.text.split()[-1], positive=True)
         if day and 1 <= day <= 31:
-            day_set(message, day)
+            language = language_analyzer(message, only_one=True)
+            if language:
+                day_set(message, day, language)
         else:
             reply(message, "Последнее слово должно быть положительным числом от 1 до 31 — номером дня")
 
@@ -575,7 +579,9 @@ def birthday_handler(message):
     """Show the nearest birthdays"""
     log.log_print(f"birthday_handler invoked")
     if in_mf(message, command_type=None):
-        birthday(message)
+        language = language_analyzer(message, only_one=True)
+        if language:
+            birthday(message, language)
 
 
 @bot.message_handler(commands=['admins', 'report'])

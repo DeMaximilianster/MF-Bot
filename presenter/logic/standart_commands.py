@@ -1,11 +1,11 @@
 # -*- coding: utf-8 -*-
 from view.output import reply, send_photo, send_sticker, send, send_video, send_document
-from presenter.config.config_func import language_analyzer, member_update, int_check, \
+from presenter.config.config_func import member_update, int_check, \
     is_suitable, feature_is_available, get_system_configs, get_systems_json, get_person, get_list_from_storage,\
     html_cleaner, link_text_wrapper
 from presenter.config.database_lib import Database
 from presenter.config.config_var import admin_place, original_to_english, english_to_original, \
-    months, months_genitive, months_prepositional, features, features_texts
+    months_genitive, months_prepositional, features, features_texts
 from random import choice
 from presenter.config.log import Loger
 from presenter.config.texts import minets
@@ -123,10 +123,9 @@ def money_helper(message):
     reply(message, answer, parse_mode='HTML')
 
 
-def minet(message):
+def minet(message, language):
     """Приносит удовольствие"""
     log.log_print(str(message.from_user.id) + ": minet invoked")
-    language = language_analyzer(message, only_one=True)
     if language:
         choices = []
         for i in minets[language].keys():
@@ -289,35 +288,33 @@ def month_set(message, month):
     database.change(month, 'month_birthday', 'members', ('id', message.from_user.id))
 
 
-def day_set(message, day):
+def day_set(message, day, language):
     log.log_print(f"day_set invoked")
     days = (31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31)
     database = Database()
     month = database.get('members', ('id', message.from_user.id))['month_birthday']
-    lang = language_analyzer(message, only_one=True)
     if not month:
         reply(message, "Сначала поставь месяц рождения")
     elif day > days[month - 1]:
-        month = months_prepositional[month][lang]
+        month = months_prepositional[month][language]
         reply(message, "В {} нет столько дней".format(month.lower()))
     else:
         reply(message, "Ставлю человеку с ID {} день рождения {}".format(message.from_user.id, day))
         database.change(day, 'day_birthday', 'members', ('id', message.from_user.id))
 
 
-def birthday(message):
+def birthday(message, language):
     log.log_print(f"birthday invoked")
     database = Database()
     people = list(database.get_all("members", "month_birthday", how_sort='ASC'))
-    
-    people = filter(lambda x: (x['month_birthday'], x['day_birthday']), people)
-    lang = language_analyzer(message, only_one=True)
+    people = filter(lambda x: (x['month_birthday'] and x['day_birthday']), people)
+    # TODO улучшить сортировщик в send_some_top и заменить им эту функцию
     i = 1
     text = ""
     for person in people:
         text += "\n{}. <a href='t.me/{}'>{}</a> — {} {} ".format(i, person['username'], person['nickname'],
                                                                  person['day_birthday'],
-                                                                 months_genitive[person['month_birthday']][lang])
+                                                                 months_genitive[person['month_birthday']][language])
         i += 1
     reply(message, text, parse_mode='HTML', disable_web_page_preview=True)
 
