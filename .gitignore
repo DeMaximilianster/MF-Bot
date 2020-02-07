@@ -2,4 +2,4 @@
 **/__pycache__/
 
 #игнорирование model в корне
-model/
+/model
