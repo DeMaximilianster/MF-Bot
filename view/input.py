@@ -1,7 +1,8 @@
 from presenter.config.token import bot
 from view.output import reply, answer_callback, send_document
 from presenter.config.config_func import in_mf, cooldown, person_analyze, rank_superiority, \
-     int_check, person_check, is_suitable, in_system_commands, is_correct_message
+     int_check, person_check, is_suitable, in_system_commands, is_correct_message, remove_slash_and_bot_mention, \
+     convert_command_to_storage_content
 from presenter.logic.elite import elite
 from presenter.logic.boss_commands import ban, add_chat, add_admin_place, chat_options, system_options, \
     warn, unwarn, message_change, money_pay, rank_changer, mute, money_mode_change, money_emoji, money_name, \
@@ -15,7 +16,8 @@ from presenter.logic.standart_commands import helper, send_me, send_meme, minet,
 from presenter.logic.start import starter
 from presenter.config.log import Loger, log_to
 from presenter.config.config_var import features_defaulters, features_oners, features_offers, system_features_offers, \
-    system_features_oners, porn_adders, stuff_adders, all_content_types
+    system_features_oners, porn_adders, stuff_adders, all_content_types, commands_to_add_stuff,\
+    commands_to_add_vulgar_stuff
 from presenter.config.files_paths import votes_file, database_file, adapt_votes_file, multi_votes_file,  systems_file, \
     storage_file
 import presenter.logic.developer_commands as developer_commands
@@ -85,11 +87,10 @@ def chat_search_handler(message):
 """
 
 
-# TODO Вариативность команд-добавлялок
-@bot.message_handler(commands=['breasts_add', 'ass_add'])
-def send_vulgar_stuff_from_storage_handler(message):
-    log.log_print("send_vulgar_stuff_from_storage_handler invoked")
-    command = (message.text.split()[0].split(sep='@')[0].split(sep='_add')[0])[1:]
+@bot.message_handler(commands=commands_to_add_vulgar_stuff)
+def upload_vulgar_stuff_to_storage_handler(message):
+    log.log_print("upload_vulgar_stuff_to_storage_handler invoked")
+    command = convert_command_to_storage_content(message.text)
     if in_mf(message, 'erotic_commands'):
         if message.from_user.id in porn_adders:
             add_stuff_to_storage(message, command)
@@ -97,22 +98,13 @@ def send_vulgar_stuff_from_storage_handler(message):
             reply(message, "Не-а, вы не числитесь в рядах добавлятелей 'контента'")
 
 
-@bot.message_handler(commands=['drakken_add'])
-def send_drakken_from_storage_handler(message):
-    log.log_print("send_drakken_from_storage_handler invoked")
-    command = (message.text.split()[0].split(sep='@')[0].split(sep='_add')[0])[1:]
+@bot.message_handler(commands=commands_to_add_stuff)
+def upload_stuff_to_storage_handler(message):
+    log.log_print("upload_stuff_to_storage_handler invoked")
+    command = convert_command_to_storage_content(message.text)
     if in_mf(message, command_type=None):
         if message.from_user.id in stuff_adders:
             add_stuff_to_storage(message, command)
-        else:
-            reply(message, "Не-а, вы не числитесь в рядах добавлятелей контента")
-            
-@bot.message_handler(commands=['art_add', 'add_art', 'artadd', 'addart'])
-def send_art_from_storage_handler(message):
-    log.log_print("send_art_from_storage_handler invoked")
-    if in_mf(message, command_type=None):
-        if message.from_user.id in stuff_adders:
-            add_stuff_to_storage(message, 'art')
         else:
             reply(message, "Не-а, вы не числитесь в рядах добавлятелей контента")
 
@@ -153,7 +145,7 @@ def unwarn_handler(message):
                 reply(message, "Последнее слово должно быть положительным числом, сколько варнов снимаем")
 
 
-@bot.message_handler(commands=['ban'])  # TODO Добавить время бана
+@bot.message_handler(commands=['ban'])
 def ban_handler(message):
     log.log_print(f"ban_handler invoked")
     if in_mf(message, 'boss_commands', or_private=False) and is_suitable(message, message.from_user, 'boss'):
@@ -483,7 +475,7 @@ def minet_handler(message):
 def send_stuff_from_storage_handler(message):
     """Send random media from the storage"""
     log.log_print("send_stuff_from_storage_handler invoked")
-    command = (message.text.split()[0].split(sep='@')[0])[1:]
+    command = remove_slash_and_bot_mention(message.text)
     if in_mf(message, 'standart_commands') and cooldown(message, command):
         send_stuff_from_storage(message, command)
 
@@ -491,7 +483,7 @@ def send_stuff_from_storage_handler(message):
 @bot.message_handler(commands=['breasts', 'ass'])
 def send_vulgar_stuff_from_storage_handler(message):
     log.log_print("send_vulgar_stuff_from_storage_handler invoked")
-    command = (message.text.split()[0].split(sep='@')[0])[1:]
+    command = remove_slash_and_bot_mention(message.text)
     if in_mf(message, 'erotic_commands') and cooldown(message, command, timeout=60):
         send_stuff_from_storage(message, command)
 

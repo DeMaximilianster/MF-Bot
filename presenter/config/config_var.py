@@ -14,8 +14,9 @@ original_to_english = {'Русский': 'Russian', 'English': 'English'}
 english_to_original = {'Russian': 'Русский', 'English': 'English'}
 months = ['No Month', january, february, march, april, may, june, july, august, september, october, november, december]
 
+
 def month_to_genitive(month):
-    if type(month)==str:
+    if type(month) == str:
         return month
     if month['Russian'][-1] in ('й', 'ь'):
         nrm = month['Russian'][:-1].lower()+'я'
@@ -23,8 +24,9 @@ def month_to_genitive(month):
     nrm = month['Russian'].lower()+'а'
     return {'Russian': nrm, 'English': month['English']}
 
+
 def month_to_prepositional(month):
-    if type(month)==str:
+    if type(month) == str:
         return month
     if month['Russian'][-1] in ('й', 'ь'):
         nrm = month['Russian'][:-1].lower()+'е'
@@ -32,8 +34,10 @@ def month_to_prepositional(month):
     nrm = month['Russian'].lower()+'е'
     return {'Russian': nrm, 'English': month['English']}
 
+
 months_genitive = [month_to_genitive(i) for i in months]
 months_prepositional = [month_to_prepositional(i) for i in months]
+
 
 def admin_place(message, database):
     log.log_print(f"admin_place invoked")
@@ -59,9 +63,10 @@ def channel_list(database):
     """Список всех МФ2-каналов"""
     return database.get_all('channels')
 
-#список всех content_types для подсчёта сообщений
+
+# список всех content_types для подсчёта сообщений
 all_content_types = ['text', 'audio', 'document', 'photo', 'sticker', 'video',
-'video_note', 'voice', 'location', 'contact']
+                     'video_note', 'voice', 'location', 'contact']
 
 # Клавиатура для вопроса, иронично ли признание оскорбления/провокации
 ironic_keyboard = InlineKeyboardMarkup()
@@ -112,6 +117,12 @@ features_offers = tuple(map(lambda x: x+'_off', features))
 features_defaulters = tuple(map(lambda x: x+'_default', features))
 system_features_oners = tuple(map(lambda x: 's_'+x+'_on', features))
 system_features_offers = tuple(map(lambda x: 's_'+x+'_off', features))
+
+commands_to_add_stuff = ('artadd', 'addart', 'art_add', 'add_art',
+                         'drakkenadd', 'adddrakken', 'drakken_add', 'add_drakken')
+
+commands_to_add_vulgar_stuff = ('breastsadd', 'addbreasts', 'breasts_add', 'add_breasts',
+                                'assadd', 'addass', 'ass_add', 'add_ass')
 
 new_system_json_entry = {"name": "", "money": False, "money_emoji": "💰", "money_name": "валюты",
                          "ranks": ["Забаненный", "Участник", "Админ", "Старший Админ", "Лидер"],

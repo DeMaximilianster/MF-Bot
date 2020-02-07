@@ -127,8 +127,11 @@ def entities_saver(text, entities):
         return html_cleaner(text)
 
 
-def html_cleaner(text):
-    return text.replace('&', '&amp;').replace('<', '&lt;').replace('>', '&gt;')
+def html_cleaner(text: str) -> str:
+    if text:
+        return text.replace('&', '&amp;').replace('<', '&lt;').replace('>', '&gt;')
+    else:
+        return ''
 
 
 def get_target_message(message):
@@ -139,6 +142,45 @@ def get_target_message(message):
         return message
 
 
+def convert_command_to_storage_content(command: str) -> str:
+    """Convert command about adding something to storage into content name
+
+    :param command: examples '/add_art', '/artadd', '/art_add@MultiFandomRuBot'
+    :type command: str
+
+    :return: content name like 'art'
+    :rtype: str
+    :raises: Exception if converting failed
+    """
+    command = remove_slash_and_bot_mention(command)
+    print(command)
+    if command[-4:] == '_add':
+        return command[:-4]
+    elif command[:4] == 'add_':
+        return command[4:]
+    elif command[-3:] == 'add':
+        return command[:-3]
+    elif command[:3] == 'add':
+        return command[3:]
+    else:
+        raise Exception
+
+
+def remove_slash_and_bot_mention(command: str) -> str:
+    """Convert command about adding something to storage into content name
+
+    :param command: like '/some_cool_command@MultiFandomRuBot' or '/some_command blah blah blah'
+    :type command: str
+
+    :return: name of the command 'some_cool_command'
+    :rtype: str
+    """
+    command = command.split()[0]  # '/some_command blah blah blah' -> '/some_command'
+    command = command.split(sep='@')[0]  # /art_add@MultiFandomRuBot -> /art_add
+    command = command[1:]  # /art_add -> art_add
+    return command
+
+
 def person_info_in_html(user) -> str:
     """Converts information about user to pretty string
 
@@ -146,6 +188,7 @@ def person_info_in_html(user) -> str:
     :type user: User
 
     :returns: string like 'link_to a person (@username) [id]'
+    :rtype: str
     """
     name = html_cleaner(user.first_name)
     return f'{id_link_text_wrapper(name, user.id)} (@{user.username}), [{code_text_wrapper(user.id)}]'
@@ -213,8 +256,8 @@ def language_analyzer(message, only_one):
             if chat.description:
                 text += chat.description
     text = set(text)
-    languages['Russian'] = bool(russian & text) | (message.from_user.language_code == 'ru')
-    languages['English'] = bool(english & text) | (message.from_user.language_code == 'en')
+    languages['Russian'] = bool(russian & text) or (message.from_user.language_code == 'ru')
+    languages['English'] = bool(english & text) or (message.from_user.language_code == 'en')
     count = 0
     language_answer = None
     for language in languages.keys():
@@ -233,6 +276,7 @@ def language_analyzer(message, only_one):
         return None
     else:
         return languages
+
 
 def case_analyzer(word, language):
     if language == 'Russian':
