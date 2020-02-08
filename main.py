@@ -1,20 +1,19 @@
 # -*- coding: utf-8 -*-
-from view.input import *
-from presenter.config.token import inf_mode
-from presenter.config.log import Loger, log_to
+"""Main programm in the code. Run it"""
+#  from requests import ReadTimeout, ConnectionError
+#  from urllib3.exceptions import NewConnectionError, MaxRetryError, ReadTimeoutError
+import view.input
+from presenter.config.token import inf_mode, bot
 from presenter.config.config_func import update_old_systems_json
 
-log = Loger(log_to)
+print(view.input.WORK)
 
 update_old_systems_json()
 if inf_mode:
     bot.infinity_polling()  # Запуск бота
 else:
-    try:
-        #  telebot.logger.setLevel("DEBUG")  # Иногда помогает, но обычно не нужна
-        bot.polling(none_stop=True)
-    except Exception as e:
-        log.log_print(e)
+    #  telebot.logger.setLevel("DEBUG")  # Иногда помогает, но обычно не нужна
+    bot.polling(none_stop=True)
 
 # TODO провокацио-голосовашки и оск-голосовашки
 # TODO Антифлуд механизм

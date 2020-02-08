@@ -1,5 +1,5 @@
 import sqlite3
-from presenter.config.files_paths import database_file
+from presenter.config.files_paths import DATABASE_FILE
 from presenter.config.log import Loger, log_to
 
 log = Loger(log_to)
@@ -12,7 +12,7 @@ class Database:
         """Подключается к базе данных"""
         if to_log:
             log.log_print("Init database")
-        self.connection = sqlite3.connect(database_file)
+        self.connection = sqlite3.connect(DATABASE_FILE)
         self.connection.row_factory = sqlite3.Row
         self.cursor = self.connection.cursor()
         self.to_log = to_log

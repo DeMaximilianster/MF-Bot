@@ -4,7 +4,7 @@ from presenter.config.config_func import update_adapt_vote, update_multi_vote, c
 from presenter.config.config_var import test_keyboard, ironic_keyboard, \
     vote_keyboard, admin_place
 from presenter.config.database_lib import Database
-from presenter.config.files_paths import multi_votes_file, adapt_votes_file, votes_file
+from presenter.config.files_paths import MULTI_VOTES_FILE, ADAPT_VOTES_FILE, VOTES_FILE
 from view.output import edit_markup, answer_inline, reply, answer_callback, edit_text, delete, send, restrict
 from presenter.config.log import Loger, log_to
 
@@ -43,9 +43,9 @@ def adequate(call):
     log.log_print("adequate invoked")
     file_place = None
     if call.data == 'adequate':
-        file_place = multi_votes_file
+        file_place = MULTI_VOTES_FILE
     elif call.data == 'a_adequate':
-        file_place = adapt_votes_file
+        file_place = ADAPT_VOTES_FILE
     file = open(file_place, encoding='utf-8')
     votes_shelve = eval(file.read())
     info = eval(call.message.text)
@@ -146,7 +146,7 @@ def mv(call):
     # Как этот челик будет отображаться в сообщении
     link = f'<a href="t.me/{user_username}">{user_nickname}</a>'
     which = int(call.data[-1])  # Где менять мнение
-    file = open(multi_votes_file, encoding='utf-8')
+    file = open(MULTI_VOTES_FILE, encoding='utf-8')
     votes_shelve = eval(file.read())
     votey = votes_shelve[msg_id]  # Получаем необходимую нам голосовашку в хранилище
     file.close()
@@ -159,7 +159,7 @@ def mv(call):
         votey['votes'][which][1].update([(user_id, link)])
     # Сохраняем изменения
     votes_shelve[msg_id] = votey
-    file = open(multi_votes_file, 'w', encoding='utf-8')
+    file = open(MULTI_VOTES_FILE, 'w', encoding='utf-8')
     file.write(str(votes_shelve))
     file.close()
     answer_callback(call.id, text="Жмак учтён!")
@@ -177,7 +177,7 @@ def av(call):
     # Как этот челик будет отображаться в сообщении
     link = f'<a href="t.me/{user_username}">{user_nickname}</a>'
     which = int(call.data[-1])  # Где менять мнение
-    file = open(adapt_votes_file, encoding='utf-8')
+    file = open(ADAPT_VOTES_FILE, encoding='utf-8')
     votes_shelve = eval(file.read())
     votey = votes_shelve[msg_id]  # Получаем необходимую нам голосовашку в хранилище
     file.close()
@@ -192,7 +192,7 @@ def av(call):
             votey['votes'][which][1].update([(user_id, link)])
     # Сохраняем изменения
     votes_shelve[msg_id] = votey
-    file = open(adapt_votes_file, 'w', encoding='utf-8')
+    file = open(ADAPT_VOTES_FILE, 'w', encoding='utf-8')
     file.write(str(votes_shelve))
     file.close()
     answer_callback(call.id, text="Жмак учтён!")
@@ -211,7 +211,7 @@ def add_vote(call):
     msg_id = call.message.message_id  # Ай ди жмакнутого сообщения
     # Как этот челик будет отображаться в сообщении
     link = f'<a href="t.me/{user_username}">{user_nickname}</a>'
-    file = open(votes_file, 'r', encoding='utf-8')
+    file = open(VOTES_FILE, 'r', encoding='utf-8')
     votes_shelve = eval(file.read())
     file.close()
     if msg_id in votes_shelve.keys():
@@ -237,7 +237,7 @@ def add_vote(call):
         reply_markup = None
         text += 'Голосование окончено по причине ненахода записи об этой голосовашки. Новые голоса не принимаются\n\n'
         text += call.message.text
-    file = open(votes_file, 'w', encoding='utf-8')
+    file = open(VOTES_FILE, 'w', encoding='utf-8')
     file.write(str(votes_shelve))
     file.close()
     edit_text(text=text, chat_id=call.message.chat.id, message_id=call.message.message_id,

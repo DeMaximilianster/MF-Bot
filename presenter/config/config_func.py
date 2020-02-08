@@ -6,26 +6,28 @@ from threading import Thread
 from telebot.types import InlineKeyboardButton, InlineKeyboardMarkup, CallbackQuery
 from presenter.config.config_var import bot_id, new_system_json_entry
 from presenter.config.database_lib import Database
-from presenter.config.files_paths import adapt_votes_file, multi_votes_file, votes_file, systems_file, storage_file
+from presenter.config.files_paths import ADAPT_VOTES_FILE, MULTI_VOTES_FILE, VOTES_FILE, \
+    SYSTEMS_FILE, STORAGE_FILE
 from presenter.config.log import Loger
-from view.output import *
+from view.output import reply, kick, answer_callback, send, edit_text, edit_markup, get_member,\
+    unban, get_chat
 
-log = Loger()
-captchers = []
+LOG = Loger()
+CAPTCHERS = []
 
 
 class CaptchaBan(Thread):
     def __init__(self, message, bots_message):
         Thread.__init__(self)
-        log.log_print("CaptchaBan invoked")
+        LOG.log_print("CaptchaBan invoked")
         self.message = message
         self.bots_message = bots_message
 
     def run(self):
-        global captchers
-        captchers.append((self.message.new_chat_members[0].id, self.message.chat.id))
+        global CAPTCHERS
+        CAPTCHERS.append((self.message.new_chat_members[0].id, self.message.chat.id))
         time.sleep(300)
-        if (self.message.new_chat_members[0].id, self.message.chat.id) in captchers:
+        if (self.message.new_chat_members[0].id, self.message.chat.id) in CAPTCHERS:
             kick_and_unban(self.message.chat.id, self.message.new_chat_members[0].id)
             edit_text("Испытание креветкой провалено! (время истекло)", self.bots_message.chat.id,
                       self.bots_message.message_id)
@@ -34,7 +36,7 @@ class CaptchaBan(Thread):
 class SystemUpdate(Thread):
     def __init__(self, chat_id, system_id, members, sent):
         Thread.__init__(self)
-        log.log_print("SystemUpdate invoked")
+        LOG.log_print("SystemUpdate invoked")
         self.chat_id = chat_id
         self.system_id = system_id
         self.members = members
@@ -51,7 +53,7 @@ class SystemUpdate(Thread):
 class WaitAndUnban(Thread):
     def __init__(self, chat_id, user_id):
         Thread.__init__(self)
-        log.log_print("WaitAndUnban invoked")
+        LOG.log_print("WaitAndUnban invoked")
         self.chat_id = chat_id
         self.user_id = user_id
 
@@ -61,9 +63,9 @@ class WaitAndUnban(Thread):
 
 
 def remove_captcher(call):
-    global captchers
-    if (call.from_user.id, call.message.chat.id) in captchers:
-        captchers.remove((call.from_user.id, call.message.chat.id))
+    global CAPTCHERS
+    if (call.from_user.id, call.message.chat.id) in CAPTCHERS:
+        CAPTCHERS.remove((call.from_user.id, call.message.chat.id))
         return True
 
 
@@ -86,8 +88,8 @@ def get_text_and_entities(target_message):
 def entities_saver(text, entities):
     points = set()
     entities_blocks = []
-    if entities and set([e.type for e in entities]) & {'bold', 'italic', 'underline', 'strikethrough', 'code',
-                                                       'text_link'}:
+    entities_to_parse = {'bold', 'italic', 'underline', 'strikethrough', 'code', 'text_link'}
+    if entities and ({e.type for e in entities} and entities_to_parse):
         for entity in entities:
             if entity.type in ('bold', 'italic', 'underline', 'strikethrough', 'code'):
                 points.add(entity.offset)
@@ -96,7 +98,9 @@ def entities_saver(text, entities):
             elif entity.type == 'text_link':
                 points.add(entity.offset)
                 points.add(entity.offset + entity.length)
-                entities_blocks.append((entity.offset, entity.offset + entity.length, entity.type, entity.url))
+                start = entity.offset
+                finish = start + entity.length
+                entities_blocks.append((start, finish, entity.type, entity.url))
         points = list(points)
         points.sort()
         start_text = text[:points[0]]
@@ -138,8 +142,7 @@ def get_target_message(message):
     reply_to = message.reply_to_message
     if reply_to:
         return reply_to
-    else:
-        return message
+    return message
 
 
 def convert_command_to_storage_content(command: str) -> str:
@@ -156,14 +159,13 @@ def convert_command_to_storage_content(command: str) -> str:
     print(command)
     if command[-4:] == '_add':
         return command[:-4]
-    elif command[:4] == 'add_':
+    if command[:4] == 'add_':
         return command[4:]
-    elif command[-3:] == 'add':
+    if command[-3:] == 'add':
         return command[:-3]
-    elif command[:3] == 'add':
+    if command[:3] == 'add':
         return command[3:]
-    else:
-        raise Exception
+    raise Exception
 
 
 def remove_slash_and_bot_mention(command: str) -> str:
@@ -191,7 +193,8 @@ def person_info_in_html(user) -> str:
     :rtype: str
     """
     name = html_cleaner(user.first_name)
-    return f'{id_link_text_wrapper(name, user.id)} (@{user.username}), [{code_text_wrapper(user.id)}]'
+    id_link = id_link_text_wrapper(name, user.id)
+    return f'{id_link} (@{user.username}), [{code_text_wrapper(user.id)}]'
 
 
 def chat_info_in_html(chat) -> str:
@@ -199,6 +202,7 @@ def chat_info_in_html(chat) -> str:
 
 
 def code_text_wrapper(text):
+    """Simply wraps some text into code html-wrap"""
     return f'<code>{text}</code>'
 
 
@@ -239,7 +243,7 @@ def int_check(string, positive):
 
 
 def language_analyzer(message, only_one):
-    log.log_print(f"language_analyzer invoked")
+    LOG.log_print(f"language_analyzer invoked")
     database = Database()
     entry = database.get('languages', ('id', message.chat.id))
     languages = {"Russian": False, "English": False}
@@ -295,31 +299,29 @@ def case_analyzer(word, language):
             return word + 'е'
     else:
         return word
-    
-    
+
+
 def left_new_or_else_member(target_message):
     if target_message.new_chat_members:
         return target_message.new_chat_members[0]
     elif target_message.left_chat_member:
         return target_message.left_chat_member
-    else:
-        return target_message.from_user
+    return target_message.from_user
 
 
 def person_check(message, person, to_self=False, to_bot=False):
-    log.log_print(f"{__name__} invoked")
+    LOG.log_print(f"{__name__} invoked")
     if person.id == message.from_user.id and not to_self:
         reply(message, "Этой командой нельзя пользоваться на самом себе")
         return False
-    elif person.id == bot_id and not to_bot:
+    if person.id == bot_id and not to_bot:
         reply(message, "Этой командой нельзя пользоваться на мне")
         return False
-    else:
-        return True
+    return True
 
 
 def person_analyze(message, to_self=False, to_bot=False):
-    log.log_print("person_analyze invoked")
+    LOG.log_print("person_analyze invoked")
     if message.reply_to_message:  # Сообщение является ответом
         person = left_new_or_else_member(message.reply_to_message)
         if person_check(message, person, to_self, to_bot):
@@ -340,15 +342,15 @@ def person_analyze(message, to_self=False, to_bot=False):
     elif to_self:
         return message.from_user
     else:
-        reply(message, "Ответьте на сообщение необходимого человека или напишите после команды его ID")
+        reply(message, "Ответьте на сообщение необходимого чела или напишите после команды его ID")
 
 
 def rank_superiority(message, person):
-    log.log_print("rank_superiority invoked")
+    LOG.log_print("rank_superiority invoked")
     database = Database()
     chat = database.get('chats', ('id', message.chat.id))
     system = chat['system']
-    read_file = open(systems_file, 'r', encoding='utf-8')
+    read_file = open(SYSTEMS_FILE, 'r', encoding='utf-8')
     data = json.load(read_file)
     read_file.close()
     chat_configs = data[str(system)]
@@ -359,18 +361,31 @@ def rank_superiority(message, person):
     your_rank_n = ranks.index(your_rank)
     their_rank_n = ranks.index(their_rank)
     if their_rank_n >= your_rank_n:
-        reply(message, "Для этого ваше звание ({}) должно превосходить звание цели ({})".format(your_rank, their_rank))
+        text = f"Для этого ваше звание ({your_rank}) должно превосходить звание цели ({their_rank})"
+        reply(message, text)
     return your_rank_n > their_rank_n
 
 
 def add_person(person, system, database, system_configs):
+    """Add entry to database about some person in some system"""
     # TODO ранг зависит от статуса чела, при обнаружении ботом
     # TODO часть данных должна браться из других записей, например день и месяц рождения
-    person_entry = (person.id, system, person.username, person.first_name, system_configs['ranks'][1], 0, 0, 0, 0, 0)
+    person_entry = (person.id,
+                    system,
+                    person.username,
+                    person.first_name,
+                    system_configs['ranks'][1],
+                    0,
+                    0,
+                    0,
+                    0,
+                    0
+                    )
     database.append(person_entry, 'members')
 
 
 def get_person(person, system, database, system_configs=None):
+    """Get entry about some person in some system, create if there wasn't"""
     person_entry = database.get('members', ('id', person.id), ('system', system))
     if not person_entry:
         if not system_configs:
@@ -381,7 +396,7 @@ def get_person(person, system, database, system_configs=None):
 
 
 def rank_required(message, person, system, min_rank, max_rank, loud=True):
-    log.log_print("rank_required invoked from userID {}".format(message.from_user.id))
+    LOG.log_print("rank_required invoked from userID {}".format(message.from_user.id))
     database = Database()
     chat_configs = get_system_configs(system)
     ranks = chat_configs['ranks']
@@ -396,21 +411,21 @@ def rank_required(message, person, system, min_rank, max_rank, loud=True):
                             "Ваше звание ({}) не дотягивает до звания ({}) для жмака"
                             .format(your_rank, min_rank), show_alert=True)
         else:
-            reply(message, "Ваше звание ({}) не дотягивает до необходимого ({}) для данной команды"
+            reply(message, "Ваше звание ({}) не дотягивает до необходимого ({}) для этого"
                   .format(your_rank, min_rank))
     elif your_rank_n > max_rank_n and loud:
         if type(message) == CallbackQuery:
             answer_callback(message.id,
-                            "Ваше звание ({}) выше максимального ({}) для жмака. Гордитесь своим превосходством"
+                            "Ваше звание ({}) выше максимального ({}) для жмака. Гордитесь собой"
                             .format(your_rank, max_rank), show_alert=True)
         else:
-            reply(message, "Ваше звание ({}) выше максимального ({}) для данной команды. Гордитесь своим превосходством"
+            reply(message, "Ваше звание ({}) выше максимального ({}) для этого. Гордитесь собой"
                   .format(your_rank, max_rank))
     return min_rank_n <= your_rank_n <= max_rank_n
 
 
 def appointment_required(message, person, system, appointment, loud=True):
-    log.log_print("appointment_required invoked")
+    LOG.log_print("appointment_required invoked")
     database = Database()
     true_false = database.get("appointments", ('id', person.id), ('appointment', appointment),
                               ('system', system))
@@ -421,7 +436,7 @@ def appointment_required(message, person, system, appointment, loud=True):
 
 def is_suitable(inputed, person, command_type, system=None, loud=True):
     """Function to check if this command can be permitted in current chat"""
-    log.log_print("is_suitable invoked")
+    LOG.log_print("is_suitable invoked")
     database = Database()
     # determine if input is a message or a callback query
     if type(inputed) == CallbackQuery:
@@ -437,12 +452,12 @@ def is_suitable(inputed, person, command_type, system=None, loud=True):
     # check if requirement for this command type is a rank or appointment
     if isinstance(requirements, list):  # Requirement is a list
         return rank_required(inputed, person, system, requirements[0], requirements[1], loud=loud)
-    elif isinstance(requirements, str):  # Requirement is a string
+    if isinstance(requirements, str):  # Requirement is a string
         return appointment_required(message, person, system, requirements, loud=loud)
 
 
 def cooldown(message, command, timeout=3600):
-    log.log_print("cooldown invoked")
+    LOG.log_print("cooldown invoked")
     if message.chat.id > 0:  # Command is used in PM's
         return True
     database = Database()
@@ -464,11 +479,10 @@ def cooldown(message, command, timeout=3600):
         reply(message, answer)
 
         return False
-    else:  # Кулдаун прошёл
-        database.change(message.date, 'time', 'cooldown', ('person_id', message.from_user.id), ('command', command),
-                        ('chat_id', message.chat.id))
-
-        return True
+    # Кулдаун прошёл
+    database.change(message.date, 'time', 'cooldown', ('person_id', message.from_user.id),
+                    ('command', command), ('chat_id', message.chat.id))
+    return True
 
 
 def time_replace(seconds):
@@ -478,13 +492,13 @@ def time_replace(seconds):
 
 def in_mf(message, command_type, or_private=True, loud=True):
     """Позволяет регулировать использование команл вне чатов и в личке"""
-    log.log_print("in_mf invoked")
+    LOG.log_print("in_mf invoked")
     database = Database()
     person = left_new_or_else_member(message)
     if message.chat.id > 0:
         if loud and not or_private:
-            send(381279599, "Некто {} попыталcя использовать команду {} в личке".format(person_info_in_html(
-                 message.from_user), message.text), parse_mode='HTML')
+            send(381279599, "Некто {} попыталcя использовать команду {} в личке".format(
+                person_info_in_html(message.from_user), message.text), parse_mode='HTML')
             reply(message, "Эта команда отключена в ЛС")
         return or_private
 
@@ -506,11 +520,11 @@ def in_mf(message, command_type, or_private=True, loud=True):
                 if loud and not database.get('systems', ('id', system), (command_type, 0)):
                     reply(message, "В данном чате команды такого типа не поддерживаются")
                 return False
-        else:
-            return True
+        return True
     if loud:
         text = "Люди из чата {}, в частности {} попытались мной воспользоваться"
-        send(381279599, text.format(chat_info_in_html(message.chat), person_info_in_html(message.from_user)),
+        send(381279599, text.format(chat_info_in_html(message.chat),
+                                    person_info_in_html(message.from_user)),
              parse_mode='HTML')
         reply(message, "Hmm, I don't know this chat. Call @DeMaximilianster for help\n\n"
                        "Хмм, я не знаю этот чат. Обратитесь к @DeMaximilianster за помощью\n\n")
@@ -519,12 +533,12 @@ def in_mf(message, command_type, or_private=True, loud=True):
 def is_correct_message(message):
     """ Checks if a command has been sent to this bot or if the command is not a forwarding """
     cmd = message.text.split("@")
-    return not message.forward_from and (len(cmd) == 1 or cmd[1] == bot.get_me().username)
+    return not message.forward_from and (len(cmd) == 1 or cmd[1] == "MultiFandomRuBot")
 
 
 def in_system_commands(message):
     """Check if command is available in this system"""
-    log.log_print("in_system_commands invoked")
+    LOG.log_print("in_system_commands invoked")
     database = Database()
     chat = database.get('chats', ('id', message.chat.id))
     if message.text:
@@ -535,24 +549,21 @@ def in_system_commands(message):
             every = chat_configs["ranks_commands"] + chat_configs["appointment_adders"]
             every += chat_configs["appointment_removers"]
             return command in every
-        else:
-            return message.text.split()[0] in ("/guest", "/admin", "/senior_admin", "/leader")
+        return message.text.split()[0] in ("/guest", "/admin", "/senior_admin", "/leader")
 
 
 def feature_is_available(chat_id, system, command_type):
-    log.log_print("command_is_available invoked")
+    LOG.log_print("command_is_available invoked")
     database = Database()
-    if database.get('chats', ('id', chat_id), (command_type, 1)):
+    command_mode = database.get('chats', ('id', chat_id))[command_type]
+    if command_mode == 1:
         return True
-    elif database.get('chats', ('id', chat_id), (command_type, 2)) and database.get('systems', ('id', system),
-                                                                                               (command_type, 2)):
-        return True
-    return False
+    return command_mode == 2 and database.get('systems', ('id', system), (command_type, 2))
 
 
 def counter(message, person):
     """Подсчитывает сообщения, отправленные челом"""
-    log.log_print("counter invoked")
+    LOG.log_print("counter invoked")
     database = Database()
     if not database.get('messages', ('person_id', person.id), ('chat_id', message.chat.id)):
         database.append((person.id, message.chat.id, 0), 'messages')
@@ -562,7 +573,8 @@ def counter(message, person):
 
 
 def member_update(system, person):
-    log.log_print('member_update invoked')
+    """Updates nickname, username and messages columns in database"""
+    LOG.log_print('member_update invoked')
     database = Database()
     chats_ids = [x['id'] for x in database.get_many('chats', ('messages_count', 2), ('system', system))]
     msg_count = 0
@@ -577,7 +589,7 @@ def member_update(system, person):
 
 
 def get_systems_json():
-    with open(systems_file, 'r', encoding='utf-8') as read_file:
+    with open(SYSTEMS_FILE, 'r', encoding='utf-8') as read_file:
         return json.load(read_file)
 
 
@@ -587,22 +599,22 @@ def get_system_configs(system):
 
 
 def get_list_from_storage(storage):
-    with open(storage_file, 'r', encoding='utf-8') as read_file:
+    with open(STORAGE_FILE, 'r', encoding='utf-8') as read_file:
         return json.load(read_file)[storage]
 
 
 def get_storage_json():
-    with open(storage_file, 'r', encoding='utf-8') as read_file:
+    with open(STORAGE_FILE, 'r', encoding='utf-8') as read_file:
         return json.load(read_file)
 
 
 def write_storage_json(data):
-    with open(storage_file, 'w', encoding='utf-8') as write_file:
+    with open(STORAGE_FILE, 'w', encoding='utf-8') as write_file:
         json.dump(data, write_file, indent=4, ensure_ascii=False)
 
 
 def write_systems_json(data):
-    with open(systems_file, 'w', encoding='utf-8') as write_file:
+    with open(SYSTEMS_FILE, 'w', encoding='utf-8') as write_file:
         json.dump(data, write_file, indent=4, ensure_ascii=False)
 
 
@@ -615,6 +627,7 @@ def update_systems_json(system, set_what, set_where):
 
 
 def create_system(message, system_id, database):
+    """Create entry about some system"""
     system_tuple = (system_id,
                     0,  # money in the system
                     0,  # admin places of the system
@@ -639,13 +652,14 @@ def create_system(message, system_id, database):
 def update_old_systems_json():
     data = get_systems_json()
     for system in data.keys():
-        for prop in new_system_json_entry.keys():
-            if prop not in data[system].keys():
+        for prop in new_system_json_entry:
+            if prop not in data[system]:
                 data[system][prop] = new_system_json_entry[prop]
     write_systems_json(data)
 
 
 def create_chat(message, system_id, typee, link, database):
+    """Create entry about some chat in some system"""
     chat_tuple = (message.chat.id,
                   system_id,
                   message.chat.title,
@@ -668,9 +682,9 @@ def create_chat(message, system_id, typee, link, database):
 # TODO перенести все голосовашки в базу данных или ещё куда-то (JSON)
 def create_vote(vote_message):
     """Создаёт голосовашку"""
-    log.log_print("create_vote invoked")
+    LOG.log_print("create_vote invoked")
     # TODO Параметр purpose, отвечающий за действие, которое надо сделать при закрытии голосовашки
-    file = open(votes_file, 'r', encoding='utf-8')
+    file = open(VOTES_FILE, 'r', encoding='utf-8')
     votes_shelve = file.read()
     if votes_shelve:
         votes_shelve = eval(votes_shelve)
@@ -679,19 +693,19 @@ def create_vote(vote_message):
     file.close()
     votes_shelve[vote_message.message_id] = {"time": vote_message.date, "text": vote_message.text,
                                              "favor": {}, "against": {}, "abstain": {}}
-    file = open(votes_file, 'w', encoding='utf-8')
+    file = open(VOTES_FILE, 'w', encoding='utf-8')
     file.write(str(votes_shelve))
     file.close()
 
 
 def create_multi_vote(vote_message):
     """Создаёт мульти-голосовашку"""
-    log.log_print("create_multi_vote invoked")
+    LOG.log_print("create_multi_vote invoked")
     keyboard = InlineKeyboardMarkup()
     url = 'https://t.me/multifandomrubot?start=new_option{}'.format(vote_message.message_id)
     keyboard.row_width = 1
     keyboard.add(InlineKeyboardButton("Предложить вариант", url=url))
-    file = open(multi_votes_file, encoding='utf-8')
+    file = open(MULTI_VOTES_FILE, encoding='utf-8')
     votes_shelve = file.read()
     if votes_shelve:
         votes_shelve = eval(votes_shelve)
@@ -700,7 +714,7 @@ def create_multi_vote(vote_message):
     file.close()
     votes_shelve[vote_message.message_id] = {"text": vote_message.text, "votes": [], "keyboard": [],
                                              "chat": vote_message.chat.id}
-    file = open(multi_votes_file, 'w', encoding='utf-8')
+    file = open(MULTI_VOTES_FILE, 'w', encoding='utf-8')
     file.write(str(votes_shelve))
     file.close()
     edit_markup(vote_message.chat.id, vote_message.message_id, reply_markup=keyboard)
@@ -708,12 +722,12 @@ def create_multi_vote(vote_message):
 
 def create_adapt_vote(vote_message):
     """Создаёт адапт-голосовашку"""
-    log.log_print("create_adapt_vote invoked")
+    LOG.log_print("create_adapt_vote invoked")
     keyboard = InlineKeyboardMarkup()
     url = 'https://t.me/multifandomrubot?start=new_adapt_option{}'.format(vote_message.message_id)
     keyboard.row_width = 1
     keyboard.add(InlineKeyboardButton("Предложить вариант", url=url))
-    file = open(adapt_votes_file, encoding='utf-8')
+    file = open(ADAPT_VOTES_FILE, encoding='utf-8')
     votes_shelve = file.read()
     if votes_shelve:
         votes_shelve = eval(votes_shelve)
@@ -722,7 +736,7 @@ def create_adapt_vote(vote_message):
     file.close()
     votes_shelve[vote_message.message_id] = {"text": vote_message.text, "votes": [], "keyboard": [],
                                              "chat": vote_message.chat.id}
-    file = open(adapt_votes_file, 'w', encoding='utf-8')
+    file = open(ADAPT_VOTES_FILE, 'w', encoding='utf-8')
     file.write(str(votes_shelve))
     file.close()
     edit_markup(vote_message.chat.id, vote_message.message_id, reply_markup=keyboard)
@@ -730,8 +744,8 @@ def create_adapt_vote(vote_message):
 
 def update_multi_vote(vote_id):
     """Обновляет мульти-голосовашку"""
-    log.log_print("update_multi_vote invoked")
-    file = open(multi_votes_file, encoding='utf-8')
+    LOG.log_print("update_multi_vote invoked")
+    file = open(MULTI_VOTES_FILE, encoding='utf-8')
     votes_shelve = file.read()
     if votes_shelve:
         votes_shelve = eval(votes_shelve)
@@ -750,16 +764,16 @@ def update_multi_vote(vote_id):
     for i in votey['votes']:
         text += '\n{}: '.format(i[0]) + ', '.join(i[1].values())
     try:
-        edit_text(text=text, chat_id=votey['chat'], message_id=vote_id, reply_markup=keyboard, parse_mode="HTML",
-                  disable_web_page_preview=True)
-    except Exception as e:
-        print(e)
+        edit_text(text=text, chat_id=votey['chat'], message_id=vote_id,
+                  reply_markup=keyboard, parse_mode="HTML", disable_web_page_preview=True)
+    except Exception as exception:
+        print(exception)
 
 
 def update_adapt_vote(vote_id):
     """Обновляет адапт голосовашку"""
-    log.log_print("update_adapt_vote")
-    file = open(adapt_votes_file, encoding='utf-8')
+    LOG.log_print("update_adapt_vote")
+    file = open(ADAPT_VOTES_FILE, encoding='utf-8')
     votes_shelve = file.read()
     if votes_shelve:
         votes_shelve = eval(votes_shelve)
@@ -778,15 +792,16 @@ def update_adapt_vote(vote_id):
     for i in votey['votes']:
         text += '\n{}: '.format(i[0]) + ', '.join(i[1].values())
     try:
-        edit_text(text=text, chat_id=votey['chat'], message_id=vote_id, reply_markup=keyboard, parse_mode="HTML",
+        edit_text(text=text, chat_id=votey['chat'], message_id=vote_id,
+                  reply_markup=keyboard, parse_mode="HTML",
                   disable_web_page_preview=True)
-    except Exception as e:
-        print(e)
+    except Exception as exception:
+        print(exception)
 
 
 def unban_user(person):
     """Remove ban from user"""
-    log.log_print("unban_user invoked")
+    LOG.log_print("unban_user invoked")
     database = Database()
     # TODO Уточнить систему
     chats_to_unban = database.get_many('chats', ('violators_ban', 2))

@@ -18,12 +18,13 @@ from presenter.config.log import Loger, log_to
 from presenter.config.config_var import features_defaulters, features_oners, features_offers, system_features_offers, \
     system_features_oners, porn_adders, stuff_adders, all_content_types, commands_to_add_stuff,\
     commands_to_add_vulgar_stuff
-from presenter.config.files_paths import votes_file, database_file, adapt_votes_file, multi_votes_file,  systems_file, \
-    storage_file
+from presenter.config.files_paths import VOTES_FILE, DATABASE_FILE, ADAPT_VOTES_FILE, MULTI_VOTES_FILE,  SYSTEMS_FILE, \
+    STORAGE_FILE
 import presenter.logic.developer_commands as developer_commands
 
 # TODO Убрать этот ебучий срач
 log = Loger(log_to)
+WORK = True
 
 
 '''Реакции на медиа, новых участников и выход участников'''
@@ -651,7 +652,7 @@ def anon_message_handler(message):
 def database_send_handler(message):
     log.log_print('database_send_handler invoked')
     if message.chat.id == 381279599:
-        for FILE in (database_file, votes_file, adapt_votes_file, multi_votes_file, systems_file, storage_file):
+        for FILE in (DATABASE_FILE, VOTES_FILE, ADAPT_VOTES_FILE, MULTI_VOTES_FILE, SYSTEMS_FILE, STORAGE_FILE):
             file_send = open(FILE, 'rb')
             send_document(message.chat.id, file_send)
             file_send.close()

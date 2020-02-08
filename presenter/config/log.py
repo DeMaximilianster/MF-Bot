@@ -2,7 +2,7 @@ import time
 from traceback import print_exc
 from io import StringIO
 
-from presenter.config.files_paths import log_files
+from presenter.config.files_paths import LOG_FILES
 
 LOG_TO_FILE = 1  # Записать только в файл
 LOG_TO_CONSOLE = 2  # Записать только в консоль
@@ -15,7 +15,7 @@ log_to = LOG_BOTH
 class Loger:
     def __init__(self, log_place=2):
         self.log_place = log_place
-        self.log_files = log_files
+        self.log_files = LOG_FILES
         self.gmt = 3
 
     def time_now(self):
