@@ -1,4 +1,4 @@
-from presenter.config.token import bot
+from presenter.config.token import BOT
 from view.output import reply, answer_callback, send_document
 from presenter.config.config_func import in_mf, cooldown, person_analyze, rank_superiority, \
      int_check, person_check, is_suitable, in_system_commands, is_correct_message, remove_slash_and_bot_mention, \
@@ -30,21 +30,13 @@ WORK = True
 '''Реакции на медиа, новых участников и выход участников'''
 
 
-@bot.message_handler(content_types=['migrate_from_chat_id'])
+@BOT.message_handler(content_types=['migrate_from_chat_id'])
 def chat_id_update_handler(message):
     log.log_print("chat_id_update_handler invoked")
     reactions.chat_id_update(message)
 
 
-@bot.message_handler(content_types=['document', 'photo', 'sticker', 'video', 'video_note'])
-def deleter_handler(message):
-    """Удаляет медиа ночью"""
-    log.log_print(f"deleter_handler invoked")
-    if in_mf(message, command_type=None, or_private=False, loud=False):
-        reactions.deleter(message)
-
-
-@bot.message_handler(content_types=['new_chat_members'])
+@BOT.message_handler(content_types=['new_chat_members'])
 def new_member_handler(message):
     """Реагирует на вход в чат"""
     log.log_print("new_member_handler invoked")
@@ -53,7 +45,7 @@ def new_member_handler(message):
         reactions.new_member(message, person)
 
 
-@bot.message_handler(content_types=['left_chat_member'])
+@BOT.message_handler(content_types=['left_chat_member'])
 def left_member_handler(message):
     """Комментирует уход участника и прощается участником"""
     log.log_print("left_member_handler invoked")
@@ -64,7 +56,7 @@ def left_member_handler(message):
 '''Элитарные команды'''
 
 
-@bot.message_handler(commands=['elite'])
+@BOT.message_handler(commands=['elite'])
 def elite_handler(message):
     log.log_print("elite_handler invoked")
     if message.chat.type == 'private':  # Тест на элитность можно провести только в личке у бота
@@ -84,7 +76,7 @@ def chat_search_handler(message):
 """
 
 
-@bot.message_handler(commands=commands_to_add_vulgar_stuff)
+@BOT.message_handler(commands=commands_to_add_vulgar_stuff)
 def upload_vulgar_stuff_to_storage_handler(message):
     log.log_print("upload_vulgar_stuff_to_storage_handler invoked")
     command = convert_command_to_storage_content(message.text)
@@ -95,7 +87,7 @@ def upload_vulgar_stuff_to_storage_handler(message):
             reply(message, "Не-а, вы не числитесь в рядах добавлятелей 'контента'")
 
 
-@bot.message_handler(commands=commands_to_add_stuff)
+@BOT.message_handler(commands=commands_to_add_stuff)
 def upload_stuff_to_storage_handler(message):
     log.log_print("upload_stuff_to_storage_handler invoked")
     command = convert_command_to_storage_content(message.text)
@@ -106,14 +98,14 @@ def upload_stuff_to_storage_handler(message):
             reply(message, "Не-а, вы не числитесь в рядах добавлятелей контента")
 
 
-@bot.message_handler(commands=['update'])
+@BOT.message_handler(commands=['update'])
 def update_all_members_handler(message):
     log.log_print("update_all_members_handler invoked")
     if in_mf(message, 'boss_commands', or_private=False) and is_suitable(message, message.from_user, 'boss'):
         update_all_members(message)
 
 
-@bot.message_handler(commands=['warn'])
+@BOT.message_handler(commands=['warn'])
 def warn_handler(message):
     """Даёт участнику предупреждение"""
     log.log_print("warn_handler invoked")
@@ -129,7 +121,7 @@ def warn_handler(message):
             reply(message, "Надо ответить на сообщение с актом преступления, чтобы переслать контекст в хранилище")
 
 
-@bot.message_handler(commands=['unwarn'])
+@BOT.message_handler(commands=['unwarn'])
 def unwarn_handler(message):
     """Снимает с участника предупреждение"""
     log.log_print("unwarn_handler invoked")
@@ -142,7 +134,7 @@ def unwarn_handler(message):
                 reply(message, "Последнее слово должно быть положительным числом, сколько варнов снимаем")
 
 
-@bot.message_handler(commands=['ban'])
+@BOT.message_handler(commands=['ban'])
 def ban_handler(message):
     log.log_print(f"ban_handler invoked")
     if in_mf(message, 'boss_commands', or_private=False) and is_suitable(message, message.from_user, 'boss'):
@@ -151,7 +143,7 @@ def ban_handler(message):
             ban(message, person)
 
 
-@bot.message_handler(commands=['kick'])
+@BOT.message_handler(commands=['kick'])
 def kick_handler(message):
     log.log_print(f"kick_handler invoked")
     if in_mf(message, 'boss_commands', or_private=False) and is_suitable(message, message.from_user, 'boss'):
@@ -160,7 +152,7 @@ def kick_handler(message):
             ban(message, person, unban_then=True)
 
 
-@bot.message_handler(commands=['mute'])
+@BOT.message_handler(commands=['mute'])
 def mute_handler(message):
     log.log_print("mute_handler invoked")
     if in_mf(message, "boss_commands", or_private=False) and is_suitable(message, message.from_user, 'boss'):
@@ -172,7 +164,7 @@ def mute_handler(message):
                 reply(message, "Последнее слово должно быть положительным числом на сколько часов запрещаем писать")
 
 
-@bot.message_handler(commands=['pay'])
+@BOT.message_handler(commands=['pay'])
 def money_pay_handler(message):
     log.log_print(f"money_pay_handler invoked")
     if in_mf(message, 'financial_commands', or_private=False) and is_suitable(message, message.from_user, 'boss'):
@@ -193,7 +185,7 @@ def deleter_mode_handler(message):
 '''
 
 
-@bot.message_handler(func=lambda message: in_system_commands(message))
+@BOT.message_handler(func=lambda message: in_system_commands(message))
 def rank_changer_handler(message):
     """Sets person's rank to guest"""
     log.log_print("rank_changer_handler invoked")
@@ -208,7 +200,7 @@ def rank_changer_handler(message):
                 rank_changer(message, person)
 
 
-@bot.message_handler(commands=['messages'])
+@BOT.message_handler(commands=['messages'])
 def messages_change_handler(message):
     """Меняет запись в БД о количестве сообщений чела"""
     log.log_print(f"messages_change_handler invoked")
@@ -224,14 +216,14 @@ def messages_change_handler(message):
             reply(message, "Либо не указана персона, к которой это применяется, либо количество сообщений")
 
 
-@bot.message_handler(commands=['add_chat'])
+@BOT.message_handler(commands=['add_chat'])
 def add_chat_handler(message):  # TODO Она работает в личке, а не должна
     """Добавляет чат в базу данных чатов, входящих в систему МФ2"""
     log.log_print(f"add_chat_handler invoked")
     add_chat(message)
 
 
-@bot.message_handler(commands=['admin_place'])
+@BOT.message_handler(commands=['admin_place'])
 def add_admin_place_handler(message):
     """Add admin place to system"""
     log.log_print("add_admin_place_handler invoked")
@@ -239,35 +231,35 @@ def add_admin_place_handler(message):
         add_admin_place(message)
 
 
-@bot.message_handler(commands=['money_on', 'money_off'])
+@BOT.message_handler(commands=['money_on', 'money_off'])
 def money_mode_change_handler(message):
     log.log_print("money_mode_change_handler invoked")
     if in_mf(message, command_type=None, or_private=False) and is_suitable(message, message.from_user, "chat_changer"):
         money_mode_change(message)
 
 
-@bot.message_handler(commands=['m_emoji'])
+@BOT.message_handler(commands=['m_emoji'])
 def money_emoji_handler(message):
     log.log_print("money_emoji_handler invoked")
     if in_mf(message, command_type=None, or_private=False) and is_suitable(message, message.from_user, "chat_changer"):
         money_emoji(message)
 
 
-@bot.message_handler(commands=['m_name'])
+@BOT.message_handler(commands=['m_name'])
 def money_name_handler(message):
     log.log_print("money_name_handler invoked")
     if in_mf(message, command_type=None, or_private=False) and is_suitable(message, message.from_user, "chat_changer"):
         money_name(message)
 
 
-@bot.message_handler(commands=features_offers+features_oners+features_defaulters)
+@BOT.message_handler(commands=features_offers + features_oners + features_defaulters)
 def chat_options_handler(message):
     log.log_print("chat_options_handler invoked")
     if in_mf(message, command_type=None, or_private=False) and is_suitable(message, message.from_user, "chat_changer"):
         chat_options(message)
 
 
-@bot.message_handler(commands=system_features_oners+system_features_offers)
+@BOT.message_handler(commands=system_features_oners + system_features_offers)
 def system_options_handler(message):
     log.log_print("system_options_handler invoked")
     if in_mf(message, command_type=None, or_private=False) and is_suitable(message, message.from_user, "chat_changer"):
@@ -286,40 +278,40 @@ def database_changer_handler(message):
 '''Составные команды'''
 
 
-@bot.callback_query_handler(func=lambda call: call.data == 'captcha')
+@BOT.callback_query_handler(func=lambda call: call.data == 'captcha')
 def captcha_completed_handler(call):
     log.log_print("captcha_completed_handler invoked")
     captcha_completed(call)
 
 
-@bot.callback_query_handler(func=lambda call: call.data == 'captcha_fail')
+@BOT.callback_query_handler(func=lambda call: call.data == 'captcha_fail')
 def captcha_failed_handler(call):
     log.log_print("captcha_failed_handler invoked")
     captcha_failed(call)
 
 
-@bot.callback_query_handler(func=lambda call: 'adequate' in call.data and call.data != 'inadequate')
+@BOT.callback_query_handler(func=lambda call: 'adequate' in call.data and call.data != 'inadequate')
 def adequate_handler(call):
     """Вариант адекватен"""
     log.log_print(f"adequate_handler invoked")
     adequate(call)
 
 
-@bot.callback_query_handler(func=lambda call: call.data == 'inadequate')
+@BOT.callback_query_handler(func=lambda call: call.data == 'inadequate')
 def inadequate_handler(call):
     """Вариант неадекватен"""
     log.log_print(f"inadequate_handler invoked")
     inadequate(call)
 
 
-@bot.inline_handler(lambda query: query.query == 'test')
+@BOT.inline_handler(lambda query: query.query == 'test')
 def response_handler(inline_query):
     """Тестовая инлайновая команда, бесполезная"""
     log.log_print(f"response_handler invoked")
     response(inline_query)
 
 
-@bot.message_handler(regexp='Признаю оскорблением')
+@BOT.message_handler(regexp='Признаю оскорблением')
 def insult_handler(message):  # TODO В частных чатах бот не умеет указать ссылку нормально
     # TODO Проверка на наличие админосостава
     """Спращивает, иронично ли признание оскорблением"""
@@ -328,7 +320,7 @@ def insult_handler(message):  # TODO В частных чатах бот не у
         insult(message)
 
 
-@bot.callback_query_handler(func=lambda call: call.data == 'non_ironic')  # триггерится, когда нажата кнопка "Нет"
+@BOT.callback_query_handler(func=lambda call: call.data == 'non_ironic')  # триггерится, когда нажата кнопка "Нет"
 def non_ironic_handler(call):
     """Реакция, если обвинение было неироничным"""
     log.log_print(f"non_ironic_handler invoked")
@@ -339,7 +331,7 @@ def non_ironic_handler(call):
         answer_callback(call.id, "Э, нет, эта кнопка не для тебя")
 
 
-@bot.callback_query_handler(func=lambda call: call.data == 'ironic')  # триггерится, когда нажата кнопка "Да"
+@BOT.callback_query_handler(func=lambda call: call.data == 'ironic')  # триггерится, когда нажата кнопка "Да"
 def ironic_handler(call):
     """Реакция, если обвинение было ироничным"""
     log.log_print(f"ironic_handler invoked")
@@ -350,7 +342,7 @@ def ironic_handler(call):
         answer_callback(call.id, "Э, нет, эта кнопка не для тебя")
 
 
-@bot.message_handler(commands=['vote', 'multi_vote', 'adapt_vote'])
+@BOT.message_handler(commands=['vote', 'multi_vote', 'adapt_vote'])
 def vote_handler(message):
     """Генерирует голосовашку"""
     log.log_print(f"vote_handler invoked")
@@ -358,7 +350,7 @@ def vote_handler(message):
         vote(message)
 
 
-@bot.callback_query_handler(func=lambda call: 'here' in call.data or 'nedostream' in call.data)
+@BOT.callback_query_handler(func=lambda call: 'here' in call.data or 'nedostream' in call.data)
 def place_here_handler(call):
     """Выбирает, куда прислать голосовашку"""
     log.log_print(f"place_here_handler invoked")
@@ -369,7 +361,7 @@ def place_here_handler(call):
         answer_callback(call.id, "Э, нет, эта кнопка не для тебя")
 
 
-@bot.callback_query_handler(func=lambda call: 'mv_' in call.data)
+@BOT.callback_query_handler(func=lambda call: 'mv_' in call.data)
 def mv_handler(call):
     """Обновляет мульти-голосовашку"""
     log.log_print(f"mv_handler invoked")
@@ -378,7 +370,7 @@ def mv_handler(call):
         mv(call)
 
 
-@bot.callback_query_handler(func=lambda call: 'av_' in call.data)
+@BOT.callback_query_handler(func=lambda call: 'av_' in call.data)
 def av_handler(call):
     """Обновляет адапт-голосовашку"""
     log.log_print(f"av_handler invoked")
@@ -386,7 +378,7 @@ def av_handler(call):
         av(call)
 
 
-@bot.callback_query_handler(func=lambda call: call.data == 'favor' or call.data == 'against' or call.data == 'abstain')
+@BOT.callback_query_handler(func=lambda call: call.data == 'favor' or call.data == 'against' or call.data == 'abstain')
 def add_vote_handler(call):
     """Вставляет голос в голосоовашку"""
     log.log_print("add_vote_handler invoked")
@@ -398,7 +390,7 @@ def add_vote_handler(call):
 
 
 # TODO Это блять не простая команда, а админская
-@bot.message_handler(commands=['lang'])
+@BOT.message_handler(commands=['lang'])
 def language_getter_handler(message):
     """Gets the language of the chat"""
     log.log_print("language_getter_handler invoked")  # TODO Более удобную ставилку языков
@@ -407,7 +399,7 @@ def language_getter_handler(message):
             language_getter(message)
 
 
-@bot.message_handler(commands=['start'])
+@BOT.message_handler(commands=['start'])
 def starter_handler(message):
     """Запуск бота в личке, в чате просто реагирует"""
     log.log_print("starter_handler invoked")
@@ -415,7 +407,7 @@ def starter_handler(message):
         starter(message)
 
 
-@bot.message_handler(commands=['help'])
+@BOT.message_handler(commands=['help'])
 def helper_handler(message):
     """Предоставляет человеку список команд"""
     log.log_print("helper_handler invoked")
@@ -423,7 +415,7 @@ def helper_handler(message):
         helper(message)
 
 
-@bot.message_handler(commands=['money_help', 'help_money'])
+@BOT.message_handler(commands=['money_help', 'help_money'])
 def money_helper_handler(message):
     """Financial instructions"""
     log.log_print("money_helper_handler invoked")
@@ -431,7 +423,7 @@ def money_helper_handler(message):
         money_helper(message)
 
 
-@bot.message_handler(commands=['id'])
+@BOT.message_handler(commands=['id'])
 def show_id_handler(message):
     """Присылает различные ID'шники, зачастую бесполезные"""
     log.log_print(f"show_id_handler invoked")
@@ -439,28 +431,28 @@ def show_id_handler(message):
         developer_commands.show_id(message)
 
 
-@bot.message_handler(commands=['echo'])
+@BOT.message_handler(commands=['echo'])
 def echo_message_handler(message):
-    log.log_print(f"echo_message_handler invoked")
+    log.log_print("echo_message_handler invoked")
     if in_mf(message, command_type=None):
         developer_commands.echo_message(message)
 
 
-@bot.message_handler(commands=['clear'])
-def echo_message_handler(message):
-    log.log_print(f"clear_echo_message_handler invoked")
+@BOT.message_handler(commands=['clear'])
+def clear_echo_message_handler(message):
+    log.log_print("clear_echo_message_handler invoked")
     if in_mf(message, command_type=None):
         developer_commands.clear_echo_message(message)
 
 
-@bot.message_handler(commands=['html'])
-def echo_message_handler(message):
+@BOT.message_handler(commands=['html'])
+def html_echo_message_handler(message):
     log.log_print("html_echo_message_handler invoked")
     if in_mf(message, command_type=None):
         developer_commands.html_echo_message(message)
 
 
-@bot.message_handler(commands=['minet', 'french_style_sex', 'blowjob'])
+@BOT.message_handler(commands=['minet', 'french_style_sex', 'blowjob'])
 def minet_handler(message):
     """Приносит удовольствие"""
     log.log_print(f"minet_handler invoked")
@@ -470,7 +462,7 @@ def minet_handler(message):
             minet(message, language)
 
 
-@bot.message_handler(commands=['drakken', 'art'])
+@BOT.message_handler(commands=['drakken', 'art'])
 def send_stuff_from_storage_handler(message):
     """Send random media from the storage"""
     log.log_print("send_stuff_from_storage_handler invoked")
@@ -479,7 +471,7 @@ def send_stuff_from_storage_handler(message):
         send_stuff_from_storage(message, command)
 
 
-@bot.message_handler(commands=['breasts', 'ass'])
+@BOT.message_handler(commands=['breasts', 'ass'])
 def send_vulgar_stuff_from_storage_handler(message):
     log.log_print("send_vulgar_stuff_from_storage_handler invoked")
     command = remove_slash_and_bot_mention(message.text)
@@ -487,8 +479,8 @@ def send_vulgar_stuff_from_storage_handler(message):
         send_stuff_from_storage(message, command)
 
 
-@bot.message_handler(regexp='есть один мем')
-@bot.message_handler(commands=['meme'])
+@BOT.message_handler(regexp='есть один мем')
+@BOT.message_handler(commands=['meme'])
 def send_meme_handler(message):
     """Присылает мем"""
     log.log_print(f"send_meme_handler invoked")
@@ -496,7 +488,7 @@ def send_meme_handler(message):
         send_meme(message)
 
 
-@bot.message_handler(commands=['me', 'check', 'check_me', 'check_ebalo'])
+@BOT.message_handler(commands=['me', 'check', 'check_me', 'check_ebalo'])
 def send_me_handler(message):
     """Присылает человеку его запись в БД"""
     log.log_print(f"send_me_handler invoked")
@@ -506,7 +498,7 @@ def send_me_handler(message):
             send_me(message, person)
 
 
-@bot.message_handler(commands=['members', 'database'])
+@BOT.message_handler(commands=['members', 'database'])
 def all_members_handler(message):
     """Присылает человеку все записи в БД"""
     log.log_print(f"all_members_handler invoked")
@@ -516,7 +508,7 @@ def all_members_handler(message):
             send_some_top(message, language, '{index}. <code>{p_id}</code> {p_link}\n')
 
 
-@bot.message_handler(commands=['give'])
+@BOT.message_handler(commands=['give'])
 def money_give_handler(message):
     """Обмен денег между пользователями"""
     log.log_print(f"money_give_handler invoked")
@@ -529,7 +521,7 @@ def money_give_handler(message):
                 reply(message, "Последнее слово должно быть числом, сколько денег даём")
 
 
-@bot.message_handler(commands=['top'])
+@BOT.message_handler(commands=['top'])
 def money_top_handler(message):
     """Топ ЯМ"""
     log.log_print("money_top_handler invoked")
@@ -541,7 +533,7 @@ def money_top_handler(message):
                           filter_f=lambda x: x['money'] > 0, to_private=False)
 
 
-@bot.message_handler(commands=['warns'])
+@BOT.message_handler(commands=['warns'])
 def warns_top_handler(message):
     log.log_print('warns_top_handler invoked')
     if in_mf(message, command_type=None, or_private=False):
@@ -551,7 +543,7 @@ def warns_top_handler(message):
                           sort_key=lambda x: x['warns'], filter_f=lambda x: x['warns'] > 0, to_private=False)
 
 
-@bot.message_handler(commands=['messages_top'])
+@BOT.message_handler(commands=['messages_top'])
 def messages_top_handler(message):
     """Messages top"""
     log.log_print("messages_top_handler invoked")
@@ -562,7 +554,7 @@ def messages_top_handler(message):
                           sort_key=lambda x: x['messages'], filter_f=lambda x: x['messages'] > 10)
 
 
-@bot.message_handler(commands=['month'])
+@BOT.message_handler(commands=['month'])
 def month_set_handler(message):
     """Set month of person's birthday"""
     log.log_print("month_set_handler invoked")
@@ -574,7 +566,7 @@ def month_set_handler(message):
             reply(message, "Последнее слово должно быть положительным числом от 1 до 12 — номером месяца")
 
 
-@bot.message_handler(commands=['day'])
+@BOT.message_handler(commands=['day'])
 def day_set_handler(message):
     """Set day of person's birthday"""
     log.log_print("day_set_handler invoked")
@@ -588,7 +580,7 @@ def day_set_handler(message):
             reply(message, "Последнее слово должно быть положительным числом от 1 до 31 — номером дня")
 
 
-@bot.message_handler(commands=['bdays', 'birthdays'])
+@BOT.message_handler(commands=['bdays', 'birthdays'])
 def birthday_handler(message):
     """Show the nearest birthdays"""
     log.log_print(f"birthday_handler invoked")
@@ -601,7 +593,7 @@ def birthday_handler(message):
                           to_private=False, reverse=False)
 
 
-@bot.message_handler(commands=['admins', 'report'])
+@BOT.message_handler(commands=['admins', 'report'])
 def admins_handler(message):
     """Ping admins"""
     log.log_print("admins_handler invoked")
@@ -610,7 +602,7 @@ def admins_handler(message):
         admins(message)
 
 
-@bot.message_handler(commands=['chat'])
+@BOT.message_handler(commands=['chat'])
 def chat_check_handler(message):
     """Show options of the current chat"""
     log.log_print("chat_check_handler invoked")
@@ -618,7 +610,7 @@ def chat_check_handler(message):
         chat_check(message)
 
 
-@bot.message_handler(commands=['system'])
+@BOT.message_handler(commands=['system'])
 def system_check_handler(message):
     """Show options of the current chat"""
     log.log_print("system_check_handler invoked")
@@ -635,7 +627,7 @@ def chats_handler(message):
 '''
 
 
-@bot.message_handler(commands=['anon'])
+@BOT.message_handler(commands=['anon'])
 def anon_message_handler(message):
     """Send anon message to admin place"""
     log.log_print("anon_message_handler invoked")
@@ -648,7 +640,7 @@ def anon_message_handler(message):
         reply(message, "Эта команда предназначена для лички")
 
 
-@bot.message_handler(commands=['test'])
+@BOT.message_handler(commands=['test'])
 def database_send_handler(message):
     log.log_print('database_send_handler invoked')
     if message.chat.id == 381279599:
@@ -661,7 +653,7 @@ def database_send_handler(message):
 '''Последний хэндлер. Просто считает сообщения, что не попали в другие хэндлеры'''
 
 
-@bot.message_handler(func=lambda message: True, content_types=all_content_types)
+@BOT.message_handler(func=lambda message: True, content_types=all_content_types)
 def counter_handler(message):
     """Подсчитывает сообщения"""
     log.log_print("counter_handler invoked")

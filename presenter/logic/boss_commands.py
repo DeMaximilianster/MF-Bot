@@ -256,7 +256,7 @@ def del_admin(message, person, loud=True):
 def rank_changer(message, person):
     # TODO Если у чела 3+ варна, то их нужно обнулить
     """Changes person's rank"""
-    log.log_print(f"{__name__} invoked")
+    log.log_print("rank_changer invoked")
     database = Database()
     chat = database.get('chats', ('id', message.chat.id))
     system = chat['system']
@@ -269,14 +269,15 @@ def rank_changer(message, person):
         database.change(rank, "rank", 'members', ('id', person.id), ('system', system))
         reply(message, f"Теперь это {rank} по званию!")
         if adm_place:
-            send(adm_place, "Пользователь {} получил(а) звание {}".format(person_info_in_html(person), rank),
-                 parse_mode='HTML')
+            send(adm_place, "Пользователь {} получил(а) звание {}".format(
+                person_info_in_html(person), rank), parse_mode='HTML')
     elif command in chat_configs["appointment_adders"]:
         appointment_index = chat_configs["appointment_adders"].index(command)
         appointment = chat_configs["appointments"][appointment_index]
-        if not database.get('appointments', ('id', person.id), ('system', system), ('appointment', appointment)):
+        if not database.get('appointments', ('id', person.id), ('system', system),
+                            ('appointment', appointment)):
             database.append((person.id, system, appointment), "appointments")
-            reply(message, f"Теперь это {appointment}. Поздравим человека с назначением на должность!")
+            reply(message, f"Теперь это {appointment}. Поздравим человека с повышением!")
             if adm_place:
                 send(adm_place, "Пользователь {} получил(а) должность {}".format(
                     person_info_in_html(person), appointment), parse_mode='HTML')
@@ -285,11 +286,12 @@ def rank_changer(message, person):
     elif command in chat_configs["appointment_removers"]:
         appointment_index = chat_configs["appointment_removers"].index(command)
         appointment = chat_configs["appointments"][appointment_index]
-        database.remove("appointments", ('id', person.id), ('system', system), ('appointment', appointment))
+        database.remove("appointments", ('id', person.id), ('system', system),
+                        ('appointment', appointment))
         reply(message, f"Теперь это не {appointment}")
         if adm_place:
-            send(adm_place, "Пользователь {} потерял(а) должность {}".format(person_info_in_html(person), appointment),
-                 parse_mode='HTML')
+            send(adm_place, "Пользователь {} потерял(а) должность {}".format(
+                person_info_in_html(person), appointment), parse_mode='HTML')
     unban_user(person)
     if is_suitable(message, person, 'boss', loud=False):
         give_admin(message, person, loud=False)
@@ -305,7 +307,7 @@ def message_change(message, person):
     ch_id = message.chat.id
     messages = message.text.split()[-1]
     value = int(messages)
-    reply(message, "Ставлю человеку с ID {} в чат с ID {} количество сообщений равное {}".format(p_id, ch_id, value))
+    reply(message, "Ставлю этому человеку в этот чат количество сообщений {}".format(value))
     if not database.get('messages', ('person_id', p_id), ('chat_id', ch_id)):
         database.append((p_id, ch_id, value), 'messages')
     else:

@@ -1,8 +1,11 @@
 # -*- coding: utf-8 -*-
+"""This is config functions. They are pretty important part of the bot
+so don't mess with them
+"""
 import json
 import time
 from threading import Thread
-
+from random import shuffle
 from telebot.types import InlineKeyboardButton, InlineKeyboardMarkup, CallbackQuery
 from presenter.config.config_var import bot_id, new_system_json_entry
 from presenter.config.database_lib import Database
@@ -17,6 +20,7 @@ CAPTCHERS = []
 
 
 def test_function(excepted_result, gaven_result):
+    """Test whenever function has done correctly or not"""
     if gaven_result == excepted_result:
         print("Test completed!")
     else:
@@ -24,6 +28,7 @@ def test_function(excepted_result, gaven_result):
 
 
 class CaptchaBan(Thread):
+    """Waits for person to complete the captcha or ban if time is passed"""
     def __init__(self, message, bots_message):
         Thread.__init__(self)
         LOG.log_print("CaptchaBan invoked")
@@ -41,6 +46,7 @@ class CaptchaBan(Thread):
 
 
 class SystemUpdate(Thread):
+    """Updates all the entries in some system"""
     def __init__(self, chat_id, system_id, members, sent):
         Thread.__init__(self)
         LOG.log_print("SystemUpdate invoked")
@@ -58,6 +64,7 @@ class SystemUpdate(Thread):
 
 
 class WaitAndUnban(Thread):
+    """Some timer passes some time and user if unbanned"""
     def __init__(self, chat_id, user_id):
         Thread.__init__(self)
         LOG.log_print("WaitAndUnban invoked")
@@ -65,24 +72,28 @@ class WaitAndUnban(Thread):
         self.user_id = user_id
 
     def run(self):
-        time.sleep(1)
+        time.sleep(3)
         unban(self.chat_id, self.user_id)
 
 
 def remove_captcher(call):
+    """Remove the user from CAPTCHERS list"""
     global CAPTCHERS
     if (call.from_user.id, call.message.chat.id) in CAPTCHERS:
         CAPTCHERS.remove((call.from_user.id, call.message.chat.id))
         return True
+    return False
 
 
 def kick_and_unban(chat_id, user_id):
+    """Kicks user and unbans them in one flash"""
     kick(chat_id, user_id)
     wait_and_unban = WaitAndUnban(chat_id, user_id)
     wait_and_unban.start()
 
 
 def get_text_and_entities(target_message):
+    """Get the text and entities from the message"""
     if target_message.text:
         text = target_message.text
         entities = target_message.entities
@@ -93,6 +104,7 @@ def get_text_and_entities(target_message):
 
 
 def entities_saver(text, entities):
+    """Copies the text and saving all the entities"""
     points = set()
     entities_blocks = []
     entities_to_parse = {'bold', 'italic', 'underline', 'strikethrough', 'code', 'text_link'}
@@ -134,22 +146,44 @@ def entities_saver(text, entities):
                         point_block[2] = f'<a href="{entity_block[3]}">{point_block[2]}</a>'
         text_blocks = [point_block[2] for point_block in points_blocks]
         return start_text + ''.join(text_blocks) + end_text
-    else:
-        return html_cleaner(text)
+    return html_cleaner(text)
 
 
 def html_cleaner(text: str) -> str:
+    """Cleans html-entities irrelevant for some reason"""
     if text:
         return text.replace('&', '&amp;').replace('<', '&lt;').replace('>', '&gt;')
-    else:
-        return ''
+    return ''
 
 
 def get_target_message(message):
+    """Aims message that was perlied to or cuurent message if it's not a reply"""
     reply_to = message.reply_to_message
     if reply_to:
         return reply_to
     return message
+
+
+def create_captcha_keyboard():
+    """Creates 5x5 buttons keyboard with animals as a captcha
+
+    :return InlineKeyboardMarkup
+    """
+    wrong_animals_string = '🦀🦞🦑🐡🐶🐱🐭🐹🐰🦊🐻🐼🐵🐸🐷🐮🦁🐯🐨🙈🙉🙊🐒🐔🐧🐦🐤🐗🐺🦇🦉🦅🦆🐥🐣🐴🦄'
+    wrong_animals_string += '🐝🐛🦋🐌🐞🐜🦎🐍🐢🦂🕷🦗🦟🐆🦓🦍🐘🦛🦏🐪🐫🐏🐖🐎🦔🐈'
+    wrong_animals_buttons = []
+    # TODO Регулятор сложности капчи
+    for wrong_animal in wrong_animals_string[:24]:
+        wrong_animals_buttons.append(InlineKeyboardButton(wrong_animal,
+                                                          callback_data="captcha_fail"))
+    buttons = [InlineKeyboardButton("🦐", callback_data="captcha")] + wrong_animals_buttons
+    shuffle(buttons)
+    buttons_rows = list([buttons[i:i + 5] for i in range(0, len(buttons), 5)])
+    keyboard = InlineKeyboardMarkup()
+    keyboard.row_width = 5
+    for buttons_row in buttons_rows:
+        keyboard.add(*buttons_row)
+    return keyboard
 
 
 def convert_command_to_storage_content(command: str) -> str:
@@ -205,6 +239,12 @@ def person_info_in_html(user) -> str:
 
 
 def chat_info_in_html(chat) -> str:
+    """
+
+    :param chat:
+    :return: string with pretty chat info like 'Multi Fandom 2 (@MultiFandomRu) [-1001408293838]'
+    :rtype: str
+    """
     return f'{html_cleaner(chat.title)} (@{chat.username}) [{code_text_wrapper(chat.id)}]'
 
 
@@ -218,23 +258,27 @@ test_function('<code>spam</code>', code_text_wrapper('spam'))
 
 
 def id_link_text_wrapper(text, person_id):
+    """Simply wraps some text into id_link html-wrap."""
     return f'<a href="tg://user?id={person_id}">{text}</a>'
 
 
 def link_text_wrapper(text, url):
+    """Simply wraps some text into url-link html-wrap."""
     return f'<a href="{url}">{text}</a>'
 
 
 def function_worked_correctly(function, *args, **kwargs):
+    """Checks if function worked without throwing an exception"""
     try:
         function(*args, **kwargs)
         return True
-    except Exception as e:
-        print(e)
+    except Exception as exception:
+        print(exception)
         return False
 
 
 def photo_video_gif_get(target_message):
+    """Gets the media from the target message to save into a storage"""
     text, entities = get_text_and_entities(target_message)
     final_text = entities_saver(text, entities)
     if target_message.photo:
@@ -246,6 +290,8 @@ def photo_video_gif_get(target_message):
 
 
 def int_check(string, positive):
+    """Checks if string is a integet (isdigit() passes ² which crashes (int))"""
+    # TODO Replace this function with function_worked_correctly()
     if positive:
         if set(string) & set('0123456789') == set(string):
             return int(string)
@@ -254,6 +300,7 @@ def int_check(string, positive):
 
 
 def language_analyzer(message, only_one):
+    """Analyzes the language that is suitable for some situation"""
     LOG.log_print(f"language_analyzer invoked")
     database = Database()
     entry = database.get('languages', ('id', message.chat.id))
@@ -284,7 +331,7 @@ def language_analyzer(message, only_one):
     languages['English'] = bool(english & text) or (message.from_user.language_code == 'en')
     count = 0
     language_answer = None
-    for language in languages.keys():
+    for language in languages:
         if languages[language]:
             count += 1
             language_answer = languages[language]
@@ -303,6 +350,11 @@ def language_analyzer(message, only_one):
 
 
 def case_analyzer(word, language):
+    """For now it's some stupid command
+    But in the future it will be able to comprehend cases in different languages
+
+    Don't touch this
+    """
     if language == 'Russian':
         if word[-1] in ('ь', 'й'):
             return word[:-1] + 'е'
@@ -313,6 +365,7 @@ def case_analyzer(word, language):
 
 
 def left_new_or_else_member(target_message):
+    """Get the target person in leave/entering messages"""
     if target_message.new_chat_members:
         return target_message.new_chat_members[0]
     elif target_message.left_chat_member:
@@ -321,7 +374,8 @@ def left_new_or_else_member(target_message):
 
 
 def person_check(message, person, to_self=False, to_bot=False):
-    LOG.log_print(f"{__name__} invoked")
+    """Checks if target person chosen correctly"""
+    LOG.log_print("person_check invoked")
     if person.id == message.from_user.id and not to_self:
         reply(message, "Этой командой нельзя пользоваться на самом себе")
         return False
@@ -332,6 +386,7 @@ def person_check(message, person, to_self=False, to_bot=False):
 
 
 def person_analyze(message, to_self=False, to_bot=False):
+    """Analyzes the target person for some command"""
     LOG.log_print("person_analyze invoked")
     if message.reply_to_message:  # Сообщение является ответом
         person = left_new_or_else_member(message.reply_to_message)
@@ -357,6 +412,7 @@ def person_analyze(message, to_self=False, to_bot=False):
 
 
 def rank_superiority(message, person):
+    """Checks if user's rank is superior to person's rank"""
     LOG.log_print("rank_superiority invoked")
     database = Database()
     chat = database.get('chats', ('id', message.chat.id))
@@ -407,6 +463,7 @@ def get_person(person, system, database, system_configs=None):
 
 
 def rank_required(message, person, system, min_rank, max_rank, loud=True):
+    """Checks if person has rank required for something"""
     LOG.log_print("rank_required invoked from userID {}".format(message.from_user.id))
     database = Database()
     chat_configs = get_system_configs(system)
@@ -417,7 +474,7 @@ def rank_required(message, person, system, min_rank, max_rank, loud=True):
     min_rank_n = ranks.index(min_rank)
     max_rank_n = ranks.index(max_rank)
     if your_rank_n < min_rank_n and loud:
-        if type(message) == CallbackQuery:
+        if isinstance(message, CallbackQuery):
             answer_callback(message.id,
                             "Ваше звание ({}) не дотягивает до звания ({}) для жмака"
                             .format(your_rank, min_rank), show_alert=True)
@@ -425,7 +482,7 @@ def rank_required(message, person, system, min_rank, max_rank, loud=True):
             reply(message, "Ваше звание ({}) не дотягивает до необходимого ({}) для этого"
                   .format(your_rank, min_rank))
     elif your_rank_n > max_rank_n and loud:
-        if type(message) == CallbackQuery:
+        if isinstance(message, CallbackQuery):
             answer_callback(message.id,
                             "Ваше звание ({}) выше максимального ({}) для жмака. Гордитесь собой"
                             .format(your_rank, max_rank), show_alert=True)
@@ -436,6 +493,7 @@ def rank_required(message, person, system, min_rank, max_rank, loud=True):
 
 
 def appointment_required(message, person, system, appointment, loud=True):
+    """Checks if person has appointment required for something"""
     LOG.log_print("appointment_required invoked")
     database = Database()
     true_false = database.get("appointments", ('id', person.id), ('appointment', appointment),
@@ -450,7 +508,7 @@ def is_suitable(inputed, person, command_type, system=None, loud=True):
     LOG.log_print("is_suitable invoked")
     database = Database()
     # determine if input is a message or a callback query
-    if type(inputed) == CallbackQuery:
+    if isinstance(inputed, CallbackQuery):
         message = inputed.message
     else:
         message = inputed
@@ -468,6 +526,7 @@ def is_suitable(inputed, person, command_type, system=None, loud=True):
 
 
 def cooldown(message, command, timeout=3600):
+    """Checks if the function is ready to be used again"""
     LOG.log_print("cooldown invoked")
     if message.chat.id > 0:  # Command is used in PM's
         return True
@@ -497,6 +556,7 @@ def cooldown(message, command, timeout=3600):
 
 
 def time_replace(seconds):
+    """Converts time in GMT+0 into GMT+3 and return days, hours, minutes and seconds"""
     _, _, days, hours, minutes, seconds, *_ = time.gmtime(seconds + 3600*3)
     return days, hours, minutes, seconds
 
@@ -564,6 +624,7 @@ def in_system_commands(message):
 
 
 def feature_is_available(chat_id, system, command_type):
+    """Checks if some feature is available in this system"""
     LOG.log_print("command_is_available invoked")
     database = Database()
     command_mode = database.get('chats', ('id', chat_id))[command_type]
@@ -578,8 +639,10 @@ def counter(message, person):
     database = Database()
     if not database.get('messages', ('person_id', person.id), ('chat_id', message.chat.id)):
         database.append((person.id, message.chat.id, 0), 'messages')
-    value = database.get('messages', ('person_id', person.id), ('chat_id', message.chat.id))['messages'] + 1
-    database.change(value, 'messages', 'messages', ('person_id', person.id), ('chat_id', message.chat.id))
+    messages = database.get('messages', ('person_id', person.id),
+                            ('chat_id', message.chat.id))['messages']
+    database.change(messages + 1, 'messages', 'messages', ('person_id', person.id),
+                    ('chat_id', message.chat.id))
     # TODO Добавить время последнего сообщения и элитократические взаимодействия с ним
 
 
@@ -587,7 +650,8 @@ def member_update(system, person):
     """Updates nickname, username and messages columns in database"""
     LOG.log_print('member_update invoked')
     database = Database()
-    chats_ids = [x['id'] for x in database.get_many('chats', ('messages_count', 2), ('system', system))]
+    chats_ids = [x['id'] for x in database.get_many('chats', ('messages_count', 2),
+                                                    ('system', system))]
     msg_count = 0
     for chat_id in chats_ids:
         if feature_is_available(chat_id, system, 'messages_count'):
@@ -600,36 +664,42 @@ def member_update(system, person):
 
 
 def get_systems_json():
+    """Get info about all the systems"""
     with open(SYSTEMS_FILE, 'r', encoding='utf-8') as read_file:
         return json.load(read_file)
 
 
 def get_system_configs(system):
-    data = get_systems_json()
-    return data[system]
+    """Get info about one system"""
+    return get_systems_json()[system]
 
 
 def get_list_from_storage(storage):
+    """Get some catalogue from the media storage"""
     with open(STORAGE_FILE, 'r', encoding='utf-8') as read_file:
         return json.load(read_file)[storage]
 
 
 def get_storage_json():
+    """Get the media storage"""
     with open(STORAGE_FILE, 'r', encoding='utf-8') as read_file:
         return json.load(read_file)
 
 
 def write_storage_json(data):
+    """Write info about all the storage into json file"""
     with open(STORAGE_FILE, 'w', encoding='utf-8') as write_file:
         json.dump(data, write_file, indent=4, ensure_ascii=False)
 
 
 def write_systems_json(data):
+    """Write info about all the systems into json file"""
     with open(SYSTEMS_FILE, 'w', encoding='utf-8') as write_file:
         json.dump(data, write_file, indent=4, ensure_ascii=False)
 
 
 def update_systems_json(system, set_what, set_where):
+    """Changes some data in some system"""
     data = get_systems_json()
     system_configs = data[system]
     system_configs[set_where] = set_what
@@ -661,6 +731,7 @@ def create_system(message, system_id, database):
 
 
 def update_old_systems_json():
+    """Fills old json entries with missing attributes"""
     data = get_systems_json()
     for system in data.keys():
         for prop in new_system_json_entry:

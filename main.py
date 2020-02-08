@@ -3,17 +3,17 @@
 #  from requests import ReadTimeout, ConnectionError
 #  from urllib3.exceptions import NewConnectionError, MaxRetryError, ReadTimeoutError
 import view.input
-from presenter.config.token import inf_mode, bot
+from presenter.config.token import INFINITE_MODE, BOT
 from presenter.config.config_func import update_old_systems_json
 
 print(view.input.WORK)
 
 update_old_systems_json()
-if inf_mode:
-    bot.infinity_polling()  # Запуск бота
+if INFINITE_MODE:
+    BOT.infinity_polling()  # Запуск бота
 else:
     #  telebot.logger.setLevel("DEBUG")  # Иногда помогает, но обычно не нужна
-    bot.polling(none_stop=True)
+    BOT.polling(none_stop=True)
 
 # TODO провокацио-голосовашки и оск-голосовашки
 # TODO Антифлуд механизм
