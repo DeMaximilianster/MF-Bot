@@ -25,6 +25,7 @@ def test_function(excepted_result, gaven_result):
         print("Test completed!")
     else:
         print(f"Test failed! Excepted: {excepted_result}. Got: {gaven_result}")
+        raise Exception
 
 
 class CaptchaBan(Thread):
@@ -277,6 +278,15 @@ def function_worked_correctly(function, *args, **kwargs):
         return False
 
 
+def function_returned_true(function, *args, **kwargs):
+    """Checks if function worked without throwing an exception and returned True"""
+    try:
+        return bool(function(*args, **kwargs))
+    except Exception as exception:
+        print(exception)
+        return False
+
+
 def photo_video_gif_get(target_message):
     """Gets the media from the target message to save into a storage"""
     text, entities = get_text_and_entities(target_message)
@@ -409,6 +419,43 @@ def person_analyze(message, to_self=False, to_bot=False):
         return message.from_user
     else:
         reply(message, "Ответьте на сообщение необходимого чела или напишите после команды его ID")
+
+
+def parameters_analyze(text: str, defaul_value=None) -> dict:
+    """
+    :param text: text of user's message
+    :type text: str
+    :return: parameters required for some command
+    :rtype: dict
+    """
+    dictionary_of_parameters = {'command': remove_slash_and_bot_mention(text)}
+    if defaul_value is not None:
+        dictionary_of_parameters['value'] = defaul_value
+    parts_of_the_message = text.split()[1:]
+    for part in parts_of_the_message:
+        if function_returned_true(int, part) and get_member(-1001268084945, int(part)):
+            dictionary_of_parameters['person_id'] = int(part)
+            parts_of_the_message.remove(part)
+            break
+    for part in parts_of_the_message:
+        if function_returned_true(int, part):
+            dictionary_of_parameters['value'] = int(part)
+            parts_of_the_message.remove(part)
+            break
+    comment = ' '.join(parts_of_the_message)
+    if comment:
+        dictionary_of_parameters['comment'] = comment
+    return dictionary_of_parameters
+
+
+test_function({'command': 'give', 'person_id': 381279599, 'value': 20},
+              parameters_analyze('/give 381279599 20'))
+test_function({'command': 'give', 'value': 20},
+              parameters_analyze('/give 20'))
+test_function({'command': 'give', 'value': 20, 'comment': 'Take this'},
+              parameters_analyze('/give Take 20 this'))
+test_function({'command': 'warn', 'value': 1, 'comment': 'Take this'},
+              parameters_analyze('/warn Take this', defaul_value=1))
 
 
 def rank_superiority(message, person):
@@ -621,6 +668,7 @@ def in_system_commands(message):
             every += chat_configs["appointment_removers"]
             return command in every
         return message.text.split()[0] in ("/guest", "/admin", "/senior_admin", "/leader")
+    return False
 
 
 def feature_is_available(chat_id, system, command_type):
