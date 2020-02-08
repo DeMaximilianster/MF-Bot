@@ -16,6 +16,13 @@ LOG = Loger()
 CAPTCHERS = []
 
 
+def test_function(excepted_result, gaven_result):
+    if gaven_result == excepted_result:
+        print("Test completed!")
+    else:
+        print(f"Test failed! Excepted: {excepted_result}. Got: {gaven_result}")
+
+
 class CaptchaBan(Thread):
     def __init__(self, message, bots_message):
         Thread.__init__(self)
@@ -202,8 +209,12 @@ def chat_info_in_html(chat) -> str:
 
 
 def code_text_wrapper(text):
-    """Simply wraps some text into code html-wrap"""
+    """Simply wraps some text into code html-wrap."""
     return f'<code>{text}</code>'
+
+
+test_function('<code>test</code>', code_text_wrapper('test'))
+test_function('<code>spam</code>', code_text_wrapper('spam'))
 
 
 def id_link_text_wrapper(text, person_id):
