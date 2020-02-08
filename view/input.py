@@ -166,7 +166,7 @@ def mute_handler(message):
     if in_mf(message, "boss_commands", or_private=False) and is_suitable(message, message.from_user, 'boss'):
         person = person_analyze(message)
         if person and rank_superiority(message, person):
-            if int_check(message.text.split()[-1], positive=True):  # TODO Добавить час мута по умолчанию
+            if int_check(message.text.split()[-1], positive=True) or len(message.text.split()) == 1:
                 mute(message, person)
             else:
                 reply(message, "Последнее слово должно быть положительным числом на сколько часов запрещаем писать")
