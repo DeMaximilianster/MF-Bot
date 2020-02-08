@@ -136,11 +136,12 @@ def ban(message, person, comment=True, unban_then=False):
         unban_user(person)
 
 
-def mute(message, person):
+def mute(message, person, hours=1):
     """Даёт участнику бан"""
     log.log_print("mute invoked")
     database = Database()
-    hours = int(message.text.split()[-1])
+    if len(message.text.split()) > 1:
+        hours = int(message.text.split()[-1])
     chat = database.get('chats', ('id', message.chat.id))
     system = chat['system']
     for chat in full_chat_list(database, system):
