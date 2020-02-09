@@ -383,69 +383,93 @@ def left_new_or_else_member(target_message):
     return target_message.from_user
 
 
-def person_check(message, person, to_self=False, to_bot=False):
-    """Checks if target person chosen correctly"""
-    LOG.log_print("person_check invoked")
-    if person.id == message.from_user.id and not to_self:
-        reply(message, "Этой командой нельзя пользоваться на самом себе")
-        return False
-    if person.id == bot_id and not to_bot:
-        reply(message, "Этой командой нельзя пользоваться на мне")
-        return False
-    return True
+class Analyzer:
+    """Class to get target_person and other paramters"""
+    def __init__(self, message, value_necessary=True, default_value=None, value_positive=False):
+        self.message = message
+        self.parameters_dictionary = parameters_analyze(message.text,
+                                                        value_necessary=value_necessary,
+                                                        default_value=default_value,
+                                                        value_positive=value_positive)
+        self.value_potive = value_positive
+
+    def return_target_person(self, to_self=False, to_bot=False):
+        """Get and check target person"""
+        target_person = self.get_person(self.parameters_dictionary)
+        if self.check_person(target_person, to_self, to_bot):
+            return target_person
+
+    def get_person(self, parameters_dictionary: dict):
+        """Gets possible target person"""
+        if 'person_id' in parameters_dictionary.keys():
+            return get_member(-1001268084945, parameters_dictionary['person_id']).user
+        if self.message.reply_to_message:  # Сообщение является ответом
+            return left_new_or_else_member(self.message.reply_to_message)
+        return self.message.from_user
+
+    def check_person(self, person, to_self, to_bot):
+        """Checks if target person chosen correctly"""
+        LOG.log_print("person_check invoked")
+        if not self.parameters_dictionary:
+            str_value_positive = 'ПОЛОЖИТЕЛЬНОЕ' if self.value_potive else ''
+            reply(self.message, "Пожалуйста, введите {} ".format(str_value_positive) +
+                                "число-значение, необходимое для команды, например\n\n"
+                                "/cmd 866828593 50 Комментарий\n\nили\n\n"
+                                "[Ответ на сообщение]\n/cmd 50 Комментарий\n\n"
+                                "Вы даже можете перемешивать параметры\n\n"
+                                "/cmd Комментарий 50 866828593\n"
+                                "/cmd 50 Комментарий 866828593\n"
+                                "/cmd 866828593 Комментарий 50\n")
+        elif person.id == self.message.from_user.id and not to_self:
+            reply(self.message, "Пожалуйста, введите ID нужного человека (можно найти в /members) "
+                                "или ответьте командой на его сообщение\n\n"
+                                "Этой командой нельзя пользоваться на себе, "
+                                "так что ввести свой же ID или ответить "
+                                "на своё же сообщение не выйдет)")
+            return False
+        if person.id == bot_id and not to_bot:
+            reply(self.message, "Этой командой нельзя пользоваться на мне")
+            return False
+        return True
 
 
-def person_analyze(message, to_self=False, to_bot=False):
-    """Analyzes the target person for some command"""
-    LOG.log_print("person_analyze invoked")
-    if message.reply_to_message:  # Сообщение является ответом
-        person = left_new_or_else_member(message.reply_to_message)
-        if person_check(message, person, to_self, to_bot):
-            return person
-    elif len(message.text.split()) > 1:
-        par = message.text.split()[1]
-        if int_check(par, positive=True) and 7 <= len(par) <= 10:
-            member = get_member(message.chat.id, par)
-            if member:
-                print(member.status)
-                person = member.user
-                if person_check(message, person, to_self, to_bot):
-                    return person
-            else:
-                reply(message, "Не вижу такого ID")
-        else:
-            reply(message, "Некорректный ID. ID это число, которое содержит в себе от 7 до 10 цифр")
-    elif to_self:
-        return message.from_user
-    else:
-        reply(message, "Ответьте на сообщение необходимого чела или напишите после команды его ID")
-
-
-def parameters_analyze(text: str, defaul_value=None) -> dict:
+def parameters_analyze(text: str, value_necessary=True,
+                       default_value=None, value_positive=False) -> dict:
     """
     :param text: text of user's message
     :type text: str
+
+    :param value_necessary: if it's necessary to return dictionary_of_parameters['value']
+
+    :param default_value: default dictionary_of_parameters['value']
+
+    :param value_positive: if dictionary_of_parameters['value'] must be positive
+    :type value_positive: bool
+
     :return: parameters required for some command
     :rtype: dict
     """
     dictionary_of_parameters = {'command': remove_slash_and_bot_mention(text)}
-    if defaul_value is not None:
-        dictionary_of_parameters['value'] = defaul_value
+    if default_value is not None:
+        dictionary_of_parameters['value'] = default_value
     parts_of_the_message = text.split()[1:]
     for part in parts_of_the_message:
-        if function_returned_true(int, part) and get_member(-1001268084945, int(part)):
+        if function_worked_correctly(int, part) and get_member(-1001268084945, int(part)):
             dictionary_of_parameters['person_id'] = int(part)
             parts_of_the_message.remove(part)
             break
     for part in parts_of_the_message:
-        if function_returned_true(int, part):
+        if function_worked_correctly(int, part):
             dictionary_of_parameters['value'] = int(part)
             parts_of_the_message.remove(part)
             break
     comment = ' '.join(parts_of_the_message)
     if comment:
         dictionary_of_parameters['comment'] = comment
-    return dictionary_of_parameters
+    if not value_necessary or ('value' in dictionary_of_parameters.keys() and
+                               (dictionary_of_parameters['value'] > 0 or not value_positive)):
+        return dictionary_of_parameters
+    return dict()
 
 
 test_function({'command': 'give', 'person_id': 381279599, 'value': 20},
@@ -455,7 +479,10 @@ test_function({'command': 'give', 'value': 20},
 test_function({'command': 'give', 'value': 20, 'comment': 'Take this'},
               parameters_analyze('/give Take 20 this'))
 test_function({'command': 'warn', 'value': 1, 'comment': 'Take this'},
-              parameters_analyze('/warn Take this', defaul_value=1))
+              parameters_analyze('/warn Take this', default_value=1, value_positive=True))
+test_function(dict(), parameters_analyze('/give'))
+test_function(dict(), parameters_analyze('/pay 381279599'))
+test_function(dict(), parameters_analyze('/warn 0', default_value=1, value_positive=True))
 
 
 def rank_superiority(message, person):
@@ -936,5 +963,6 @@ def unban_user(person):
     # TODO Уточнить систему
     chats_to_unban = database.get_many('chats', ('violators_ban', 2))
     for chat in chats_to_unban:
-        if get_member(chat['id'], person.id).status in ('left', 'kicked'):
+        member = get_member(chat['id'], person.id)
+        if member and member.status in ('left', 'kicked'):
             unban(chat['id'], person.id)

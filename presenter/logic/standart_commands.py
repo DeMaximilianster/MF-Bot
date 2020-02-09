@@ -44,6 +44,8 @@ def helper(message):
     """Предоставляет человеку список команд"""
     log.log_print(str(message.from_user.id) + ": helper invoked")
     database = Database()
+    # TODO Возможность посмотреть номер своей системы
+    # TODO Адаптативность званий
     answer = '<b>Команды:</b>\n\n'
     if message.chat.id < 0:  # Command is used in chat
         system = database.get('chats', ('id', message.chat.id))['system']
@@ -52,7 +54,8 @@ def helper(message):
         answer += '/me - Присылает вашу запись в базе данных\n'
         answer += '/anon - Прислать анонимное послание в админский чат (если таковой имеется)\n'
         answer += '/members - Прислать в личку перечень участников (нынешних и бывших) и их ID\n'
-        answer += '/messages_top - Прмслать в личку топ участников по сообщениям\n\n'
+        answer += '/messages_top - Прислать в личку топ участников по сообщениям\n' \
+                  '/warns - Посмотреть, у кого сколько предупреждений\n'
         # Helps
         answer += '<b>Помощь и менюшки:</b>\n'
         answer += '/help - Прислать это сообщение\n'
@@ -240,24 +243,23 @@ def send_some_top(message, language, format_string, start='', sort_key=lambda x:
         reply(message, "Ничего нет!")
 
 
-def money_give(message, person):
+def money_give(message, person, parameters_dictionary: dict):
     """Функция обмена деньгами между людьми"""
     # TODO add nice link's to people instead of id's
     log.log_print(f"money_give invoked to person {person.id}")
     database = Database()
     getter = person.id
     giver = message.from_user.id
-    money = message.text.split()[-1]
+    money = parameters_dictionary['value']
     chat = database.get('chats', ('id', message.chat.id))
     system = chat['system']
     value_getter = database.get('members', ('id', getter), ('system', system))['money']
     value_giver = database.get('members', ('id', giver), ('system', system))['money']
-    if money[0] == '-':
+    if money < 0:
         reply(message, "Я вам запрещаю воровать")
-    elif money == "0":
+    elif money == 0:
         reply(message, "Я вам запрещаю делать подобные бессмысленные запросы")
     else:
-        money = int(money)
         if money > value_giver:
             reply(message, "Деньжат не хватает")
         else:

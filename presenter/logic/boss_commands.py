@@ -43,17 +43,11 @@ def update_all_members(message):
     system_update.start()
 
 
-def warn(message, person):
+def warn(message, person, parameters_dictionary):
     """Даёт участнику предупреждение"""
     log.log_print("warn invoked")
     database = Database()
-    if len(message.text.split()) > 1:
-        warns = int(message.text.split()[-1])  # TODO Эта проверка происходит дважды
-    else:
-        warns = 1
-    if warns == 0:
-        reply(message, "Я вам запрещаю делать подобные бессмысленные запросы")
-        return None
+    warns = parameters_dictionary['value']
     chat = database.get('chats', ('id', message.chat.id))
     system = chat['system']
     value = database.get('members', ('id', person.id), ('system', system))['warns'] + warns
@@ -76,28 +70,32 @@ def warn(message, person):
         ban(message, person)
 
 
-def unwarn(message, person):
-    # TODO Предохранитель на отрицательное количество варнов
+def unwarn(message, person, parameters_dictionary: dict):
     """Снимает с участника предупреждение"""
     log.log_print("unwarn invoked")
     database = Database()
-    if len(message.text.split()) > 1:
-        unwarns = int(message.text.split()[-1])  # TODO Эта проверка происходит дважды
-    else:
-        unwarns = 1
+    unwarns = parameters_dictionary['value']
     chat = database.get('chats', ('id', message.chat.id))
     system = chat['system']
     value = database.get('members', ('id', person.id), ('system', system))['warns'] - unwarns
-    database.change(value, 'warns', 'members', ('id', person.id), ('system', system))
-    adm_place = admin_place(message, database)
-    if adm_place:
-        send(adm_place, "Пользователь {} потерял(а) {} варн(а) и их стало {}".format(
-                         person_info_in_html(person), unwarns, value), parse_mode='HTML')
-    reply(message, "Варн(ы) снят(ы). Теперь их {}".format(value))
-    if 3 - unwarns <= value < 3:
-        chat_configs = get_system_configs(system)
-        unban_user(person)
-        database.change(chat_configs['ranks'][1], 'rank', 'members', ('id', person.id), ('system', system))
+    if value >= 0:
+        database.change(value, 'warns', 'members', ('id', person.id), ('system', system))
+        adm_place = admin_place(message, database)
+        if adm_place:
+            text = "#warns\n\n"
+            text += "Пользователь {} потерял(а) {} варн(а) и их стало {}\n".format(
+                    person_info_in_html(person), unwarns, value)
+            text += "Варн(ы) снят(ы) пользователем {}\n".format(person_info_in_html(message.from_user))
+            if 'comment' in parameters_dictionary.keys():
+                text += "Комментарий: {}".format(parameters_dictionary['comment'])
+            send(adm_place, text, parse_mode='HTML')
+        reply(message, "Варн(ы) снят(ы). Теперь их {}".format(value))
+        if 3 - unwarns <= value < 3:
+            chat_configs = get_system_configs(system)
+            unban_user(person)
+            database.change(chat_configs['ranks'][1], 'rank', 'members', ('id', person.id), ('system', system))
+    else:
+        reply(message, "Нельзя сделать отрицательное количество предупреждений")
 
 
 def ban(message, person, comment=True, unban_then=False):
@@ -153,7 +151,7 @@ def mute(message, person, hours=1):
     reply(message, "Мут выдан")
 
 
-def money_pay(message, person):
+def money_pay(message, person, parameters_dictionary):
     """Платит человеку деньги из бюджета чата"""
     # TODO Добавить уведомление о человеке, совершившем перевод
     # TODO add nice link's to people instead of id's
@@ -166,7 +164,7 @@ def money_pay(message, person):
     if not_inf:
         bot_money = int(bot_money)
     p_id = person.id
-    money = message.text.split()[-1]
+    money = parameters_dictionary['value']
     value = database.get('members', ('id', p_id), ('system', system))['money']
     if money == "0":
         reply(message, "Не")
@@ -299,14 +297,13 @@ def rank_changer(message, person):
         del_admin(message, person, loud=False)
 
 
-def message_change(message, person):
+def message_change(message, person, parameters_dictionary):
     """Меняет запись в БД о количестве сообщений чела"""
     log.log_print(f"message_change invoked to person {person.id}")
     database = Database()
     p_id = person.id
     ch_id = message.chat.id
-    messages = message.text.split()[-1]
-    value = int(messages)
+    value = parameters_dictionary['value']
     reply(message, "Ставлю этому человеку в этот чат количество сообщений {}".format(value))
     if not database.get('messages', ('person_id', p_id), ('chat_id', ch_id)):
         database.append((p_id, ch_id, value), 'messages')

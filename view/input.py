@@ -1,8 +1,9 @@
 from presenter.config.token import BOT
 from view.output import reply, answer_callback, send_document
-from presenter.config.config_func import in_mf, cooldown, person_analyze, rank_superiority, \
-     int_check, person_check, is_suitable, in_system_commands, is_correct_message, remove_slash_and_bot_mention, \
+from presenter.config.config_func import in_mf, cooldown, rank_superiority, \
+     int_check, is_suitable, in_system_commands, is_correct_message, remove_slash_and_bot_mention, \
      convert_command_to_storage_content, language_analyzer
+import presenter.config.config_func as config_func
 from presenter.logic.elite import elite
 from presenter.logic.boss_commands import ban, add_chat, add_admin_place, chat_options, system_options, \
     warn, unwarn, message_change, money_pay, rank_changer, mute, money_mode_change, money_emoji, money_name, \
@@ -112,11 +113,11 @@ def warn_handler(message):
     if in_mf(message, 'boss_commands', or_private=False) and is_suitable(message, message.from_user, 'boss'):
         rep = message.reply_to_message
         if rep:
-            if person_check(message, rep.from_user) and rank_superiority(message, rep.from_user):
-                if int_check(message.text.split()[-1], positive=True) or len(message.text.split()) == 1:
-                    warn(message, rep.from_user)
-                else:
-                    reply(message, "Последнее слово должно быть положительным числом, сколько варнов даём")
+            analyzer = config_func.Analyzer(message, default_value=1, value_positive=True)
+            parameters_dictionary = analyzer.parameters_dictionary
+            if analyzer.check_person(rep.from_user, False, False) and rank_superiority(message, rep.from_user):
+                if parameters_dictionary:
+                    warn(message, rep.from_user, parameters_dictionary)
         else:
             reply(message, "Надо ответить на сообщение с актом преступления, чтобы переслать контекст в хранилище")
 
@@ -126,19 +127,17 @@ def unwarn_handler(message):
     """Снимает с участника предупреждение"""
     log.log_print("unwarn_handler invoked")
     if in_mf(message, 'boss_commands', or_private=False) and is_suitable(message, message.from_user, 'boss'):
-        person = person_analyze(message, to_bot=True)
+        analyzer = config_func.Analyzer(message, default_value=1, value_positive=True)
+        person = analyzer.return_target_person()
         if person:
-            if int_check(message.text.split()[-1], positive=True) or len(message.text.split()) == 1:
-                unwarn(message, person)
-            else:
-                reply(message, "Последнее слово должно быть положительным числом, сколько варнов снимаем")
+            unwarn(message, person, analyzer.parameters_dictionary)
 
 
 @BOT.message_handler(commands=['ban'])
 def ban_handler(message):
     log.log_print(f"ban_handler invoked")
     if in_mf(message, 'boss_commands', or_private=False) and is_suitable(message, message.from_user, 'boss'):
-        person = person_analyze(message)
+        person = config_func.Analyzer(message, value_necessary=False).return_target_person()
         if person and rank_superiority(message, person):
             ban(message, person)
 
@@ -147,7 +146,7 @@ def ban_handler(message):
 def kick_handler(message):
     log.log_print(f"kick_handler invoked")
     if in_mf(message, 'boss_commands', or_private=False) and is_suitable(message, message.from_user, 'boss'):
-        person = person_analyze(message)
+        person = config_func.Analyzer(message, value_necessary=False).return_target_person()
         if person and rank_superiority(message, person):
             ban(message, person, unban_then=True)
 
@@ -156,24 +155,22 @@ def kick_handler(message):
 def mute_handler(message):
     log.log_print("mute_handler invoked")
     if in_mf(message, "boss_commands", or_private=False) and is_suitable(message, message.from_user, 'boss'):
-        person = person_analyze(message)
-        if person and rank_superiority(message, person):
-            if int_check(message.text.split()[-1], positive=True) or len(message.text.split()) == 1:
-                mute(message, person)
-            else:
-                reply(message, "Последнее слово должно быть положительным числом на сколько часов запрещаем писать")
+        analyzer = config_func.Analyzer(message, default_value=1, value_positive=True)
+        person = analyzer.return_target_person()
+        parameters_dictionary = analyzer.parameters_dictionary
+        if person and rank_superiority(message, person) and parameters_dictionary:
+            mute(message, person, parameters_dictionary)
 
 
 @BOT.message_handler(commands=['pay'])
 def money_pay_handler(message):
     log.log_print(f"money_pay_handler invoked")
     if in_mf(message, 'financial_commands', or_private=False) and is_suitable(message, message.from_user, 'boss'):
-        person = person_analyze(message, to_self=True)
-        if person:
-            if int_check(message.text.split()[-1], positive=False):
-                money_pay(message, person)
-            else:
-                reply(message, "Последнее слово должно быть числом, сколько валюты прибавляем или убавляем")
+        analyzer = config_func.Analyzer(message)
+        person = analyzer.return_target_person(to_self=True)
+        parameters_dictionary = analyzer.parameters_dictionary
+        if person and parameters_dictionary:
+            money_pay(message, person, parameters_dictionary)
 
 
 '''
@@ -191,11 +188,11 @@ def rank_changer_handler(message):
     log.log_print("rank_changer_handler invoked")
     if in_mf(message, command_type=None, or_private=False):
         if message.from_user.id == 381279599:  # TODO Сделать так, чтоб добавлять можно было только лидера
-            person = person_analyze(message)
+            person = config_func.Analyzer(message, value_necessary=False).return_target_person()
             if person:
                 rank_changer(message, person)
         elif is_suitable(message, message.from_user, 'boss'):
-            person = person_analyze(message)
+            person = config_func.Analyzer(message, value_necessary=False).return_target_person()
             if person and rank_superiority(message, person):
                 rank_changer(message, person)
 
@@ -205,15 +202,11 @@ def messages_change_handler(message):
     """Меняет запись в БД о количестве сообщений чела"""
     log.log_print(f"messages_change_handler invoked")
     if in_mf(message, 'boss_commands', or_private=False) and is_suitable(message, message.from_user, "boss"):
-        if (len(message.text.split()) == 2 and message.reply_to_message) or len(message.text.split()) == 3:
-            person = person_analyze(message, to_self=True)
-            if person:
-                if int_check(message.text.split()[-1], positive=True):
-                    message_change(message, person)
-                else:
-                    reply(message, "Последнее слово должно быть положительным числом, сколько сообщений ставим")
-        else:
-            reply(message, "Либо не указана персона, к которой это применяется, либо количество сообщений")
+        analyzer = config_func.Analyzer(message, value_positive=True)
+        person = analyzer.return_target_person()
+        parameters_dictionary = analyzer.parameters_dictionary
+        if person and parameters_dictionary:
+            message_change(message, person, parameters_dictionary)
 
 
 @BOT.message_handler(commands=['add_chat'])
@@ -493,15 +486,15 @@ def send_me_handler(message):
     """Присылает человеку его запись в БД"""
     log.log_print(f"send_me_handler invoked")
     if in_mf(message, command_type=None, or_private=False):
-        person = person_analyze(message, to_self=True)
+        person = config_func.Analyzer(message, value_necessary=False).return_target_person(to_self=True)
         if person:
             send_me(message, person)
 
 
-@BOT.message_handler(commands=['members', 'database'])
+@BOT.message_handler(commands=['members'])
 def all_members_handler(message):
     """Присылает человеку все записи в БД"""
-    log.log_print(f"all_members_handler invoked")
+    log.log_print("all_members_handler invoked")
     if in_mf(message, command_type=None, or_private=False):
         language = language_analyzer(message, only_one=True)
         if language:
@@ -513,12 +506,11 @@ def money_give_handler(message):
     """Обмен денег между пользователями"""
     log.log_print(f"money_give_handler invoked")
     if in_mf(message, 'financial_commands', or_private=False):
-        person = person_analyze(message, to_bot=False)
-        if person:
-            if int_check(message.text.split()[-1], positive=False):
-                money_give(message, person)
-            else:
-                reply(message, "Последнее слово должно быть числом, сколько денег даём")
+        analyzer = config_func.Analyzer(message)
+        person = analyzer.return_target_person()
+        parameters_dictionary = analyzer.parameters_dictionary
+        if person and parameters_dictionary:
+            money_give(message, person, parameters_dictionary)
 
 
 @BOT.message_handler(commands=['top'])
