@@ -134,12 +134,11 @@ def ban(message, person, comment=True, unban_then=False):
         unban_user(person)
 
 
-def mute(message, person, hours=1):
+def mute(message, person, parameters_dictionary):
     """Даёт участнику бан"""
     log.log_print("mute invoked")
     database = Database()
-    if len(message.text.split()) > 1:
-        hours = int(message.text.split()[-1])
+    hours = parameters_dictionary['value']
     chat = database.get('chats', ('id', message.chat.id))
     system = chat['system']
     for chat in full_chat_list(database, system):
@@ -166,9 +165,9 @@ def money_pay(message, person, parameters_dictionary):
     p_id = person.id
     money = parameters_dictionary['value']
     value = database.get('members', ('id', p_id), ('system', system))['money']
-    if money == "0":
+    if money == 0:
         reply(message, "Не")
-    elif money[0] == '-':
+    elif money < 0:
         money = -int(money)  # Делаем из отрицательного числа положительное
         if value - money >= 0:
             value -= money
@@ -190,7 +189,6 @@ def money_pay(message, person, parameters_dictionary):
         else:
             reply(message, "У людей число денег должно быть больше нуля")
     else:
-        money = int(money)
         if not_inf and bot_money < money:
             reply(message, "У нас нет столько в бюджете")
         else:
