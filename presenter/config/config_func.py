@@ -109,7 +109,7 @@ def entities_saver(text, entities):
     points = set()
     entities_blocks = []
     entities_to_parse = {'bold', 'italic', 'underline', 'strikethrough', 'code', 'text_link'}
-    if entities and ({e.type for e in entities} and entities_to_parse):
+    if entities and ({e.type for e in entities}.intersection(entities_to_parse)):
         for entity in entities:
             if entity.type in ('bold', 'italic', 'underline', 'strikethrough', 'code'):
                 points.add(entity.offset)
