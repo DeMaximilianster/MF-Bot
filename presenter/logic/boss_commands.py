@@ -1,18 +1,25 @@
 # -*- coding: utf-8 -*-
+"""This is a module for commands without inline-buttons,
+and that require some special ranks
+"""
+from time import time
+
 from presenter.config.database_lib import Database
 from presenter.config.config_var import full_chat_list, channel_list, bot_id, admin_place, chat_list
 from presenter.config.log import Loger, log_to
-from presenter.config.config_func import unban_user, is_suitable, int_check, get_system_configs, photo_video_gif_get, \
-    update_systems_json, create_system, create_chat, SystemUpdate, write_storage_json, get_storage_json,\
+from presenter.config.config_func import unban_user, is_suitable, int_check, \
+    get_system_configs, photo_video_gif_get, get_target_message, \
+    update_systems_json, create_system, create_chat, SystemUpdate, \
+    write_storage_json, get_storage_json, get_person,\
     person_info_in_html, chat_info_in_html
 from view.output import kick, reply, promote, send, forward, restrict
-from time import time
 
-log = Loger(log_to)
+LOG = Loger(log_to)
 
 
 def add_stuff_to_storage(message, stuff):
-    log.log_print("add_stuff_to_storage")
+    """Add some media to media storage"""
+    LOG.log_print("add_stuff_to_storage")
     rep = message.reply_to_message
     data = get_storage_json()
     if rep:
@@ -23,7 +30,8 @@ def add_stuff_to_storage(message, stuff):
             else:
                 data[stuff].append(insert)
                 forward(381279599, message.chat.id, rep.message_id)
-                send(381279599, f"Норм контент?) user={message.from_user.id}, text={message.text}, id={insert[0]}")
+                send(381279599, f"Норм контент?) user={message.from_user.id}, "
+                                f"text={message.text}, id={insert[0]}")
                 write_storage_json(data)
                 reply(message, "ОК!")
         else:
@@ -33,7 +41,8 @@ def add_stuff_to_storage(message, stuff):
 
 
 def update_all_members(message):
-    log.log_print("money_top invoked")
+    """Updates all the messages, usernames and nicknames"""
+    LOG.log_print("money_top invoked")
     sent = reply(message, "Начинаю обновление...")
     database = Database(to_log=False)
     chat = database.get('chats', ('id', message.chat.id))
@@ -45,7 +54,7 @@ def update_all_members(message):
 
 def warn(message, person, parameters_dictionary):
     """Даёт участнику предупреждение"""
-    log.log_print("warn invoked")
+    LOG.log_print("warn invoked")
     database = Database()
     warns = parameters_dictionary['value']
     chat = database.get('chats', ('id', message.chat.id))
@@ -56,14 +65,15 @@ def warn(message, person, parameters_dictionary):
     adm_place = admin_place(message, database)
     if adm_place:
         send(adm_place, "Пользователь {} получил(а) {} варн(а) и их стало {}".format(
-                         person_info_in_html(person), warns, value), parse_mode='HTML')
+            person_info_in_html(person), warns, value), parse_mode='HTML')
     blowout = database.get('channels', ('name', 'Проколы'))['id']
     # TODO каждому чату своё хранилище преступлений
     how_many = 10  # Сколько пересылает сообщений
     end_forwarding = message.reply_to_message.message_id
     start_forwarding = end_forwarding - how_many
     send(blowout, "В чате {} случилось нарушение участником {} Прысылаю {} сообщений".
-         format(chat_info_in_html(message.chat), person_info_in_html(person), how_many), parse_mode='HTML')
+         format(chat_info_in_html(message.chat), person_info_in_html(person), how_many),
+         parse_mode='HTML')
     for msg_id in range(start_forwarding, end_forwarding + 1):
         forward(blowout, message.chat.id, msg_id)
     if value >= 3:  # TODO Выборочное количество варнов для бана для каждой системы
@@ -72,7 +82,7 @@ def warn(message, person, parameters_dictionary):
 
 def unwarn(message, person, parameters_dictionary: dict):
     """Снимает с участника предупреждение"""
-    log.log_print("unwarn invoked")
+    LOG.log_print("unwarn invoked")
     database = Database()
     unwarns = parameters_dictionary['value']
     chat = database.get('chats', ('id', message.chat.id))
@@ -84,8 +94,9 @@ def unwarn(message, person, parameters_dictionary: dict):
         if adm_place:
             text = "#warns\n\n"
             text += "Пользователь {} потерял(а) {} варн(а) и их стало {}\n".format(
-                    person_info_in_html(person), unwarns, value)
-            text += "Варн(ы) снят(ы) пользователем {}\n".format(person_info_in_html(message.from_user))
+                person_info_in_html(person), unwarns, value)
+            text += "Варн(ы) снят(ы) пользователем {}\n".format(person_info_in_html(
+                message.from_user))
             if 'comment' in parameters_dictionary.keys():
                 text += "Комментарий: {}".format(parameters_dictionary['comment'])
             send(adm_place, text, parse_mode='HTML')
@@ -93,35 +104,34 @@ def unwarn(message, person, parameters_dictionary: dict):
         if 3 - unwarns <= value < 3:
             chat_configs = get_system_configs(system)
             unban_user(person)
-            database.change(chat_configs['ranks'][1], 'rank', 'members', ('id', person.id), ('system', system))
+            database.change(chat_configs['ranks'][1], 'rank', 'members',
+                            ('id', person.id), ('system', system))
     else:
         reply(message, "Нельзя сделать отрицательное количество предупреждений")
 
 
 def ban(message, person, comment=True, unban_then=False):
     """Даёт участнику бан"""
-    log.log_print("ban invoked")
+    LOG.log_print("ban invoked")
     database = Database()
     blowout = database.get('channels', ('name', 'Проколы'))['id']
     how_many = 3  # Сколько пересылает сообщений
-    not_unban_then = not unban_then
-    if not_unban_then:
-        target = message
-        if message.reply_to_message:
-            target = message.reply_to_message
-        end_forwarding = target.message_id
+    if not unban_then:
+        end_forwarding = get_target_message(message).message_id
         start_forwarding = end_forwarding - how_many
         send(blowout, "В чате {} забанили участника {}. Прысылаю {} сообщений".
-             format(chat_info_in_html(message.chat), person_info_in_html(person), how_many), parse_mode='HTML')
+             format(chat_info_in_html(message.chat), person_info_in_html(person), how_many),
+             parse_mode='HTML')
         for msg_id in range(start_forwarding, end_forwarding + 1):
             forward(blowout, message.chat.id, msg_id)
     if comment:
-        send(message.chat.id, "Ну всё, этому челу " + "бан"*not_unban_then + "кик"*unban_then)
+        send(message.chat.id, "Ну всё, этому челу " + "бан"*(not unban_then) + "кик"*unban_then)
     chat = database.get('chats', ('id', message.chat.id))
     system = chat['system']
     chat_configs = get_system_configs(system)
     if not unban_then:
-        database.change(chat_configs['ranks'][0], 'rank', 'members', ('id', person.id), ('system', system))
+        database.change(chat_configs['ranks'][0], 'rank', 'members',
+                        ('id', person.id), ('system', system))
     for chat in full_chat_list(database, system):
         kick(chat['id'], person.id)
     for channel in channel_list(database):
@@ -136,7 +146,7 @@ def ban(message, person, comment=True, unban_then=False):
 
 def mute(message, person, parameters_dictionary):
     """Даёт участнику бан"""
-    log.log_print("mute invoked")
+    LOG.log_print("mute invoked")
     database = Database()
     hours = parameters_dictionary['value']
     chat = database.get('chats', ('id', message.chat.id))
@@ -145,8 +155,8 @@ def mute(message, person, parameters_dictionary):
         restrict(chat['id'], person.id, until_date=time()+hours*3600)
     adm_place = admin_place(message, database)
     if adm_place:
-        send(adm_place, "Пользователь {} получил(а) мут на {} час(ов)".format(person_info_in_html(person), hours),
-             parse_mode='HTML')
+        send(adm_place, "Пользователь {} получил(а) мут на {} час(ов)".format(
+            person_info_in_html(person), hours), parse_mode='HTML')
     reply(message, "Мут выдан")
 
 
@@ -154,7 +164,7 @@ def money_pay(message, person, parameters_dictionary):
     """Платит человеку деньги из бюджета чата"""
     # TODO Добавить уведомление о человеке, совершившем перевод
     # TODO add nice link's to people instead of id's
-    log.log_print(f"money pay invoked to person {person.id}")
+    LOG.log_print(f"money pay invoked to person {person.id}")
     database = Database()
     chat = database.get('chats', ('id', message.chat.id))
     system = chat['system']
@@ -164,17 +174,18 @@ def money_pay(message, person, parameters_dictionary):
         bot_money = int(bot_money)
     p_id = person.id
     money = parameters_dictionary['value']
-    value = database.get('members', ('id', p_id), ('system', system))['money']
+    person_money = get_person(person, system, database)['money']
     if money == 0:
         reply(message, "Не")
     elif money < 0:
         money = -int(money)  # Делаем из отрицательного числа положительное
-        if value - money >= 0:
-            value -= money
+        if person_money - money >= 0:
+            person_money -= money
             if not_inf:
                 bot_money += money
             sent = send(p_id, f"#Финансы\n\n"
-                              f"С вашего счёта было снято {money} денег в фонд чата. У вас осталось {value} денег")
+                              f"С вашего счёта было снято {money} денег в фонд чата. "
+                              f"У вас осталось {person_money} денег")
             # TODO Уточнять чат
             if sent:
                 sent = "🔔 уведомлён(а)"
@@ -183,7 +194,7 @@ def money_pay(message, person, parameters_dictionary):
             answer = "#Финансы " + "#Бюджет "*not_inf + f"#f{p_id}\n\n"
             if not_inf:
                 answer += f"Бюджет [{bot_money - money} --> {bot_money}]\n"
-            answer += f"ID {p_id} [{value + money} --> {value}] {sent}"
+            answer += f"ID {p_id} [{person_money + money} --> {person_money}] {sent}"
             reply(message, answer)
             send(admin_place(message, database), answer)
         else:
@@ -192,11 +203,10 @@ def money_pay(message, person, parameters_dictionary):
         if not_inf and bot_money < money:
             reply(message, "У нас нет столько в бюджете")
         else:
-            value += money
-            if not_inf:
-                bot_money -= money
+            person_money += money
             sent = send(p_id, f"#Финансы\n\n"
-                              f"На ваш счёт было переведено {money} денег из фонда чата. Теперь у вас {value} денег")
+                              f"На ваш счёт было переведено {money} денег из фонда чата. "
+                              f"Теперь у вас {person_money} денег")
             # TODO рефакторинг уведомлялки и переименование недег
             if sent:
                 sent = "🔔 уведомлён(а)"
@@ -204,12 +214,13 @@ def money_pay(message, person, parameters_dictionary):
                 sent = "🔕 не уведомлён(а)"
             answer = "#Финансы " + "#Бюджет " * not_inf + f"#f{p_id}\n\n"
             if not_inf:
+                bot_money -= money
                 answer += f"Бюджет [{bot_money + money} --> {bot_money}]\n"
-            answer += f"ID {p_id} [{value - money} --> {value}] {sent}"
+            answer += f"ID {p_id} [{person_money - money} --> {person_money}] {sent}"
             reply(message, answer)
 
             send(admin_place(message, database), answer)
-    database.change(value, 'money', 'members', ('id', p_id), ('system', system))
+    database.change(person_money, 'money', 'members', ('id', p_id), ('system', system))
     if not_inf:
         database.change(bot_money, 'money', 'systems', ('id', system))
     # TODO Засунуть эти зассанские уебанские денежные функции в отдельный блять модуль
@@ -217,7 +228,7 @@ def money_pay(message, person, parameters_dictionary):
 
 def give_admin(message, person, loud=True):
     """Назначает человека админом"""
-    log.log_print("give_admin invoked")
+    LOG.log_print("give_admin invoked")
     database = Database()
     chat = database.get('chats', ('id', message.chat.id))
     system = chat['system']
@@ -234,7 +245,8 @@ def give_admin(message, person, loud=True):
 
 
 def del_admin(message, person, loud=True):
-    log.log_print("del_admin invoked")
+    """Remove admin's right"""
+    LOG.log_print("del_admin invoked")
     database = Database()
     chat = database.get('chats', ('id', message.chat.id))
     system = chat['system']
@@ -252,7 +264,7 @@ def del_admin(message, person, loud=True):
 def rank_changer(message, person):
     # TODO Если у чела 3+ варна, то их нужно обнулить
     """Changes person's rank"""
-    log.log_print("rank_changer invoked")
+    LOG.log_print("rank_changer invoked")
     database = Database()
     chat = database.get('chats', ('id', message.chat.id))
     system = chat['system']
@@ -297,7 +309,7 @@ def rank_changer(message, person):
 
 def message_change(message, person, parameters_dictionary):
     """Меняет запись в БД о количестве сообщений чела"""
-    log.log_print(f"message_change invoked to person {person.id}")
+    LOG.log_print(f"message_change invoked to person {person.id}")
     database = Database()
     p_id = person.id
     ch_id = message.chat.id
@@ -311,7 +323,7 @@ def message_change(message, person, parameters_dictionary):
 
 def deleter_mode(message):
     """Удалять медиа или нет"""
-    log.log_print("deleter_mode invoked")
+    LOG.log_print("deleter_mode invoked")
     database = Database()
     delete = int(database.get('config', ('var', 'delete'))['value'])
     delete = (delete + 1) % 2  # Переводит 0 в 1, а 1 в 0
@@ -324,7 +336,7 @@ def deleter_mode(message):
 
 def add_chat(message):
     """Добавляет чат в базу данных чатов, входящих в систему МФ2"""
-    log.log_print("add_chat invoked")
+    LOG.log_print("add_chat invoked")
     database = Database()
     system = None
     message_words = message.text.split()
@@ -362,7 +374,7 @@ def add_chat(message):
 
 def add_admin_place(message):
     """Add admin place to system"""
-    log.log_print("add_admin_place invoked")
+    LOG.log_print("add_admin_place invoked")
     database = Database()
     chat = database.get('chats', ('id', message.chat.id))
     if chat:
@@ -375,7 +387,7 @@ def add_admin_place(message):
 
 def chat_options(message):
     """Optimize current chat"""
-    log.log_print("chat_options invoked")
+    LOG.log_print("chat_options invoked")
     database = Database()
     text = message.text.split(sep='@')[0]
     last_word = text.split(sep='_')[-1]
@@ -394,7 +406,7 @@ def chat_options(message):
 
 def system_options(message):
     """Optimize current system"""
-    log.log_print("system_options invoked")
+    LOG.log_print("system_options invoked")
     database = Database()
     text = message.text.split(sep='@')[0]
     last_word = text.split(sep='_')[-1]
@@ -410,7 +422,8 @@ def system_options(message):
 
 
 def money_mode_change(message):
-    log.log_print("money_mode_change invoked")
+    """Change the money mode in system. Infinite, finite or no money"""
+    LOG.log_print("money_mode_change invoked")
     database = Database()
 
     mode = message.text.split()[0].split(sep='@')[0].split(sep='_')[-1]
@@ -442,7 +455,8 @@ def money_mode_change(message):
 
 
 def money_emoji(message):
-    log.log_print("money_emoji invoked")
+    """Change money's emoji in json"""
+    LOG.log_print("money_emoji invoked")
     database = Database()
     mode = ' '.join(message.text.split()[1:])
     chat = database.get('chats', ('id', message.chat.id))
@@ -457,8 +471,9 @@ def money_emoji(message):
 
 
 def money_name(message):
+    """Change money's name in json"""
     # TODO Добавить проверку по падежам
-    log.log_print("money_name invoked")
+    LOG.log_print("money_name invoked")
     database = Database()
     mode = ' '.join(message.text.split()[1:])
     chat = database.get('chats', ('id', message.chat.id))
@@ -468,13 +483,6 @@ def money_name(message):
         reply(message, "OK!")
     else:
         reply(message, "После команды введите название валюты")
-
-
-def database_changer():
-    database = Database()
-    members = database.get_all('members')
-    for member in members:
-        database.change(1, 'system', 'members', ('id', member['id']))
 
 
 # TODO Команда /add_channel

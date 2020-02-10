@@ -525,7 +525,7 @@ def add_person(person, system, database, system_configs):
     database.append(person_entry, 'members')
 
 
-def get_person(person, system, database, system_configs=None):
+def get_person(person, system: str, database: Database, system_configs=None) -> dict:
     """Get entry about some person in some system, create if there wasn't"""
     person_entry = database.get('members', ('id', person.id), ('system', system))
     if not person_entry:
