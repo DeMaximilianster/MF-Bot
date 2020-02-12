@@ -544,9 +544,10 @@ def all_members_handler(message):
     """Присылает человеку все записи в БД"""
     LOG.log_print("all_members_handler invoked")
     if in_mf(message, command_type=None, or_private=False):
-        language = language_analyzer(message, only_one=True)
-        if language:
-            send_some_top(message, language, '{index}. <code>{p_id}</code> {p_link}\n')
+        if message.chat.id != -1001444879250 or is_suitable(message, message.from_user, 'boss'):
+            language = language_analyzer(message, only_one=True)
+            if language:
+                send_some_top(message, language, '{index}. <code>{p_id}</code> {p_link}\n')
 
 
 @BOT.message_handler(commands=['give'])
@@ -663,13 +664,11 @@ def system_check_handler(message):
         system_check(message)
 
 
-
 # @bot.message_handler(commands=['chats'])
 # def chats_handler(message):
 #     """Send chat list"""
 #     if in_mf(message, 'standart_commands'):
 #         chats(message)
-
 
 
 @BOT.message_handler(commands=['anon'])
@@ -690,7 +689,7 @@ def database_send_handler(message):
     """ Send all databases to creator """
     LOG.log_print('database_send_handler invoked')
     if message.chat.id == 381279599:
-        for file in (DATABASE_FILE, VOTES_FILE, ADAPT_VOTES_FILE, MULTI_VOTES_FILE, SYSTEMS_FILE,\
+        for file in (DATABASE_FILE, VOTES_FILE, ADAPT_VOTES_FILE, MULTI_VOTES_FILE, SYSTEMS_FILE,
                      STORAGE_FILE):
             file_send = open(file, 'rb')
             send_document(message.chat.id, file_send)
