@@ -594,8 +594,15 @@ def messages_top_handler(message):
     if in_mf(message, command_type=None, or_private=False):
         language = language_analyzer(message, only_one=True)
         if language:
-            send_some_top(message, language, '{index}. {p_link} — {messages} сообщ.\n',
-                          sort_key=lambda x: x['messages'], filter_f=lambda x: x['messages'] > 10)
+            if is_suitable(message, message.from_user, 'boss', loud=False):
+                send_some_top(message, language, '{index}. {p_link} — {messages} сообщ.\n',
+                              sort_key=lambda x: x['messages'],
+                              filter_f=lambda x: x['messages'] > 10)
+            else:
+                send_some_top(message, language, '{index}. {p_link} — {messages} сообщ.\n',
+                              sort_key=lambda x: x['messages'],
+                              filter_f=lambda x: x['messages'] > 10,
+                              to_private=False, max_people=5)
 
 
 @BOT.message_handler(commands=['month'])

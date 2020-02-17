@@ -199,7 +199,7 @@ def send_me(message, person):
 
 
 def send_some_top(message, language, format_string, start='', sort_key=lambda x: True, filter_f=lambda x: True,
-                  to_private=True, reverse=True):
+                  to_private=True, reverse=True, max_people=None):
     # TODO Кто вышел из чата, а кто находится в чате
     log.log_print("send_some_top invoked")
     database = Database()
@@ -230,10 +230,14 @@ def send_some_top(message, language, format_string, start='', sort_key=lambda x:
         if '{month}' in format_string:
             formating_dict['month'] = months_genitive[member['month_birthday']][language]
         text += format_string.format(**formating_dict)
-        if index % 50 == 0:
+        if max_people is not None and index == max_people:
+            sent = send(target_chat, text, parse_mode='HTML', disable_web_page_preview=True)
+            break
+        elif index % 50 == 0:
             sent = send(target_chat, text, parse_mode='HTML', disable_web_page_preview=True)
             text = ''
-    sent = send(target_chat, text, parse_mode='HTML', disable_web_page_preview=True) or sent
+    else:
+        sent = send(target_chat, text, parse_mode='HTML', disable_web_page_preview=True) or sent
     if to_private:
         if sent:
             reply(message, "Выслал инфу в личку")
