@@ -1,12 +1,12 @@
 # -*- coding: utf-8 -*-
+from random import choice
 from view.output import reply, send_photo, send_sticker, send, send_video, send_document
 from presenter.config.config_func import member_update, int_check, \
     is_suitable, feature_is_available, get_system_configs, get_systems_json, get_person, get_list_from_storage,\
-    html_cleaner, link_text_wrapper, function_worked_correctly
+    html_cleaner, link_text_wrapper, function_returned_true
 from presenter.config.database_lib import Database
 from presenter.config.config_var import admin_place, original_to_english, english_to_original, \
     months_genitive, months_prepositional, features, features_texts
-from random import choice
 from presenter.config.log import Loger
 from presenter.config.texts import minets
 
@@ -198,52 +198,75 @@ def send_me(message, person):
     reply(message, msg)
 
 
-def send_some_top(message, language, format_string, start='', sort_key=lambda x: True, filter_f=lambda x: True,
-                  to_private=True, reverse=True, max_people=None):
+def send_some_top(message, language, format_string, start='', sort_key=lambda x: True):
     # TODO Кто вышел из чата, а кто находится в чате
     log.log_print("send_some_top invoked")
     database = Database()
     # Declaring variables
     sent = False
     system = database.get('chats', ('id', message.chat.id))['system']
-    bot_money = database.get('systems', ('id', system))['money']
-    chat_configs = get_system_configs(system)
-    emoji = chat_configs['money_emoji']
-    text = start.format(bot_money=bot_money, m_emo=emoji)
+    formating_dict = {'m_emo': get_system_configs(system)['money_emoji'],
+                      'bot_money': database.get('systems', ('id', system))['money']}
+    text = start.format(**formating_dict)
     members = database.get_many('members', ('system', system))
-    if to_private:
+    members = list(filter(lambda x: function_returned_true(sort_key, x), members))
+    members.sort(key=sort_key, reverse=True)
+    if len(members) > 50:
         target_chat = message.from_user.id
     else:
         target_chat = message.chat.id
-    members = filter(lambda x: function_worked_correctly(sort_key, x), members)
-    members = list(filter(lambda x: filter_f(x) and x['username'] != 'None', members))
-    members.sort(key=sort_key, reverse=reverse)
     # Main loop
-    # TODO если у челиков одинаковое значение сортировки, то они занимают несколько общих мест, например
-    #  17—19. Новакид, Готлер, Генерал — 20 🍎
     for index in range(1, len(members)+1):
         member = members[index-1]
         p_link = link_text_wrapper(html_cleaner(member["nickname"]), f't.me/{member["username"]}')
-        formating_dict = {'index': index, 'p_id': member['id'], 'p_link': p_link, 'messages': member['messages'],
-                          'money': member['money'], 'm_emo': emoji, 'day': member['day_birthday'],
-                          'warns': member['warns']}
+        formating_dict.update(member)
+        formating_dict.update({'index': index, 'p_link': p_link, 'day': member['day_birthday']})
         if '{month}' in format_string:
             formating_dict['month'] = months_genitive[member['month_birthday']][language]
         text += format_string.format(**formating_dict)
-        if max_people is not None and index == max_people:
-            sent = send(target_chat, text, parse_mode='HTML', disable_web_page_preview=True)
-            break
-        elif index % 50 == 0:
+        if index % 50 == 0:
             sent = send(target_chat, text, parse_mode='HTML', disable_web_page_preview=True)
             text = ''
-    else:
-        sent = send(target_chat, text, parse_mode='HTML', disable_web_page_preview=True) or sent
-    if to_private:
+    sent = send(target_chat, text, parse_mode='HTML', disable_web_page_preview=True) or sent
+    if len(members) > 50:
         if sent:
             reply(message, "Выслал инфу в личку")
         else:
             reply(message, "Сначала запусти меня в личных сообщениях")
     elif not sent:
+        reply(message, "Ничего нет!")
+
+
+def send_short_top(message, language, format_string, start='', sort_key=lambda x: True):
+    log.log_print("send_short_top invoked")
+    database = Database()
+    # Declaring variables
+    system = database.get('chats', ('id', message.chat.id))['system']
+    formating_dict = {'m_emo': get_system_configs(system)['money_emoji'],
+                      'bot_money': database.get('systems', ('id', system))['money']}
+    text = start.format(**formating_dict)
+    members = database.get_many('members', ('system', system))
+    members = list(filter(lambda x: function_returned_true(sort_key, x), members))
+    members.sort(key=sort_key, reverse=True)
+    person_index = 0
+    for person_index in range(1, len(members)+1):
+        if members[person_index-1]['id'] == message.from_user.id:
+            break
+    # Main loop
+    for index in range(1, len(members)+1):
+        member = members[index-1]
+        p_link = link_text_wrapper(html_cleaner(member["nickname"]), f't.me/{member["username"]}')
+        formating_dict.update(member)
+        formating_dict.update({'index': index, 'p_link': p_link, 'day': member['day_birthday']})
+        if '{month}' in format_string:
+            formating_dict['month'] = months_genitive[member['month_birthday']][language]
+        if index <= 5 or abs(index - person_index) <= 2:
+            text += format_string.format(**formating_dict)
+        elif '.\n.\n.\n' not in text and person_index >= 9:
+            text += '.\n.\n.\n'
+    if text:
+        send(message.chat.id, text, parse_mode='HTML', disable_web_page_preview=True)
+    else:
         reply(message, "Ничего нет!")
 
 

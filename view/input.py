@@ -15,6 +15,7 @@ import presenter.logic.reactions as reactions
 from presenter.logic.standart_commands import helper, send_me, send_meme, minet, money_give, \
     language_getter, month_set, day_set, admins, chat_check, \
     anon_message, system_check, money_helper, send_stuff_from_storage, send_some_top
+import presenter.logic.standart_commands as standart_commands
 from presenter.logic.start import starter
 from presenter.config.log import Loger, log_to
 from presenter.config.config_var import features_defaulters, features_oners, features_offers, \
@@ -544,10 +545,12 @@ def all_members_handler(message):
     """Присылает человеку все записи в БД"""
     LOG.log_print("all_members_handler invoked")
     if in_mf(message, command_type=None, or_private=False):
-        if message.chat.id != -1001444879250 or is_suitable(message, message.from_user, 'boss'):
-            language = language_analyzer(message, only_one=True)
-            if language:
-                send_some_top(message, language, '{index}. <code>{p_id}</code> {p_link}\n')
+        language = language_analyzer(message, only_one=True)
+        if language:
+            if is_suitable(message, message.from_user, 'boss', loud=False):
+                send_some_top(message, language, '{index}. <code>{id}</code> {p_link}\n')
+            else:
+                send_some_top(message, language, '{index}. <code>{id}</code> {nickname}\n')
 
 
 @BOT.message_handler(commands=['give'])
@@ -562,16 +565,19 @@ def money_give_handler(message):
             money_give(message, person, parameters_dictionary)
 
 
-@BOT.message_handler(commands=['top'])
+@BOT.message_handler(commands=['top', 'money_top'])
 def money_top_handler(message):
     """Топ ЯМ"""
     LOG.log_print("money_top_handler invoked")
     if in_mf(message, 'financial_commands', or_private=False):
         language = language_analyzer(message, only_one=True)
         if language:
-            send_some_top(message, language, '{index}. {p_link} — {money} {m_emo}\n',
-                          start='Бюджет: {bot_money} {m_emo}\n\n', sort_key=lambda x: x['money'],
-                          filter_f=lambda x: x['money'] > 0, to_private=False)
+            args = message, language, '{index}. {p_link} — {money} {m_emo}\n'
+            kwargs = {'start': 'Бюджет: {bot_money} {m_emo}\n\n', 'sort_key': lambda x: x['money']}
+            if is_suitable(message, message.from_user, 'boss', loud=False):
+                send_some_top(*args, **kwargs)
+            else:
+                standart_commands.send_short_top(*args, **kwargs)
 
 
 @BOT.message_handler(commands=['warns'])
@@ -581,10 +587,9 @@ def warns_top_handler(message):
     if in_mf(message, command_type=None, or_private=False):
         language = language_analyzer(message, only_one=True)
         if language:
-            send_some_top(message, language, '{index}. {p_link} — {warns} ⛔️\n',
-                          start='Количество варнов:\n\n',
-                          sort_key=lambda x: x['warns'], filter_f=lambda x: x['warns'] > 0,
-                          to_private=False)
+            args = message, language, '{index}. {p_link} — {warns} ⛔️\n'
+            kwargs = {'start': 'Количество варнов:\n\n', 'sort_key': lambda x: x['warns']}
+            send_some_top(*args, **kwargs)
 
 
 @BOT.message_handler(commands=['messages_top'])
@@ -594,15 +599,12 @@ def messages_top_handler(message):
     if in_mf(message, command_type=None, or_private=False):
         language = language_analyzer(message, only_one=True)
         if language:
+            args = message, language, '{index}. {p_link} — {messages} сообщ.\n'
+            kwargs = {'sort_key': lambda x: x['messages']}
             if is_suitable(message, message.from_user, 'boss', loud=False):
-                send_some_top(message, language, '{index}. {p_link} — {messages} сообщ.\n',
-                              sort_key=lambda x: x['messages'],
-                              filter_f=lambda x: x['messages'] > 10)
+                send_some_top(*args, **kwargs)
             else:
-                send_some_top(message, language, '{index}. {p_link} — {messages} сообщ.\n',
-                              sort_key=lambda x: x['messages'],
-                              filter_f=lambda x: x['messages'] > 10,
-                              to_private=False, max_people=5)
+                standart_commands.send_short_top(*args, **kwargs)
 
 
 @BOT.message_handler(commands=['month'])
@@ -641,9 +643,7 @@ def birthday_handler(message):
         language = language_analyzer(message, only_one=True)
         if language:
             send_some_top(message, language, '{index}. {p_link} — {day} {month}\n',
-                          sort_key=lambda x: 100 * x['month_birthday'] + x['day_birthday'],
-                          filter_f=lambda x: x['month_birthday'] > 0 and x['day_birthday'] > 0,
-                          to_private=False, reverse=False)
+                          sort_key=lambda x: -100 * x['month_birthday'] - x['day_birthday'])
 
 
 @BOT.message_handler(commands=['admins', 'report'])
