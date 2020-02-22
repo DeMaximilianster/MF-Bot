@@ -5,10 +5,10 @@ from presenter.config.config_func import member_update, int_check, \
     is_suitable, feature_is_available, get_system_configs, get_systems_json, get_person, get_list_from_storage,\
     html_cleaner, link_text_wrapper, function_returned_true
 from presenter.config.database_lib import Database
-from presenter.config.config_var import admin_place, original_to_english, english_to_original, \
-    months_genitive, months_prepositional, features, features_texts
+from presenter.config.config_var import admin_place, ORIGINAL_TO_ENGLISH, ENGLISH_TO_ORIGINAL, \
+    MONTHS_GENITIVE, MONTHS_PREPOSITIONAL, FEATURES, FEATURES_TEXTS
 from presenter.config.log import Loger
-from presenter.config.texts import minets
+from presenter.config.texts import MINETS
 
 log = Loger()
 
@@ -20,9 +20,9 @@ def language_getter(message):
     english_languages = ['Russian', 'English']
     language = message.text[6:].title()
     if language in original_languages:
-        language = (language, original_to_english[language])
+        language = (language, ORIGINAL_TO_ENGLISH[language])
     elif language in english_languages:
-        language = (english_to_original[language], language)
+        language = (ENGLISH_TO_ORIGINAL[language], language)
     else:
         answer = ''
         answer += "Если вы говорите на русском, напишите '/lang Русский'\n\n"
@@ -131,10 +131,10 @@ def minet(message, language):
     log.log_print(str(message.from_user.id) + ": minet invoked")
     if language:
         choices = []
-        for i in minets[language].keys():
+        for i in MINETS[language].keys():
             choices.append(i)
         way = choice(choices)
-        rep = choice(minets[language][way])
+        rep = choice(MINETS[language][way])
         if way == 'text':
             reply(message, rep)
         else:
@@ -222,7 +222,7 @@ def send_some_top(message, language, format_string, start='', sort_key=lambda x:
         formating_dict.update(member)
         formating_dict.update({'index': index, 'p_link': p_link, 'day': member['day_birthday']})
         if '{month}' in format_string:
-            formating_dict['month'] = months_genitive[member['month_birthday']][language]
+            formating_dict['month'] = MONTHS_GENITIVE[member['month_birthday']-1][language]
         text += format_string.format(**formating_dict)
         if index % 50 == 0:
             sent = send(target_chat, text, parse_mode='HTML', disable_web_page_preview=True)
@@ -259,7 +259,7 @@ def send_short_top(message, language, format_string, start='', sort_key=lambda x
         formating_dict.update(member)
         formating_dict.update({'index': index, 'p_link': p_link, 'day': member['day_birthday']})
         if '{month}' in format_string:
-            formating_dict['month'] = months_genitive[member['month_birthday']][language]
+            formating_dict['month'] = MONTHS_GENITIVE[member['month_birthday']-1][language]
         if index <= 5 or abs(index - person_index) <= 2:
             text += format_string.format(**formating_dict)
         elif '.\n.\n.\n' not in text and person_index >= 9:
@@ -326,11 +326,11 @@ def day_set(message, day, language):
     log.log_print(f"day_set invoked")
     days = (31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31)
     database = Database()
-    month = database.get('members', ('id', message.from_user.id))['month_birthday']
+    month = database.get('members', ('id', message.from_user.id))['month_birthday'] - 1
     if not month:
         reply(message, "Сначала поставь месяц рождения")
-    elif day > days[month - 1]:
-        month = months_prepositional[month][language]
+    elif day > days[month]:
+        month = MONTHS_PREPOSITIONAL[month][language]
         reply(message, "В {} нет столько дней".format(month.lower()))
     else:
         reply(message, "Ставлю человеку с ID {} день рождения {}".format(message.from_user.id, day))
@@ -386,7 +386,7 @@ def chat_check(message):
     # properties = ['id', 'name', 'purpose', 'type', 'link', 'standart_commands', 'boss_commands', 'financial_commands',
     #              'mutual_invites', 'messages_count', 'violators_ban', 'admins_promote']
     text = 'Настройки этого чата:\n\n'
-    for feature in features:
+    for feature in FEATURES:
         mark = ''
         microtext = ''
         system_property = system[feature]
@@ -402,7 +402,7 @@ def chat_check(message):
             else:
                 mark = '❌' + mark
                 microtext = 'Не работает' + microtext
-            text += f"{features_texts['Russian'][features.index(feature)]}: \n{mark} {microtext}\n"
+            text += f"{FEATURES_TEXTS['Russian'][FEATURES.index(feature)]}: \n{mark} {microtext}\n"
             if '⚙' in mark or '❌' in mark:
                 text += f"/{feature}_on Включить на постоянку\n"
             if '⚙' in mark or '✅' in mark:
@@ -419,13 +419,13 @@ def system_check(message):
     system = database.get('systems', ('id', chat['system']))
     print(system)
     text = 'Настройки по умолчанию:\n\n'
-    for feature in features:
+    for feature in FEATURES:
         system_property = system[feature]
         if system_property == 2:
-            text += f"{features_texts['Russian'][features.index(feature)]}: \n✅ Включено\n"
+            text += f"{FEATURES_TEXTS['Russian'][FEATURES.index(feature)]}: \n✅ Включено\n"
             text += f"/s_{feature}_off Выключить\n\n"
         elif system_property == 1:
-            text += f"{features_texts['Russian'][features.index(feature)]}: \n❌ Выключено\n"
+            text += f"{FEATURES_TEXTS['Russian'][FEATURES.index(feature)]}: \n❌ Выключено\n"
             text += f"/s_{feature}_on Включить\n\n"
     reply(message, text)
 

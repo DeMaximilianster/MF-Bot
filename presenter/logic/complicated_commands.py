@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 from presenter.config.config_func import update_adapt_vote, update_multi_vote, create_adapt_vote, create_vote, \
     create_multi_vote, remove_captcher, kick_and_unban
-from presenter.config.config_var import test_keyboard, ironic_keyboard, \
-    vote_keyboard, admin_place
+from presenter.config.config_var import TEST_KEYBOARD, IRONIC_KEYBOARD, \
+    VOTE_KEYBOARD, admin_place
 from presenter.config.database_lib import Database
 from presenter.config.files_paths import MULTI_VOTES_FILE, ADAPT_VOTES_FILE, VOTES_FILE
 from view.output import edit_markup, answer_inline, reply, answer_callback, edit_text, delete, send, restrict
@@ -74,7 +74,7 @@ def response(inline_query):
     """Тестовая инлайновая команда, бесполезная"""
     log.log_print("response invoked")
     results = [InlineQueryResultArticle('1', 'Тестовый заголовок', InputTextMessageContent("Тестовый текст"),
-                                        reply_markup=test_keyboard)]
+                                        reply_markup=TEST_KEYBOARD)]
     answer_inline(inline_query.id, results=results, cache_time=1)
 
 
@@ -82,7 +82,7 @@ def insult(message):
     """Спращивает, иронично ли признание оскорблением"""
     log.log_print("insult invoked")
     text = "Иронично? \n\n(В случае нажатия 'Неиронично' в админосостав будет послана жалоба. Будьте добры не пользоваться каналом жалоб, если вас не оскорбили)"
-    reply(message, text, reply_markup=ironic_keyboard)
+    reply(message, text, reply_markup=IRONIC_KEYBOARD)
 
 
 def non_ironic(call):
@@ -122,7 +122,7 @@ def place_here(call):
         where = -1001409685984  # Канал недостримов
     if call.message.reply_to_message.text.split()[0] == '/vote':
         vote_message = send(where, 'Голосование "{}"'
-                            .format(call.message.reply_to_message.text[6:]), reply_markup=vote_keyboard)
+                            .format(call.message.reply_to_message.text[6:]), reply_markup=VOTE_KEYBOARD)
         create_vote(vote_message)
     elif call.message.reply_to_message.text.split()[0] == '/multi_vote':
         answer = 'Мульти-голосование (вы можете предлагать варианты и выбирать несколько ответов)\n\n"{}"\n'
@@ -202,7 +202,7 @@ def av(call):
 def add_vote(call):
     """Вставляет голос в голосоовашку"""
     log.log_print("add_vote invoked")
-    reply_markup = vote_keyboard
+    reply_markup = VOTE_KEYBOARD
     text = ''
     user = call.from_user
     user_username = user.username  # юзернейм жмакнувшего челика

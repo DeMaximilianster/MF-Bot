@@ -7,7 +7,7 @@ import time
 from threading import Thread
 from random import shuffle
 from telebot.types import InlineKeyboardButton, InlineKeyboardMarkup, CallbackQuery
-from presenter.config.config_var import bot_id, new_system_json_entry
+from presenter.config.config_var import BOT_ID, NEW_SYSTEM_JSON_ENTRY
 from presenter.config.database_lib import Database
 from presenter.config.files_paths import ADAPT_VOTES_FILE, MULTI_VOTES_FILE, VOTES_FILE, \
     SYSTEMS_FILE, STORAGE_FILE
@@ -427,7 +427,7 @@ class Analyzer:
                                 "так что ввести свой же ID или ответить "
                                 "на своё же сообщение не выйдет)")
             return False
-        if person.id == bot_id and not to_bot:
+        if person.id == BOT_ID and not to_bot:
             reply(self.message, "Этой командой нельзя пользоваться на мне")
             return False
         return True
@@ -800,7 +800,7 @@ def create_system(message, system_id, database):
                     )
     database.append(system_tuple, 'systems')
     data = get_systems_json()
-    data[system_id] = dict(new_system_json_entry)
+    data[system_id] = dict(NEW_SYSTEM_JSON_ENTRY)
     data[system_id]['name'] = message.chat.title
     write_systems_json(data)
 
@@ -809,9 +809,9 @@ def update_old_systems_json():
     """Fills old json entries with missing attributes"""
     data = get_systems_json()
     for system in data.keys():
-        for prop in new_system_json_entry:
+        for prop in NEW_SYSTEM_JSON_ENTRY:
             if prop not in data[system]:
-                data[system][prop] = new_system_json_entry[prop]
+                data[system][prop] = NEW_SYSTEM_JSON_ENTRY[prop]
     write_systems_json(data)
 
 

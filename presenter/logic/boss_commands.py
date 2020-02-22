@@ -5,7 +5,7 @@ and that require some special ranks
 from time import time
 
 from presenter.config.database_lib import Database
-from presenter.config.config_var import full_chat_list, channel_list, bot_id, admin_place, chat_list
+from presenter.config.config_var import full_chat_list, channel_list, BOT_ID, admin_place, chat_list
 from presenter.config.log import Loger, log_to
 from presenter.config.config_func import unban_user, is_suitable, int_check, \
     get_system_configs, photo_video_gif_get, get_target_message, \
@@ -436,7 +436,7 @@ def money_mode_change(message):
         if int_check(all_money, positive=True):
             all_money = int(all_money)
             people = list(database.get_many('members', ('system', system)))
-            people = list(filter(lambda x: x['money'] != 0 and x['id'] != bot_id, people))
+            people = list(filter(lambda x: x['money'] != 0 and x['id'] != BOT_ID, people))
             money = 0
             for person in people:
                 money += person['money']

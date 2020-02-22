@@ -1,23 +1,24 @@
 # -*- coding: utf-8 -*-
-from presenter.config.log import Loger, log_to
+"""Module with important constants"""
 from telebot.types import InlineKeyboardButton, InlineKeyboardMarkup
-from presenter.config.texts import january, february, march, april, may, june, july, august, september, october, \
-    november, december
+from presenter.config.log import Loger, log_to
+from presenter.config.texts import JANUARY, FEBRUARY, MARCH, APRIL, MAY,\
+    JUNE, JULY, AUGUST, SEPTEMBER, OCTOBER, NOVEMBER, DECEMBER
 
-log = Loger(log_to)
+LOG = Loger(log_to)
 
-bot_id = 575704111
-porn_adders = (918715899, 381279599, 711157379)
-stuff_adders = (918715899, 381279599, 432348248)
+BOT_ID = 575704111
+PORN_ADDERS = (918715899, 381279599, 711157379)
+STUFF_ADDERS = (918715899, 381279599, 432348248)
 
-original_to_english = {'Русский': 'Russian', 'English': 'English'}
-english_to_original = {'Russian': 'Русский', 'English': 'English'}
-months = ['No Month', january, february, march, april, may, june, july, august, september, october, november, december]
+ORIGINAL_TO_ENGLISH = {'Русский': 'Russian', 'English': 'English'}
+ENGLISH_TO_ORIGINAL = {'Russian': 'Русский', 'English': 'English'}
+MONTHS = [JANUARY, FEBRUARY, MARCH, APRIL, MAY, JUNE,
+          JULY, AUGUST, SEPTEMBER, OCTOBER, NOVEMBER, DECEMBER]
 
 
-def month_to_genitive(month):
-    if type(month) == str:
-        return month
+def month_to_genitive(month: dict) -> dict:
+    """Converts a month to genitive case"""
     if month['Russian'][-1] in ('й', 'ь'):
         nrm = month['Russian'][:-1].lower()+'я'
         return {'Russian': nrm, 'English': month['English']}
@@ -25,9 +26,8 @@ def month_to_genitive(month):
     return {'Russian': nrm, 'English': month['English']}
 
 
-def month_to_prepositional(month):
-    if type(month) == str:
-        return month
+def month_to_prepositional(month: dict) -> dict:
+    """Converts a month to prepositional case"""
     if month['Russian'][-1] in ('й', 'ь'):
         nrm = month['Russian'][:-1].lower()+'е'
         return {'Russian': nrm, 'English': month['English']}
@@ -35,12 +35,13 @@ def month_to_prepositional(month):
     return {'Russian': nrm, 'English': month['English']}
 
 
-months_genitive = [month_to_genitive(i) for i in months]
-months_prepositional = [month_to_prepositional(i) for i in months]
+MONTHS_GENITIVE = [month_to_genitive(i) for i in MONTHS]
+MONTHS_PREPOSITIONAL = [month_to_prepositional(i) for i in MONTHS]
 
 
 def admin_place(message, database):
-    log.log_print(f"admin_place invoked")
+    """Finds the admin place of the system"""
+    LOG.log_print(f"admin_place invoked")
     chat = database.get('chats', ('id', message.chat.id))
     system = chat['system']
     return database.get('systems', ('id', system))['admin_place']
@@ -48,14 +49,14 @@ def admin_place(message, database):
 
 def chat_list(database, system):  # TODO Сделать приличную чатоискалку
     """Список всех МФ2-чатов, кроме Админосостава и Комитета"""
-    log.log_print(f"chat_list invoked")
+    LOG.log_print(f"chat_list invoked")
     ch_list = database.get_many('chats', ('system', system))
     return ch_list
 
 
 def full_chat_list(database, system):
     """Список всех МФ2-чатов"""
-    log.log_print(f"full_chat_list invoked")
+    LOG.log_print(f"full_chat_list invoked")
     return database.get_many('chats', ('system', system))
 
 
@@ -65,66 +66,69 @@ def channel_list(database):
 
 
 # список всех content_types для подсчёта сообщений
-all_content_types = ['text', 'audio', 'document', 'photo', 'sticker', 'video',
+ALL_CONTENT_TYPES = ['text', 'audio', 'document', 'photo', 'sticker', 'video',
                      'video_note', 'voice', 'location', 'contact']
 
 # Клавиатура для вопроса, иронично ли признание оскорбления/провокации
-ironic_keyboard = InlineKeyboardMarkup()
-ironic_keyboard.add(InlineKeyboardButton("Иронично", callback_data="ironic"))
-ironic_keyboard.add(InlineKeyboardButton("Неиронично", callback_data="non_ironic"))
-ironic_keyboard.row_width = 1
+IRONIC_KEYBOARD = InlineKeyboardMarkup()
+IRONIC_KEYBOARD.add(InlineKeyboardButton("Иронично", callback_data="ironic"))
+IRONIC_KEYBOARD.add(InlineKeyboardButton("Неиронично", callback_data="non_ironic"))
+IRONIC_KEYBOARD.row_width = 1
 
 # Клавиатура для голосовашек
-vote_keyboard = InlineKeyboardMarkup()
-vote_keyboard.add(InlineKeyboardButton("За", callback_data="favor"))
-vote_keyboard.add(InlineKeyboardButton("Против", callback_data="against"))
-vote_keyboard.add(InlineKeyboardButton("Воздерживаюсь", callback_data="abstain"))
-vote_keyboard.row_width = 1
+VOTE_KEYBOARD = InlineKeyboardMarkup()
+VOTE_KEYBOARD.add(InlineKeyboardButton("За", callback_data="favor"))
+VOTE_KEYBOARD.add(InlineKeyboardButton("Против", callback_data="against"))
+VOTE_KEYBOARD.add(InlineKeyboardButton("Воздерживаюсь", callback_data="abstain"))
+VOTE_KEYBOARD.row_width = 1
 
 # Тестовая клавиатура, кнопки не нажимаются
-test_keyboard = InlineKeyboardMarkup()
-test_keyboard.add(InlineKeyboardButton("Тестовая кнопка 1", callback_data="1"))
-test_keyboard.add(InlineKeyboardButton("Тестовая кнопка 2", callback_data="2"))
-test_keyboard.add(InlineKeyboardButton("Тестовая кнопка 3", callback_data="3"))
-test_keyboard.row_width = 1
+TEST_KEYBOARD = InlineKeyboardMarkup()
+TEST_KEYBOARD.add(InlineKeyboardButton("Тестовая кнопка 1", callback_data="1"))
+TEST_KEYBOARD.add(InlineKeyboardButton("Тестовая кнопка 2", callback_data="2"))
+TEST_KEYBOARD.add(InlineKeyboardButton("Тестовая кнопка 3", callback_data="3"))
+TEST_KEYBOARD.row_width = 1
 
 # Клавиатура для признания предложения для мульти-голосовашки адекватным/неадекватным
-adequate_keyboard = InlineKeyboardMarkup()
-adequate_keyboard.add(InlineKeyboardButton("Адекватно", callback_data="adequate"))
-adequate_keyboard.add(InlineKeyboardButton("Неадекватно", callback_data="inadequate"))
-adequate_keyboard.row_width = 1
+ADEQUATE_KEYBOARD = InlineKeyboardMarkup()
+ADEQUATE_KEYBOARD.add(InlineKeyboardButton("Адекватно", callback_data="adequate"))
+ADEQUATE_KEYBOARD.add(InlineKeyboardButton("Неадекватно", callback_data="inadequate"))
+ADEQUATE_KEYBOARD.row_width = 1
 
 # Клавиатура для признания предложения для адапт-голосовашки адекватным/неадекватным
-a_adequate_keyboard = InlineKeyboardMarkup()
-a_adequate_keyboard.add(InlineKeyboardButton("Адекватно", callback_data="a_adequate"))
-a_adequate_keyboard.add(InlineKeyboardButton("Неадекватно", callback_data="inadequate"))
-a_adequate_keyboard.row_width = 1
+ADAPT_ADEQUATE_KEYBOARD = InlineKeyboardMarkup()
+ADAPT_ADEQUATE_KEYBOARD.add(InlineKeyboardButton("Адекватно", callback_data="a_adequate"))
+ADAPT_ADEQUATE_KEYBOARD.add(InlineKeyboardButton("Неадекватно", callback_data="inadequate"))
+ADAPT_ADEQUATE_KEYBOARD.row_width = 1
 
-features = ('standart_commands', 'erotic_commands', 'boss_commands', 'financial_commands',
-            'mutual_invites', 'messages_count', 'violators_ban', 'admins_promote', 'moves_delete', 'newbies_captched')
-features_texts = dict()
-features_texts['Russian'] = ['Разлекательные команды', 'Эротические команды',
+FEATURES = ('standart_commands', 'erotic_commands', 'boss_commands', 'financial_commands',
+            'mutual_invites', 'messages_count', 'violators_ban',
+            'admins_promote', 'moves_delete', 'newbies_captched')
+FEATURES_TEXTS = dict()
+FEATURES_TEXTS['Russian'] = ['Разлекательные команды', 'Эротические команды',
                              'Админские команды', 'Денежные команды', 'Ссылка учитывается',
                              'Сообщения считаются', 'Нарушители банятся', 'Админы получают админку',
-                             'Сообщения о входе и выходе удаляются (если вкл, а капча выкл, бот не будет здороваться)',
+                             'Сообщения о входе и выходе удаляются '
+                             '(если вкл, а капча выкл, бот не будет здороваться)',
                              'Новички проходят капчу']
-features_texts['English'] = ['Standart commands', 'Admin commands', 'Financial commands',
+FEATURES_TEXTS['English'] = ['Standart commands', 'Admin commands', 'Financial commands',
                              'Invites links', 'Messages are count for citizenship',
-                             'MF2 violators are automatically banned', 'MF2 admins are automatically promoted']
+                             'MF2 violators are automatically banned',
+                             'MF2 admins are automatically promoted']
 
-features_oners = tuple(map(lambda x: x+'_on', features))
-features_offers = tuple(map(lambda x: x+'_off', features))
-features_defaulters = tuple(map(lambda x: x+'_default', features))
-system_features_oners = tuple(map(lambda x: 's_'+x+'_on', features))
-system_features_offers = tuple(map(lambda x: 's_'+x+'_off', features))
+FEATURES_ONERS = tuple(map(lambda x: x + '_on', FEATURES))
+FEATURES_OFFERS = tuple(map(lambda x: x + '_off', FEATURES))
+FEATURES_DEFAULTERS = tuple(map(lambda x: x + '_default', FEATURES))
+SYSTEM_FEATURES_ONERS = tuple(map(lambda x: 's_' + x + '_on', FEATURES))
+SYSTEM_FEATURES_OFFERS = tuple(map(lambda x: 's_' + x + '_off', FEATURES))
 
-commands_to_add_stuff = ('artadd', 'addart', 'art_add', 'add_art',
+COMMANDS_TO_ADD_STUFF = ('artadd', 'addart', 'art_add', 'add_art',
                          'drakkenadd', 'adddrakken', 'drakken_add', 'add_drakken')
 
-commands_to_add_vulgar_stuff = ('breastsadd', 'addbreasts', 'breasts_add', 'add_breasts',
+COMMANDS_TO_ADD_VULGAR_STUFF = ('breastsadd', 'addbreasts', 'breasts_add', 'add_breasts',
                                 'assadd', 'addass', 'ass_add', 'add_ass')
 
-new_system_json_entry = {"name": "", "money": False, "money_emoji": "💰", "money_name": "валюты",
+NEW_SYSTEM_JSON_ENTRY = {"name": "", "money": False, "money_emoji": "💰", "money_name": "валюты",
                          "ranks": ["Забаненный", "Участник", "Админ", "Старший Админ", "Лидер"],
                          "ranks_commands": [None, "/guest", "/admin", "/senior_admin", "/leader"],
                          "appointments": [],
@@ -137,6 +141,7 @@ new_system_json_entry = {"name": "", "money": False, "money_emoji": "💰", "mon
                                       "chat_changer": ["Старший Админ", "Лидер"]},
                          "greetings": {"standart": "Добро пожаловать, {name}",
                                        "captcha":
-                                       "Добро пожаловать, {name}. Докажите, что не бот, нажмите на КРЕВЕТКУ за 5 минут",
+                                       "Добро пожаловать, {name}. Докажите, что не бот, "
+                                       "нажмите на КРЕВЕТКУ за 5 минут",
                                        "admin": "О, добро пожаловать, держи админку",
                                        "full_admin": "О, добро пожаловать, держи полную админку"}}

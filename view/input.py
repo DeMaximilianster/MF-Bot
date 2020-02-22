@@ -18,9 +18,9 @@ from presenter.logic.standart_commands import helper, send_me, send_meme, minet,
 import presenter.logic.standart_commands as standart_commands
 from presenter.logic.start import starter
 from presenter.config.log import Loger, log_to
-from presenter.config.config_var import features_defaulters, features_oners, features_offers, \
-    system_features_offers, system_features_oners, porn_adders, stuff_adders, all_content_types, \
-    commands_to_add_stuff, commands_to_add_vulgar_stuff
+from presenter.config.config_var import FEATURES_DEFAULTERS, FEATURES_ONERS, FEATURES_OFFERS, \
+    SYSTEM_FEATURES_OFFERS, SYSTEM_FEATURES_ONERS, PORN_ADDERS, STUFF_ADDERS, ALL_CONTENT_TYPES, \
+    COMMANDS_TO_ADD_STUFF, COMMANDS_TO_ADD_VULGAR_STUFF
 from presenter.config.files_paths import VOTES_FILE, DATABASE_FILE, ADAPT_VOTES_FILE, \
     MULTI_VOTES_FILE, SYSTEMS_FILE, STORAGE_FILE
 import presenter.logic.developer_commands as developer_commands
@@ -79,25 +79,25 @@ def elite_handler(message):
 #         chat_search(message)
 
 
-@BOT.message_handler(commands=commands_to_add_vulgar_stuff)
+@BOT.message_handler(commands=COMMANDS_TO_ADD_VULGAR_STUFF)
 def upload_vulgar_stuff_to_storage_handler(message):
     """ Add vulgar stuff to a media storage """
     LOG.log_print("upload_vulgar_stuff_to_storage_handler invoked")
     command = convert_command_to_storage_content(message.text)
     if in_mf(message, 'erotic_commands'):
-        if message.from_user.id in porn_adders:
+        if message.from_user.id in PORN_ADDERS:
             add_stuff_to_storage(message, command)
         else:
             reply(message, "Не-а, вы не числитесь в рядах добавлятелей 'контента'")
 
 
-@BOT.message_handler(commands=commands_to_add_stuff)
+@BOT.message_handler(commands=COMMANDS_TO_ADD_STUFF)
 def upload_stuff_to_storage_handler(message):
     """ Add stuff to a media storage """
     LOG.log_print("upload_stuff_to_storage_handler invoked")
     command = convert_command_to_storage_content(message.text)
     if in_mf(message, command_type=None):
-        if message.from_user.id in stuff_adders:
+        if message.from_user.id in STUFF_ADDERS:
             add_stuff_to_storage(message, command)
         else:
             reply(message, "Не-а, вы не числитесь в рядах добавлятелей контента")
@@ -275,7 +275,7 @@ def money_name_handler(message):
         money_name(message)
 
 
-@BOT.message_handler(commands=features_offers + features_oners + features_defaulters)
+@BOT.message_handler(commands=FEATURES_OFFERS + FEATURES_ONERS + FEATURES_DEFAULTERS)
 def chat_options_handler(message):
     """ Change chat options """
     LOG.log_print("chat_options_handler invoked")
@@ -285,7 +285,7 @@ def chat_options_handler(message):
         chat_options(message)
 
 
-@BOT.message_handler(commands=system_features_oners + system_features_offers)
+@BOT.message_handler(commands=SYSTEM_FEATURES_ONERS + SYSTEM_FEATURES_OFFERS)
 def system_options_handler(message):
     """ Change chat system options """
     LOG.log_print("system_options_handler invoked")
@@ -706,7 +706,7 @@ def database_send_handler(message):
 # Последний хэндлер. Просто считает сообщения, что не попали в другие хэндлеры
 
 
-@BOT.message_handler(func=lambda message: True, content_types=all_content_types)
+@BOT.message_handler(func=lambda message: True, content_types=ALL_CONTENT_TYPES)
 def counter_handler(message):
     """Подсчитывает сообщения"""
     LOG.log_print("counter_handler invoked")
