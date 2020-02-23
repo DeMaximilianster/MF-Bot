@@ -3,3 +3,9 @@
 
 #игнорирование model в корне
 /model
+
+#игнорирование token.py
+/presenter/config/token.py
+
+#игнор настроек редактора
+/.vscode
