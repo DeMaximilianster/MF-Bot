@@ -63,7 +63,7 @@ def new_member(message, member):
                 can_restrict_members=True, can_pin_messages=True, can_promote_members=False)
         text += chat_configs['greetings']['admin'].format(name=name)
     elif feature_is_available(message.chat.id, system, 'newbies_captched') and\
-            member.id == message.from_user.id:
+            member.id == message.from_user.id and time() - message.date < 60:
         text = chat_configs['greetings']['captcha'].format(name=name)
         keyboard = create_captcha_keyboard()
         captcha = True
