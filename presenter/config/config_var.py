@@ -13,25 +13,26 @@ STUFF_ADDERS = (918715899, 381279599, 432348248)
 
 ORIGINAL_TO_ENGLISH = {'Русский': 'Russian', 'English': 'English'}
 ENGLISH_TO_ORIGINAL = {'Russian': 'Русский', 'English': 'English'}
-MONTHS = [JANUARY, FEBRUARY, MARCH, APRIL, MAY, JUNE,
-          JULY, AUGUST, SEPTEMBER, OCTOBER, NOVEMBER, DECEMBER]
+MONTHS = [
+    JANUARY, FEBRUARY, MARCH, APRIL, MAY, JUNE, JULY, AUGUST, SEPTEMBER, OCTOBER, NOVEMBER, DECEMBER
+]
 
 
 def month_to_genitive(month: dict) -> dict:
     """Converts a month to genitive case"""
     if month['Russian'][-1] in ('й', 'ь'):
-        nrm = month['Russian'][:-1].lower()+'я'
+        nrm = month['Russian'][:-1].lower() + 'я'
         return {'Russian': nrm, 'English': month['English']}
-    nrm = month['Russian'].lower()+'а'
+    nrm = month['Russian'].lower() + 'а'
     return {'Russian': nrm, 'English': month['English']}
 
 
 def month_to_prepositional(month: dict) -> dict:
     """Converts a month to prepositional case"""
     if month['Russian'][-1] in ('й', 'ь'):
-        nrm = month['Russian'][:-1].lower()+'е'
+        nrm = month['Russian'][:-1].lower() + 'е'
         return {'Russian': nrm, 'English': month['English']}
-    nrm = month['Russian'].lower()+'е'
+    nrm = month['Russian'].lower() + 'е'
     return {'Russian': nrm, 'English': month['English']}
 
 
@@ -66,8 +67,10 @@ def channel_list(database):
 
 
 # список всех content_types для подсчёта сообщений
-ALL_CONTENT_TYPES = ['text', 'audio', 'document', 'photo', 'sticker', 'video',
-                     'video_note', 'voice', 'location', 'contact']
+ALL_CONTENT_TYPES = [
+    'text', 'audio', 'document', 'photo', 'sticker', 'video', 'video_note', 'voice', 'location',
+    'contact'
+]
 
 # Клавиатура для вопроса, иронично ли признание оскорбления/провокации
 IRONIC_KEYBOARD = InlineKeyboardMarkup()
@@ -102,19 +105,20 @@ ADAPT_ADEQUATE_KEYBOARD.add(InlineKeyboardButton("Неадекватно", callb
 ADAPT_ADEQUATE_KEYBOARD.row_width = 1
 
 FEATURES = ('standart_commands', 'erotic_commands', 'boss_commands', 'financial_commands',
-            'mutual_invites', 'messages_count', 'violators_ban',
-            'admins_promote', 'moves_delete', 'newbies_captched')
+            'mutual_invites', 'messages_count', 'violators_ban', 'admins_promote', 'moves_delete',
+            'newbies_captched')
 FEATURES_TEXTS = dict()
-FEATURES_TEXTS['Russian'] = ['Разлекательные команды', 'Эротические команды',
-                             'Админские команды', 'Денежные команды', 'Ссылка учитывается',
-                             'Сообщения считаются', 'Нарушители банятся', 'Админы получают админку',
-                             'Сообщения о входе и выходе удаляются '
-                             '(если вкл, а капча выкл, бот не будет здороваться)',
-                             'Новички проходят капчу']
-FEATURES_TEXTS['English'] = ['Standart commands', 'Admin commands', 'Financial commands',
-                             'Invites links', 'Messages are count for citizenship',
-                             'MF2 violators are automatically banned',
-                             'MF2 admins are automatically promoted']
+FEATURES_TEXTS['Russian'] = [
+    'Разлекательные команды', 'Эротические команды', 'Админские команды', 'Денежные команды',
+    'Ссылка учитывается', 'Сообщения считаются', 'Нарушители банятся', 'Админы получают админку',
+    'Сообщения о входе и выходе удаляются '
+    '(если вкл, а капча выкл, бот не будет здороваться)', 'Новички проходят капчу'
+]
+FEATURES_TEXTS['English'] = [
+    'Standart commands', 'Admin commands', 'Financial commands', 'Invites links',
+    'Messages are count for citizenship', 'MF2 violators are automatically banned',
+    'MF2 admins are automatically promoted'
+]
 
 FEATURES_ONERS = tuple(map(lambda x: x + '_on', FEATURES))
 FEATURES_OFFERS = tuple(map(lambda x: x + '_off', FEATURES))
@@ -122,26 +126,34 @@ FEATURES_DEFAULTERS = tuple(map(lambda x: x + '_default', FEATURES))
 SYSTEM_FEATURES_ONERS = tuple(map(lambda x: 's_' + x + '_on', FEATURES))
 SYSTEM_FEATURES_OFFERS = tuple(map(lambda x: 's_' + x + '_off', FEATURES))
 
-COMMANDS_TO_ADD_STUFF = ('artadd', 'addart', 'art_add', 'add_art',
-                         'drakkenadd', 'adddrakken', 'drakken_add', 'add_drakken')
+COMMANDS_TO_ADD_STUFF = ('artadd', 'addart', 'art_add', 'add_art', 'drakkenadd', 'adddrakken',
+                         'drakken_add', 'add_drakken')
 
-COMMANDS_TO_ADD_VULGAR_STUFF = ('breastsadd', 'addbreasts', 'breasts_add', 'add_breasts',
-                                'assadd', 'addass', 'ass_add', 'add_ass')
+COMMANDS_TO_ADD_VULGAR_STUFF = ('breastsadd', 'addbreasts', 'breasts_add', 'add_breasts', 'assadd',
+                                'addass', 'ass_add', 'add_ass')
 
-NEW_SYSTEM_JSON_ENTRY = {"name": "", "money": False, "money_emoji": "💰", "money_name": "валюты",
-                         "ranks": ["Забаненный", "Участник", "Админ", "Старший Админ", "Лидер"],
-                         "ranks_commands": [None, "/guest", "/admin", "/senior_admin", "/leader"],
-                         "appointments": [],
-                         "appointment_adders": [],
-                         "appointment_removers": [],
-                         "commands": {"standart": ["Участник", "Лидер"],
-                                      "advanced": ["Участник", "Лидер"],
-                                      "boss": ["Админ", "Лидер"],
-                                      "uber": ["Старший Админ", "Лидер"],
-                                      "chat_changer": ["Старший Админ", "Лидер"]},
-                         "greetings": {"standart": "Добро пожаловать, {name}",
-                                       "captcha":
-                                       "Добро пожаловать, {name}. Докажите, что не бот, "
-                                       "нажмите на КРЕВЕТКУ за 5 минут",
-                                       "admin": "О, добро пожаловать, держи админку",
-                                       "full_admin": "О, добро пожаловать, держи полную админку"}}
+NEW_SYSTEM_JSON_ENTRY = {
+    "name": "",
+    "money": False,
+    "money_emoji": "💰",
+    "money_name": "валюты",
+    "ranks": ["Забаненный", "Участник", "Админ", "Старший Админ", "Лидер"],
+    "ranks_commands": [None, "/guest", "/admin", "/senior_admin", "/leader"],
+    "appointments": [],
+    "appointment_adders": [],
+    "appointment_removers": [],
+    "commands": {
+        "standart": ["Участник", "Лидер"],
+        "advanced": ["Участник", "Лидер"],
+        "boss": ["Админ", "Лидер"],
+        "uber": ["Старший Админ", "Лидер"],
+        "chat_changer": ["Старший Админ", "Лидер"]
+    },
+    "greetings": {
+        "standart": "Добро пожаловать, {name}",
+        "captcha": "Добро пожаловать, {name}. Докажите, что не бот, "
+        "нажмите на КРЕВЕТКУ за 5 минут",
+        "admin": "О, добро пожаловать, держи админку",
+        "full_admin": "О, добро пожаловать, держи полную админку"
+    }
+}

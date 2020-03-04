@@ -11,7 +11,7 @@ from presenter.config.config_func import unban_user, is_suitable, int_check, \
     get_system_configs, photo_video_gif_get, get_target_message, \
     update_systems_json, create_system, create_chat, SystemUpdate, \
     write_storage_json, get_storage_json, get_person,\
-    person_info_in_html, chat_info_in_html, value_marker
+    person_info_in_html, chat_info_in_html
 from view.output import kick, reply, promote, send, forward, restrict
 
 LOG = Loger(log_to)
@@ -183,12 +183,14 @@ def money_pay(message, person, parameters_dictionary):
             person_money -= money
             if not_inf:
                 bot_money += money
-            sent = value_marker(
-                send(p_id, f"#Финансы\n\n"
-                           f"С вашего счёта было снято {money} денег в фонд чата. "
-                           f"У вас осталось {person_money} денег"),
-                "🔔 уведомлён(а)", "🔕 не уведомлён(а)")
+            sent = send(p_id, f"#Финансы\n\n"
+                              f"С вашего счёта было снято {money} денег в фонд чата. "
+                              f"У вас осталось {person_money} денег")
             # TODO Уточнять чат
+            if sent:
+                sent = "🔔 уведомлён(а)"
+            else:
+                sent = "🔕 не уведомлён(а)"
             answer = "#Финансы " + "#Бюджет "*not_inf + f"#f{p_id}\n\n"
             if not_inf:
                 answer += f"Бюджет [{bot_money - money} --> {bot_money}]\n"
@@ -202,11 +204,14 @@ def money_pay(message, person, parameters_dictionary):
             reply(message, "У нас нет столько в бюджете")
         else:
             person_money += money
-            sent = value_marker(send(p_id, f"#Финансы\n\n"
-                                      f"На ваш счёт было переведено {money} денег из фонда чата. "
-                                      f"Теперь у вас {person_money} денег"),
-                                "🔔 уведомлён(а)", "🔕 не уведомлён(а)")
+            sent = send(p_id, f"#Финансы\n\n"
+                              f"На ваш счёт было переведено {money} денег из фонда чата. "
+                              f"Теперь у вас {person_money} денег")
             # TODO рефакторинг уведомлялки и переименование недег
+            if sent:
+                sent = "🔔 уведомлён(а)"
+            else:
+                sent = "🔕 не уведомлён(а)"
             answer = "#Финансы " + "#Бюджет " * not_inf + f"#f{p_id}\n\n"
             if not_inf:
                 bot_money -= money

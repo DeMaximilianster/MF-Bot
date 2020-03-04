@@ -12,7 +12,6 @@ from presenter.logic.start import starter
 LOG = Loger(log_to)
 WORK = True
 
-
 # Реакции на медиа, новых участников и выход участников
 
 
@@ -54,7 +53,6 @@ def elite_handler(message):
 
 
 # Админские обычные команды
-
 
 # @bot.message_handler(commands=['search'])
 # def chat_search_handler(message):
@@ -101,8 +99,7 @@ def warn_handler(message):
     """Даёт участнику предупреждение"""
     LOG.log_print("warn_handler invoked")
     if config_func.in_mf(message, 'boss_commands', or_private=False) and config_func.is_suitable(
-            message, message.from_user,
-            'boss'):
+            message, message.from_user, 'boss'):
         rep = message.reply_to_message
         if rep:
             analyzer = config_func.Analyzer(message, default_value=1, value_positive=True)
@@ -112,8 +109,8 @@ def warn_handler(message):
                 if parameters_dictionary:
                     boss_commands.warn(message, rep.from_user, parameters_dictionary)
         else:
-            output.reply(message,
-                         "Надо ответить на сообщение с актом преступления, чтобы переслать контекст\
+            output.reply(
+                message, "Надо ответить на сообщение с актом преступления, чтобы переслать контекст\
                           в хранилище")
 
 
@@ -122,8 +119,7 @@ def unwarn_handler(message):
     """Снимает с участника предупреждение"""
     LOG.log_print("unwarn_handler invoked")
     if config_func.in_mf(message, 'boss_commands', or_private=False) and config_func.is_suitable(
-            message, message.from_user,
-            'boss'):
+            message, message.from_user, 'boss'):
         analyzer = config_func.Analyzer(message, default_value=1, value_positive=True)
         person = analyzer.return_target_person()
         if person:
@@ -135,8 +131,7 @@ def ban_handler(message):
     """ Ban member """
     LOG.log_print(f"ban_handler invoked")
     if config_func.in_mf(message, 'boss_commands', or_private=False) and config_func.is_suitable(
-            message, message.from_user,
-            'boss'):
+            message, message.from_user, 'boss'):
         person = config_func.Analyzer(message, value_necessary=False).return_target_person()
         if person and config_func.rank_superiority(message, person):
             boss_commands.ban(message, person)
@@ -147,8 +142,7 @@ def kick_handler(message):
     """ Kicks member """
     LOG.log_print(f"kick_handler invoked")
     if config_func.in_mf(message, 'boss_commands', or_private=False) and config_func.is_suitable(
-            message, message.from_user,
-            'boss'):
+            message, message.from_user, 'boss'):
         person = config_func.Analyzer(message, value_necessary=False).return_target_person()
         if person and config_func.rank_superiority(message, person):
             boss_commands.ban(message, person, unban_then=True)
@@ -159,8 +153,7 @@ def mute_handler(message):
     """ Mutes member """
     LOG.log_print("mute_handler invoked")
     if config_func.in_mf(message, "boss_commands", or_private=False) and config_func.is_suitable(
-            message, message.from_user,
-            'boss'):
+            message, message.from_user, 'boss'):
         analyzer = config_func.Analyzer(message, default_value=1, value_positive=True)
         person = analyzer.return_target_person()
         parameters_dictionary = analyzer.parameters_dictionary
@@ -209,8 +202,7 @@ def messages_change_handler(message):
     """Меняет запись в БД о количестве сообщений чела"""
     LOG.log_print(f"messages_change_handler invoked")
     if config_func.in_mf(message, 'boss_commands', or_private=False) and config_func.is_suitable(
-            message, message.from_user,
-            "boss"):
+            message, message.from_user, "boss"):
         analyzer = config_func.Analyzer(message, value_positive=True)
         person = analyzer.return_target_person()
         parameters_dictionary = analyzer.parameters_dictionary
@@ -230,9 +222,7 @@ def add_admin_place_handler(message):
     """Add admin place to system"""
     LOG.log_print("add_admin_place_handler invoked")
     if config_func.in_mf(message, command_type=None, or_private=False) and config_func.is_suitable(
-            message,
-            message.from_user,
-            "chat_changer"):
+            message, message.from_user, "chat_changer"):
         boss_commands.add_admin_place(message)
 
 
@@ -241,9 +231,7 @@ def money_mode_change_handler(message):
     """ Enable or disable money system """
     LOG.log_print("money_mode_change_handler invoked")
     if config_func.in_mf(message, command_type=None, or_private=False) and config_func.is_suitable(
-            message,
-            message.from_user,
-            "chat_changer"):
+            message, message.from_user, "chat_changer"):
         boss_commands.money_mode_change(message)
 
 
@@ -252,9 +240,7 @@ def money_emoji_handler(message):
     """ Put emoji to indicate the amount of currency """
     LOG.log_print("money_emoji_handler invoked")
     if config_func.in_mf(message, command_type=None, or_private=False) and config_func.is_suitable(
-            message,
-            message.from_user,
-            "chat_changer"):
+            message, message.from_user, "chat_changer"):
         boss_commands.money_emoji(message)
 
 
@@ -263,21 +249,17 @@ def money_name_handler(message):
     """ Set currency name """
     LOG.log_print("money_name_handler invoked")
     if config_func.in_mf(message, command_type=None, or_private=False) and config_func.is_suitable(
-            message,
-            message.from_user,
-            "chat_changer"):
+            message, message.from_user, "chat_changer"):
         boss_commands.money_name(message)
 
 
-@BOT.message_handler(
-    commands=config_var.FEATURES_OFFERS + config_var.FEATURES_ONERS + config_var.FEATURES_DEFAULTERS)
+@BOT.message_handler(commands=config_var.FEATURES_OFFERS + config_var.FEATURES_ONERS +
+                     config_var.FEATURES_DEFAULTERS)
 def chat_options_handler(message):
     """ Change chat options """
     LOG.log_print("chat_options_handler invoked")
     if config_func.in_mf(message, command_type=None, or_private=False) and config_func.is_suitable(
-            message,
-            message.from_user,
-            "chat_changer"):
+            message, message.from_user, "chat_changer"):
         boss_commands.chat_options(message)
 
 
@@ -286,9 +268,7 @@ def system_options_handler(message):
     """ Change chat system options """
     LOG.log_print("system_options_handler invoked")
     if config_func.in_mf(message, command_type=None, or_private=False) and config_func.is_suitable(
-            message,
-            message.from_user,
-            "chat_changer"):
+            message, message.from_user, "chat_changer"):
         boss_commands.system_options(message)
 
 
@@ -299,8 +279,8 @@ def system_options_handler(message):
 #     if rank_required(message, "Deputy"):
 #         database_changer()
 
-
 # Составные команды
+
 
 @BOT.callback_query_handler(func=lambda call: call.data == 'captcha')
 def captcha_completed_handler(call):
@@ -343,14 +323,12 @@ def insult_handler(message):  # TODO В частных чатах бот не у
     """Спращивает, иронично ли признание оскорблением"""
     LOG.log_print(f"insult_handler invoked")
     if config_func.in_mf(message, command_type=None, or_private=False) and config_func.is_suitable(
-            message,
-            message.from_user,
-            "standart"):
+            message, message.from_user, "standart"):
         complicated_commands.insult(message)
 
 
-@BOT.callback_query_handler(
-    func=lambda call: call.data == 'non_ironic')  # триггерится, когда нажата кнопка "Нет"
+@BOT.callback_query_handler(func=lambda call: call.data == 'non_ironic'
+                            )  # триггерится, когда нажата кнопка "Нет"
 def non_ironic_handler(call):
     """Реакция, если обвинение было неироничным"""
     LOG.log_print(f"non_ironic_handler invoked")
@@ -361,8 +339,8 @@ def non_ironic_handler(call):
         output.answer_callback(call.id, "Э, нет, эта кнопка не для тебя")
 
 
-@BOT.callback_query_handler(
-    func=lambda call: call.data == 'ironic')  # триггерится, когда нажата кнопка "Да"
+@BOT.callback_query_handler(func=lambda call: call.data == 'ironic'
+                            )  # триггерится, когда нажата кнопка "Да"
 def ironic_handler(call):
     """Реакция, если обвинение было ироничным"""
     LOG.log_print(f"ironic_handler invoked")
@@ -397,8 +375,8 @@ def mv_handler(call):
     """Обновляет мульти-голосовашку"""
     LOG.log_print(f"mv_handler invoked")
     # TODO Убрать привязку к МФным голосовашкам
-    if call.chat_instance != "-8294084429973252853" or config_func.is_suitable(call, call.from_user,
-                                                                               "advanced"):
+    if call.chat_instance != "-8294084429973252853" or config_func.is_suitable(
+            call, call.from_user, "advanced"):
         complicated_commands.mv(call)
 
 
@@ -406,8 +384,8 @@ def mv_handler(call):
 def av_handler(call):
     """Обновляет адапт-голосовашку"""
     LOG.log_print(f"av_handler invoked")
-    if call.chat_instance != "-8294084429973252853" or config_func.is_suitable(call, call.from_user,
-                                                                               "advanced"):
+    if call.chat_instance != "-8294084429973252853" or config_func.is_suitable(
+            call, call.from_user, "advanced"):
         complicated_commands.av(call)
 
 
@@ -416,8 +394,8 @@ def av_handler(call):
 def add_vote_handler(call):
     """Вставляет голос в голосоовашку"""
     LOG.log_print("add_vote_handler invoked")
-    if call.chat_instance != "-8294084429973252853" or config_func.is_suitable(call, call.from_user,
-                                                                               "advanced"):
+    if call.chat_instance != "-8294084429973252853" or config_func.is_suitable(
+            call, call.from_user, "advanced"):
         complicated_commands.add_vote(call)
 
 
@@ -514,8 +492,8 @@ def send_vulgar_stuff_from_storage_handler(message):
     """ Send vulgar stuff from media storage """
     LOG.log_print("send_vulgar_stuff_from_storage_handler invoked")
     command = config_func.remove_slash_and_bot_mention(message.text)
-    if config_func.in_mf(message, 'erotic_commands') and config_func.cooldown(message, command,
-                                                                              timeout=60):
+    if config_func.in_mf(message, 'erotic_commands') and config_func.cooldown(
+            message, command, timeout=60):
         standart_commands.send_stuff_from_storage(message, command)
 
 
@@ -533,8 +511,8 @@ def send_me_handler(message):
     """Присылает человеку его запись в БД"""
     LOG.log_print(f"send_me_handler invoked")
     if config_func.in_mf(message, command_type=None, or_private=False):
-        person = config_func.Analyzer(message, value_necessary=False).return_target_person(
-            to_self=True)
+        person = config_func.Analyzer(message,
+                                      value_necessary=False).return_target_person(to_self=True)
         if person:
             standart_commands.send_me(message, person)
 
@@ -617,9 +595,9 @@ def month_set_handler(message):
         if month and 1 <= month <= 12:
             standart_commands.month_set(message, month)
         else:
-            output.reply(message,
-                         "Последнее слово должно быть положительным числом от 1 до 12 — "
-                         "номером месяца")
+            output.reply(
+                message, "Последнее слово должно быть положительным числом от 1 до 12 — "
+                "номером месяца")
 
 
 @BOT.message_handler(commands=['day'])
@@ -633,9 +611,9 @@ def day_set_handler(message):
             if language:
                 standart_commands.day_set(message, day, language)
         else:
-            output.reply(message,
-                         "Последнее слово должно быть положительным числом от 1 до 31 — "
-                         "номером дня")
+            output.reply(
+                message, "Последнее слово должно быть положительным числом от 1 до 31 — "
+                "номером дня")
 
 
 @BOT.message_handler(commands=['bdays', 'birthdays'])
@@ -645,10 +623,11 @@ def birthday_handler(message):
     if config_func.in_mf(message, command_type=None):
         language = config_func.language_analyzer(message, only_one=True)
         if language:
-            standart_commands.send_some_top(message, language,
-                                            '{index}. {p_link} — {day} {month}\n',
-                                            sort_key=lambda x: -100 * x['month_birthday'] - x[
-                                                'day_birthday'])
+            standart_commands.send_some_top(
+                message,
+                language,
+                '{index}. {p_link} — {day} {month}\n',
+                sort_key=lambda x: -100 * x['month_birthday'] - x['day_birthday'])
 
 
 @BOT.message_handler(commands=['admins', 'report'])
@@ -704,10 +683,9 @@ def database_send_handler(message):
     """ Send all databases to creator """
     LOG.log_print('database_send_handler invoked')
     if message.chat.id == 381279599:
-        for file in (
-                files_paths.DATABASE_FILE, files_paths.VOTES_FILE, files_paths.ADAPT_VOTES_FILE,
-                files_paths.MULTI_VOTES_FILE, files_paths.SYSTEMS_FILE,
-                files_paths.STORAGE_FILE):
+        for file in (files_paths.DATABASE_FILE, files_paths.VOTES_FILE, files_paths.ADAPT_VOTES_FILE,
+                     files_paths.MULTI_VOTES_FILE, files_paths.SYSTEMS_FILE,
+                     files_paths.STORAGE_FILE):
             file_send = open(file, 'rb')
             output.send_document(message.chat.id, file_send)
             file_send.close()

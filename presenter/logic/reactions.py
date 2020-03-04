@@ -7,7 +7,6 @@ from presenter.config.config_func import Database, is_suitable,\
     create_chat, CaptchaBan, person_info_in_html, chat_info_in_html, html_cleaner
 from view.output import delete, kick, send, promote, reply, restrict
 
-
 LOG = Loger(log_to)
 
 
@@ -31,7 +30,8 @@ def trigger(message):
         user = message.from_user
         print(user)
         text = str(trigger_entry['text_ans']).format(username=user.username,
-                                                     nickname=user.first_name, user_id=user.id)
+                                                     nickname=user.first_name,
+                                                     user_id=user.id)
         send(chat_id, text, parse_mode='HTML')
 
 
@@ -52,15 +52,25 @@ def new_member(message, member):
         kick(message.chat.id, member.id)
     elif is_suitable(message, member, 'uber', loud=False) and feature_is_available(
             message.chat.id, system, 'admins_promote'):
-        promote(message.chat.id, member.id,
-                can_change_info=True, can_delete_messages=True, can_invite_users=True,
-                can_restrict_members=True, can_pin_messages=True, can_promote_members=True)
+        promote(message.chat.id,
+                member.id,
+                can_change_info=True,
+                can_delete_messages=True,
+                can_invite_users=True,
+                can_restrict_members=True,
+                can_pin_messages=True,
+                can_promote_members=True)
         text += chat_configs['greetings']['full_admin'].format(name=name)
     elif is_suitable(message, member, 'boss', loud=False) and feature_is_available(
             message.chat.id, system, 'admins_promote'):
-        promote(message.chat.id, member.id,
-                can_change_info=False, can_delete_messages=True, can_invite_users=True,
-                can_restrict_members=True, can_pin_messages=True, can_promote_members=False)
+        promote(message.chat.id,
+                member.id,
+                can_change_info=False,
+                can_delete_messages=True,
+                can_invite_users=True,
+                can_restrict_members=True,
+                can_pin_messages=True,
+                can_promote_members=False)
         text += chat_configs['greetings']['admin'].format(name=name)
     elif feature_is_available(message.chat.id, system, 'newbies_captched') and\
             member.id == message.from_user.id and time() - message.date < 60:
@@ -74,8 +84,11 @@ def new_member(message, member):
             message.chat.id, system, 'newbies_captched'):
         delete(message.chat.id, message.message_id)
     else:
-        sent = reply(message, text, reply_markup=keyboard,
-                     parse_mode='HTML', disable_web_page_preview=True)
+        sent = reply(message,
+                     text,
+                     reply_markup=keyboard,
+                     parse_mode='HTML',
+                     disable_web_page_preview=True)
     # Notify admins if admin's chat exists
     admin_place = database.get('systems', ('id', system))['admin_place']
     if admin_place:

@@ -8,28 +8,49 @@ def send(chat_id, message_text, parse_mode=None, reply_markup=None, disable_web_
     """Отправить сообщение"""
     log.log_print("send invoked")
     try:
-        return BOT.send_message(chat_id, message_text, parse_mode=parse_mode, reply_markup=reply_markup,
+        return BOT.send_message(chat_id,
+                                message_text,
+                                parse_mode=parse_mode,
+                                reply_markup=reply_markup,
                                 disable_web_page_preview=disable_web_page_preview)
     except Exception as e:
         log.log_print(e)
 
 
-def send_photo(chat_id, photo, caption=None, reply_to_message_id=None, reply_markup=None, parse_mode=None):
+def send_photo(chat_id,
+               photo,
+               caption=None,
+               reply_to_message_id=None,
+               reply_markup=None,
+               parse_mode=None):
     """Отправить фото"""
     log.log_print("send_photo invoked")
     try:
-        return BOT.send_photo(chat_id, photo, caption=caption, reply_to_message_id=reply_to_message_id,
-                              reply_markup=reply_markup, parse_mode=parse_mode)
+        return BOT.send_photo(chat_id,
+                              photo,
+                              caption=caption,
+                              reply_to_message_id=reply_to_message_id,
+                              reply_markup=reply_markup,
+                              parse_mode=parse_mode)
     except Exception as e:
         log.log_print(e)
 
 
-def send_video(chat_id, video, caption=None, reply_to_message_id=None, reply_markup=None, parse_mode=None):
+def send_video(chat_id,
+               video,
+               caption=None,
+               reply_to_message_id=None,
+               reply_markup=None,
+               parse_mode=None):
     """Отправить видео"""
     log.log_print("send_video invoked")
     try:
-        return BOT.send_video(chat_id, video, caption=caption, reply_to_message_id=reply_to_message_id,
-                              reply_markup=reply_markup, parse_mode=parse_mode)
+        return BOT.send_video(chat_id,
+                              video,
+                              caption=caption,
+                              reply_to_message_id=reply_to_message_id,
+                              reply_markup=reply_markup,
+                              parse_mode=parse_mode)
     except Exception as e:
         log.log_print(e)
 
@@ -55,7 +76,10 @@ def reply(message, message_text, parse_mode=None, reply_markup=None, disable_web
     """Ответить на сообщение"""
     log.log_print("reply invoked")
     try:
-        return BOT.reply_to(message, message_text, parse_mode=parse_mode, reply_markup=reply_markup,
+        return BOT.reply_to(message,
+                            message_text,
+                            parse_mode=parse_mode,
+                            reply_markup=reply_markup,
                             disable_web_page_preview=disable_web_page_preview)
     except Exception as e:
         log.log_print(e)
@@ -79,11 +103,20 @@ def edit_markup(chat_id, message_id, reply_markup=None):
         log.log_print(e)
 
 
-def edit_text(text, chat_id, message_id, parse_mode=None, reply_markup=None, disable_web_page_preview=False):
+def edit_text(text,
+              chat_id,
+              message_id,
+              parse_mode=None,
+              reply_markup=None,
+              disable_web_page_preview=False):
     """Отредактировать текст сообщения"""
     log.log_print("edit_text invoked")
     try:
-        return BOT.edit_message_text(text, chat_id, message_id, parse_mode=parse_mode, reply_markup=reply_markup,
+        return BOT.edit_message_text(text,
+                                     chat_id,
+                                     message_id,
+                                     parse_mode=parse_mode,
+                                     reply_markup=reply_markup,
                                      disable_web_page_preview=disable_web_page_preview)
     except Exception as e:
         log.log_print(e)
@@ -107,12 +140,19 @@ def kick(chat_id, user_id, until_date=60):
         log.log_print(e)
 
 
-def restrict(chat_id, user_id, until_date=None, can_send_messages=None, can_send_media_messages=None,
-             can_send_other_messages=None, can_add_web_page_previews=None):
+def restrict(chat_id,
+             user_id,
+             until_date=None,
+             can_send_messages=None,
+             can_send_media_messages=None,
+             can_send_other_messages=None,
+             can_add_web_page_previews=None):
     """Restrict chat member"""
     log.log_print("restrict invoked")
     try:
-        return BOT.restrict_chat_member(chat_id=chat_id, user_id=user_id, until_date=until_date,
+        return BOT.restrict_chat_member(chat_id=chat_id,
+                                        user_id=user_id,
+                                        until_date=until_date,
                                         can_send_messages=can_send_messages,
                                         can_send_media_messages=can_send_media_messages,
                                         can_send_other_messages=can_send_other_messages,
@@ -130,17 +170,29 @@ def unban(chat_id, user_id):
         log.log_print(e)
 
 
-def promote(chat_id, user_id, can_change_info=False, can_post_messages=False, can_edit_messages=False,
-            can_delete_messages=False, can_invite_users=False, can_restrict_members=False, can_pin_messages=False,
+def promote(chat_id,
+            user_id,
+            can_change_info=False,
+            can_post_messages=False,
+            can_edit_messages=False,
+            can_delete_messages=False,
+            can_invite_users=False,
+            can_restrict_members=False,
+            can_pin_messages=False,
             can_promote_members=False):
     """Изменить админские полномочия"""
     log.log_print(f"promote invoked chat_id={chat_id}, user_id={user_id}")
     try:
-        return BOT.promote_chat_member(chat_id, user_id,
-                                       can_change_info=can_change_info, can_post_messages=can_post_messages,
-                                       can_edit_messages=can_edit_messages, can_delete_messages=can_delete_messages,
-                                       can_invite_users=can_invite_users, can_restrict_members=can_restrict_members,
-                                       can_pin_messages=can_pin_messages, can_promote_members=can_promote_members)
+        return BOT.promote_chat_member(chat_id,
+                                       user_id,
+                                       can_change_info=can_change_info,
+                                       can_post_messages=can_post_messages,
+                                       can_edit_messages=can_edit_messages,
+                                       can_delete_messages=can_delete_messages,
+                                       can_invite_users=can_invite_users,
+                                       can_restrict_members=can_restrict_members,
+                                       can_pin_messages=can_pin_messages,
+                                       can_promote_members=can_promote_members)
     except Exception as e:
         log.log_print(e)
 
