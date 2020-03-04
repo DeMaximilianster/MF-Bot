@@ -11,7 +11,6 @@ LOG_BOTH = 0  # Записать и в файл, и в консоль
 log_to = LOG_BOTH
 
 
-
 class Loger:
     def __init__(self, log_place=2):
         self.log_place = log_place
@@ -19,7 +18,7 @@ class Loger:
         self.gmt = 3
 
     def time_now(self):
-        return time.gmtime(int(time.time()) + 3600*self.gmt) # Время записи лога
+        return time.gmtime(int(time.time()) + 3600 * self.gmt)  # Время записи лога
 
     def log_strings(self, args):
         year, month, day, hour, minute, second, *_ = self.time_now()
@@ -34,7 +33,7 @@ class Loger:
                 yield f'{date} {arg}'
 
     def log_print(self, *args):
-        all_logs = '\n'.join(self.log_strings(args))+'\n'
+        all_logs = '\n'.join(self.log_strings(args)) + '\n'
 
         if self.log_place in (0, 2):
             print(all_logs, end='')
@@ -46,4 +45,3 @@ class Loger:
 
     def add_log_file(self, path):
         self.log_files.append(path)
-

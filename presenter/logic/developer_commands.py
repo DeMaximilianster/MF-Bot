@@ -49,7 +49,8 @@ def show_id(message):
                 answer += f',\n{cd(i.file_id)}'
             answer += '\n\n'
 
-        for media in (reply_msg.video, reply_msg.voice, reply_msg.video_note, reply_msg.audio, reply_msg.document):
+        for media in (reply_msg.video, reply_msg.voice, reply_msg.video_note, reply_msg.audio,
+                      reply_msg.document):
             if media:
                 answer += f'ID медиа: {cd(media.file_id)}\n\n'
                 break
@@ -83,5 +84,6 @@ def html_echo_message(message):
             reply(message, "Не могу распарсить это сообщение")
     else:
         reply(message, "У этого сообщения нет текста")
+
 
 # TODO Команда для просмотра админских полномочий бота

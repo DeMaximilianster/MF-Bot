@@ -18,8 +18,12 @@ work = True
 def captcha_completed(call):
     log.log_print("captcha_completed invoked")
     if remove_captcher(call):
-        restrict(call.message.chat.id, call.from_user.id, can_send_messages=True, can_send_other_messages=True,
-                 can_send_media_messages=True, can_add_web_page_previews=True)
+        restrict(call.message.chat.id,
+                 call.from_user.id,
+                 can_send_messages=True,
+                 can_send_other_messages=True,
+                 can_send_media_messages=True,
+                 can_add_web_page_previews=True)
         answer_callback(call.id, text='Испытание креветкой пройдено!')
         edit_markup(call.message.chat.id, call.message.message_id)
         # TODO Менять текст сообщения на текст-приветствие при выключенной капче
@@ -73,8 +77,12 @@ def inadequate(call):
 def response(inline_query):
     """Тестовая инлайновая команда, бесполезная"""
     log.log_print("response invoked")
-    results = [InlineQueryResultArticle('1', 'Тестовый заголовок', InputTextMessageContent("Тестовый текст"),
-                                        reply_markup=TEST_KEYBOARD)]
+    results = [
+        InlineQueryResultArticle('1',
+                                 'Тестовый заголовок',
+                                 InputTextMessageContent("Тестовый текст"),
+                                 reply_markup=TEST_KEYBOARD)
+    ]
     answer_inline(inline_query.id, results=results, cache_time=1)
 
 
@@ -92,10 +100,10 @@ def non_ironic(call):
     edit_text("Неиронично!", call.message.chat.id, call.message.message_id)
     # TODO добавить сюда голосовашку
     send(admin_place(call.message, Database()),
-         "Произошло оскорбление! " +
-         "[Ссылка на инцидент](t.me/{}/{})".format(call.message.reply_to_message.chat.username,
-                                                   call.message.reply_to_message.message_id),
-         parse_mode="Markdown", disable_web_page_preview=True)
+         "Произошло оскорбление! " + "[Ссылка на инцидент](t.me/{}/{})".format(
+             call.message.reply_to_message.chat.username, call.message.reply_to_message.message_id),
+         parse_mode="Markdown",
+         disable_web_page_preview=True)
     try:
         answer_callback(call.id)
     except Exception as e:
@@ -121,8 +129,9 @@ def place_here(call):
     elif 'nedostream' in call.data:
         where = -1001409685984  # Канал недостримов
     if call.message.reply_to_message.text.split()[0] == '/vote':
-        vote_message = send(where, 'Голосование "{}"'
-                            .format(call.message.reply_to_message.text[6:]), reply_markup=VOTE_KEYBOARD)
+        vote_message = send(where,
+                            'Голосование "{}"'.format(call.message.reply_to_message.text[6:]),
+                            reply_markup=VOTE_KEYBOARD)
         create_vote(vote_message)
     elif call.message.reply_to_message.text.split()[0] == '/multi_vote':
         answer = 'Мульти-голосование (вы можете предлагать варианты и выбирать несколько ответов)\n\n"{}"\n'
@@ -151,9 +160,11 @@ def mv(call):
     votey = votes_shelve[msg_id]  # Получаем необходимую нам голосовашку в хранилище
     file.close()
 
-    if user_id in votey['votes'][which][1].keys():  # Челик нажал на кнопку, на которой есть его мнение
+    if user_id in votey['votes'][which][1].keys(
+    ):  # Челик нажал на кнопку, на которой есть его мнение
         # удаляем челика из словаря
-        votey['votes'][which][1].pop(user_id)  # TODO Убрать быдлокод такого вида, изменив структуру МГ и АГ
+        votey['votes'][which][1].pop(
+            user_id)  # TODO Убрать быдлокод такого вида, изменив структуру МГ и АГ
     else:
         # если чедика нету - то просто добавляем
         votey['votes'][which][1].update([(user_id, link)])
@@ -182,7 +193,8 @@ def av(call):
     votey = votes_shelve[msg_id]  # Получаем необходимую нам голосовашку в хранилище
     file.close()
     if msg_id in votes_shelve.keys():
-        if user_id in votey['votes'][which][1].keys():  # Челик нажал на кнопку, на которой есть его мнение
+        if user_id in votey['votes'][which][1].keys(
+        ):  # Челик нажал на кнопку, на которой есть его мнение
             # удаляем челика из словаря
             votey['votes'][which][1].pop(user_id)
         else:
@@ -216,7 +228,8 @@ def add_vote(call):
     file.close()
     if msg_id in votes_shelve.keys():
         votey = votes_shelve[msg_id]  # Получаем необходимую нам голосовашку в хранилище
-        if time() - votey['time'] > 86400 and len(votey['favor']) != len(votey['against']):  # это сутки
+        if time() - votey['time'] > 86400 and len(votey['favor']) != len(
+                votey['against']):  # это сутки
             reply_markup = None
             text += 'Голосование окончено. Новые голоса не принимаются\n\n'
         elif user_id in votey[call.data].keys():  # Челик нажал на кнопку, на которой есть его мнение
@@ -240,8 +253,12 @@ def add_vote(call):
     file = open(VOTES_FILE, 'w', encoding='utf-8')
     file.write(str(votes_shelve))
     file.close()
-    edit_text(text=text, chat_id=call.message.chat.id, message_id=call.message.message_id,
-              reply_markup=reply_markup, parse_mode="HTML", disable_web_page_preview=True)
+    edit_text(text=text,
+              chat_id=call.message.chat.id,
+              message_id=call.message.message_id,
+              reply_markup=reply_markup,
+              parse_mode="HTML",
+              disable_web_page_preview=True)
     answer_callback(call.id, text="Жмак учтён!")
 
 
@@ -257,5 +274,6 @@ def vote(message):
         where_keyboard.add(InlineKeyboardButton("На канал недостримов", callback_data="nedostream"))
     '''
     reply(message, "А запостить куда?", reply_markup=where_keyboard)
+
 
 # TODO разделить этот модуль на сообщения с кнопками и триггеры кнопок

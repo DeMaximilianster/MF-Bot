@@ -113,8 +113,8 @@ def entities_saver(text, entities):
         for entity in entities:
             if entity.type in ('bold', 'italic', 'underline', 'strikethrough', 'code'):
                 points.add(entity.offset)
-                points.add(entity.offset+entity.length)
-                entities_blocks.append((entity.offset, entity.offset+entity.length, entity.type))
+                points.add(entity.offset + entity.length)
+                entities_blocks.append((entity.offset, entity.offset + entity.length, entity.type))
             elif entity.type == 'text_link':
                 points.add(entity.offset)
                 points.add(entity.offset + entity.length)
@@ -126,9 +126,9 @@ def entities_saver(text, entities):
         start_text = text[:points[0]]
         end_text = text[points[-1]:]
         points_blocks = []
-        for i in range(len(points)-1):
+        for i in range(len(points) - 1):
             start = points[i]
-            end = points[i+1]
+            end = points[i + 1]
             points_blocks.append([start, end, html_cleaner(text[start:end])])
         for point_block in points_blocks:
             for entity_block in entities_blocks:
@@ -412,20 +412,22 @@ class Analyzer:
         LOG.log_print("person_check invoked")
         if not self.parameters_dictionary:
             str_value_positive = 'ПОЛОЖИТЕЛЬНОЕ' if self.value_potive else ''
-            reply(self.message, "Пожалуйста, введите {} ".format(str_value_positive) +
-                                "число-значение, необходимое для команды, например\n\n"
-                                "/cmd 866828593 50 Комментарий\n\nили\n\n"
-                                "[Ответ на сообщение]\n/cmd 50 Комментарий\n\n"
-                                "Вы даже можете перемешивать параметры\n\n"
-                                "/cmd Комментарий 50 866828593\n"
-                                "/cmd 50 Комментарий 866828593\n"
-                                "/cmd 866828593 Комментарий 50\n")
+            reply(
+                self.message, "Пожалуйста, введите {} ".format(str_value_positive) +
+                "число-значение, необходимое для команды, например\n\n"
+                "/cmd 866828593 50 Комментарий\n\nили\n\n"
+                "[Ответ на сообщение]\n/cmd 50 Комментарий\n\n"
+                "Вы даже можете перемешивать параметры\n\n"
+                "/cmd Комментарий 50 866828593\n"
+                "/cmd 50 Комментарий 866828593\n"
+                "/cmd 866828593 Комментарий 50\n")
         elif person.id == self.message.from_user.id and not to_self:
-            reply(self.message, "Пожалуйста, введите ID нужного человека (можно найти в /members) "
-                                "или ответьте командой на его сообщение\n\n"
-                                "Этой командой нельзя пользоваться на себе, "
-                                "так что ввести свой же ID или ответить "
-                                "на своё же сообщение не выйдет)")
+            reply(
+                self.message, "Пожалуйста, введите ID нужного человека (можно найти в /members) "
+                "или ответьте командой на его сообщение\n\n"
+                "Этой командой нельзя пользоваться на себе, "
+                "так что ввести свой же ID или ответить "
+                "на своё же сообщение не выйдет)")
             return False
         if person.id == BOT_ID and not to_bot:
             reply(self.message, "Этой командой нельзя пользоваться на мне")
@@ -433,8 +435,10 @@ class Analyzer:
         return True
 
 
-def parameters_analyze(text: str, value_necessary=True,
-                       default_value=None, value_positive=False) -> dict:
+def parameters_analyze(text: str,
+                       value_necessary=True,
+                       default_value=None,
+                       value_positive=False) -> dict:
     """
     :param text: text of user's message
     :type text: str
@@ -472,14 +476,22 @@ def parameters_analyze(text: str, value_necessary=True,
     return dict()
 
 
-test_function({'command': 'give', 'person_id': 381279599, 'value': 20},
-              parameters_analyze('/give 381279599 20'))
-test_function({'command': 'give', 'value': 20},
-              parameters_analyze('/give 20'))
-test_function({'command': 'give', 'value': 20, 'comment': 'Take this'},
-              parameters_analyze('/give Take 20 this'))
-test_function({'command': 'warn', 'value': 1, 'comment': 'Take this'},
-              parameters_analyze('/warn Take this', default_value=1, value_positive=True))
+test_function({
+    'command': 'give',
+    'person_id': 381279599,
+    'value': 20
+}, parameters_analyze('/give 381279599 20'))
+test_function({'command': 'give', 'value': 20}, parameters_analyze('/give 20'))
+test_function({
+    'command': 'give',
+    'value': 20,
+    'comment': 'Take this'
+}, parameters_analyze('/give Take 20 this'))
+test_function({
+    'command': 'warn',
+    'value': 1,
+    'comment': 'Take this'
+}, parameters_analyze('/warn Take this', default_value=1, value_positive=True))
 test_function(dict(), parameters_analyze('/give'))
 test_function(dict(), parameters_analyze('/pay 381279599'))
 test_function(dict(), parameters_analyze('/warn 0', default_value=1, value_positive=True))
@@ -511,17 +523,8 @@ def add_person(person, system, database, system_configs):
     """Add entry to database about some person in some system"""
     # TODO ранг зависит от статуса чела, при обнаружении ботом
     # TODO часть данных должна браться из других записей, например день и месяц рождения
-    person_entry = (person.id,
-                    system,
-                    person.username,
-                    person.first_name,
-                    system_configs['ranks'][1],
-                    0,
-                    0,
-                    0,
-                    0,
-                    0
-                    )
+    person_entry = (person.id, system, person.username, person.first_name,
+                    system_configs['ranks'][1], 0, 0, 0, 0, 0)
     database.append(person_entry, 'members')
 
 
@@ -550,19 +553,25 @@ def rank_required(message, person, system, min_rank, max_rank, loud=True):
     if your_rank_n < min_rank_n and loud:
         if isinstance(message, CallbackQuery):
             answer_callback(message.id,
-                            "Ваше звание ({}) не дотягивает до звания ({}) для жмака"
-                            .format(your_rank, min_rank), show_alert=True)
+                            "Ваше звание ({}) не дотягивает до звания ({}) для жмака".format(
+                                your_rank, min_rank),
+                            show_alert=True)
         else:
-            reply(message, "Ваше звание ({}) не дотягивает до необходимого ({}) для этого"
-                  .format(your_rank, min_rank))
+            reply(
+                message, "Ваше звание ({}) не дотягивает до необходимого ({}) для этого".format(
+                    your_rank, min_rank))
     elif your_rank_n > max_rank_n and loud:
         if isinstance(message, CallbackQuery):
-            answer_callback(message.id,
-                            "Ваше звание ({}) выше максимального ({}) для жмака. Гордитесь собой"
-                            .format(your_rank, max_rank), show_alert=True)
+            answer_callback(
+                message.id,
+                "Ваше звание ({}) выше максимального ({}) для жмака. Гордитесь собой".format(
+                    your_rank, max_rank),
+                show_alert=True)
         else:
-            reply(message, "Ваше звание ({}) выше максимального ({}) для этого. Гордитесь собой"
-                  .format(your_rank, max_rank))
+            reply(
+                message,
+                "Ваше звание ({}) выше максимального ({}) для этого. Гордитесь собой".format(
+                    your_rank, max_rank))
     return min_rank_n <= your_rank_n <= max_rank_n
 
 
@@ -631,7 +640,7 @@ def cooldown(message, command, timeout=3600):
 
 def time_replace(seconds):
     """Converts time in GMT+0 into GMT+3 and return days, hours, minutes and seconds"""
-    _, _, days, hours, minutes, seconds, *_ = time.gmtime(seconds + 3600*3)
+    _, _, days, hours, minutes, seconds, *_ = time.gmtime(seconds + 3600 * 3)
     return days, hours, minutes, seconds
 
 
@@ -642,8 +651,10 @@ def in_mf(message, command_type, or_private=True, loud=True):
     person = left_new_or_else_member(message)
     if message.chat.id > 0:
         if loud and not or_private:
-            send(381279599, "Некто {} попыталcя использовать команду {} в личке".format(
-                person_info_in_html(message.from_user), message.text), parse_mode='HTML')
+            send(381279599,
+                 "Некто {} попыталcя использовать команду {} в личке".format(
+                     person_info_in_html(message.from_user), message.text),
+                 parse_mode='HTML')
             reply(message, "Эта команда отключена в ЛС")
         return or_private
 
@@ -668,11 +679,12 @@ def in_mf(message, command_type, or_private=True, loud=True):
         return True
     if loud:
         text = "Люди из чата {}, в частности {} попытались мной воспользоваться"
-        send(381279599, text.format(chat_info_in_html(message.chat),
-                                    person_info_in_html(message.from_user)),
+        send(381279599,
+             text.format(chat_info_in_html(message.chat), person_info_in_html(message.from_user)),
              parse_mode='HTML')
-        reply(message, "Hmm, I don't know this chat. Call @DeMaximilianster for help\n\n"
-                       "Хмм, я не знаю этот чат. Обратитесь к @DeMaximilianster за помощью\n\n")
+        reply(
+            message, "Hmm, I don't know this chat. Call @DeMaximilianster for help\n\n"
+            "Хмм, я не знаю этот чат. Обратитесь к @DeMaximilianster за помощью\n\n")
 
 
 def is_correct_message(message):
@@ -725,8 +737,9 @@ def member_update(system, person):
     """Updates nickname, username and messages columns in database"""
     LOG.log_print('member_update invoked')
     database = Database()
-    chats_ids = [x['id'] for x in database.get_many('chats', ('messages_count', 2),
-                                                    ('system', system))]
+    chats_ids = [
+        x['id'] for x in database.get_many('chats', ('messages_count', 2), ('system', system))
+    ]
     msg_count = 0
     for chat_id in chats_ids:
         if feature_is_available(chat_id, system, 'messages_count'):
@@ -784,20 +797,21 @@ def update_systems_json(system, set_what, set_where):
 
 def create_system(message, system_id, database):
     """Create entry about some system"""
-    system_tuple = (system_id,
-                    0,  # money in the system
-                    0,  # admin places of the system
-                    1,  # standart commands
-                    1,  # erotic commands
-                    1,  # boss commands
-                    1,  # financial commands
-                    0,  # mutual invites
-                    2,  # messages count
-                    1,  # violators_ban
-                    1,  # admins_promote
-                    1,  # moves delete
-                    1,  # newbies captched
-                    )
+    system_tuple = (
+        system_id,
+        0,  # money in the system
+        0,  # admin places of the system
+        1,  # standart commands
+        1,  # erotic commands
+        1,  # boss commands
+        1,  # financial commands
+        0,  # mutual invites
+        2,  # messages count
+        1,  # violators_ban
+        1,  # admins_promote
+        1,  # moves delete
+        1,  # newbies captched
+    )
     database.append(system_tuple, 'systems')
     data = get_systems_json()
     data[system_id] = dict(NEW_SYSTEM_JSON_ENTRY)
@@ -817,22 +831,23 @@ def update_old_systems_json():
 
 def create_chat(message, system_id, typee, link, database):
     """Create entry about some chat in some system"""
-    chat_tuple = (message.chat.id,
-                  system_id,
-                  message.chat.title,
-                  typee,
-                  link,
-                  2,  # standart commands
-                  2,  # erotic commands
-                  2,  # boss commands
-                  2,  # financial commands
-                  2,  # mutual invites
-                  2,  # messages count
-                  2,  # violators_ban
-                  2,  # admins_promote
-                  2,  # moves delete
-                  2,  # newbies captched
-                  )
+    chat_tuple = (
+        message.chat.id,
+        system_id,
+        message.chat.title,
+        typee,
+        link,
+        2,  # standart commands
+        2,  # erotic commands
+        2,  # boss commands
+        2,  # financial commands
+        2,  # mutual invites
+        2,  # messages count
+        2,  # violators_ban
+        2,  # admins_promote
+        2,  # moves delete
+        2,  # newbies captched
+    )
     database.append(chat_tuple, 'chats')
 
 
@@ -848,8 +863,13 @@ def create_vote(vote_message):
     else:
         votes_shelve = {}
     file.close()
-    votes_shelve[vote_message.message_id] = {"time": vote_message.date, "text": vote_message.text,
-                                             "favor": {}, "against": {}, "abstain": {}}
+    votes_shelve[vote_message.message_id] = {
+        "time": vote_message.date,
+        "text": vote_message.text,
+        "favor": {},
+        "against": {},
+        "abstain": {}
+    }
     file = open(VOTES_FILE, 'w', encoding='utf-8')
     file.write(str(votes_shelve))
     file.close()
@@ -869,8 +889,12 @@ def create_multi_vote(vote_message):
     else:
         votes_shelve = {}
     file.close()
-    votes_shelve[vote_message.message_id] = {"text": vote_message.text, "votes": [], "keyboard": [],
-                                             "chat": vote_message.chat.id}
+    votes_shelve[vote_message.message_id] = {
+        "text": vote_message.text,
+        "votes": [],
+        "keyboard": [],
+        "chat": vote_message.chat.id
+    }
     file = open(MULTI_VOTES_FILE, 'w', encoding='utf-8')
     file.write(str(votes_shelve))
     file.close()
@@ -891,8 +915,12 @@ def create_adapt_vote(vote_message):
     else:
         votes_shelve = {}
     file.close()
-    votes_shelve[vote_message.message_id] = {"text": vote_message.text, "votes": [], "keyboard": [],
-                                             "chat": vote_message.chat.id}
+    votes_shelve[vote_message.message_id] = {
+        "text": vote_message.text,
+        "votes": [],
+        "keyboard": [],
+        "chat": vote_message.chat.id
+    }
     file = open(ADAPT_VOTES_FILE, 'w', encoding='utf-8')
     file.write(str(votes_shelve))
     file.close()
@@ -921,8 +949,12 @@ def update_multi_vote(vote_id):
     for i in votey['votes']:
         text += '\n{}: '.format(i[0]) + ', '.join(i[1].values())
     try:
-        edit_text(text=text, chat_id=votey['chat'], message_id=vote_id,
-                  reply_markup=keyboard, parse_mode="HTML", disable_web_page_preview=True)
+        edit_text(text=text,
+                  chat_id=votey['chat'],
+                  message_id=vote_id,
+                  reply_markup=keyboard,
+                  parse_mode="HTML",
+                  disable_web_page_preview=True)
     except Exception as exception:
         print(exception)
 
@@ -949,8 +981,11 @@ def update_adapt_vote(vote_id):
     for i in votey['votes']:
         text += '\n{}: '.format(i[0]) + ', '.join(i[1].values())
     try:
-        edit_text(text=text, chat_id=votey['chat'], message_id=vote_id,
-                  reply_markup=keyboard, parse_mode="HTML",
+        edit_text(text=text,
+                  chat_id=votey['chat'],
+                  message_id=vote_id,
+                  reply_markup=keyboard,
+                  parse_mode="HTML",
                   disable_web_page_preview=True)
     except Exception as exception:
         print(exception)

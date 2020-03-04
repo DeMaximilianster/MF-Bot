@@ -30,8 +30,9 @@ def add_stuff_to_storage(message, stuff):
             else:
                 data[stuff].append(insert)
                 forward(381279599, message.chat.id, rep.message_id)
-                send(381279599, f"Норм контент?) user={message.from_user.id}, "
-                                f"text={message.text}, id={insert[0]}")
+                send(
+                    381279599, f"Норм контент?) user={message.from_user.id}, "
+                    f"text={message.text}, id={insert[0]}")
                 write_storage_json(data)
                 reply(message, "ОК!")
         else:
@@ -64,15 +65,18 @@ def warn(message, person, parameters_dictionary):
     reply(message, "Варн(ы) выдан(ы). Теперь их {}".format(value))
     adm_place = admin_place(message, database)
     if adm_place:
-        send(adm_place, "Пользователь {} получил(а) {} варн(а) и их стало {}".format(
-            person_info_in_html(person), warns, value), parse_mode='HTML')
+        send(adm_place,
+             "Пользователь {} получил(а) {} варн(а) и их стало {}".format(
+                 person_info_in_html(person), warns, value),
+             parse_mode='HTML')
     blowout = database.get('channels', ('name', 'Проколы'))['id']
     # TODO каждому чату своё хранилище преступлений
     how_many = 10  # Сколько пересылает сообщений
     end_forwarding = message.reply_to_message.message_id
     start_forwarding = end_forwarding - how_many
-    send(blowout, "В чате {} случилось нарушение участником {} Прысылаю {} сообщений".
-         format(chat_info_in_html(message.chat), person_info_in_html(person), how_many),
+    send(blowout,
+         "В чате {} случилось нарушение участником {} Прысылаю {} сообщений".format(
+             chat_info_in_html(message.chat), person_info_in_html(person), how_many),
          parse_mode='HTML')
     for msg_id in range(start_forwarding, end_forwarding + 1):
         forward(blowout, message.chat.id, msg_id)
@@ -95,8 +99,8 @@ def unwarn(message, person, parameters_dictionary: dict):
             text = "#warns\n\n"
             text += "Пользователь {} потерял(а) {} варн(а) и их стало {}\n".format(
                 person_info_in_html(person), unwarns, value)
-            text += "Варн(ы) снят(ы) пользователем {}\n".format(person_info_in_html(
-                message.from_user))
+            text += "Варн(ы) снят(ы) пользователем {}\n".format(
+                person_info_in_html(message.from_user))
             if 'comment' in parameters_dictionary.keys():
                 text += "Комментарий: {}".format(parameters_dictionary['comment'])
             send(adm_place, text, parse_mode='HTML')
@@ -104,8 +108,8 @@ def unwarn(message, person, parameters_dictionary: dict):
         if 3 - unwarns <= value < 3:
             chat_configs = get_system_configs(system)
             unban_user(person)
-            database.change(chat_configs['ranks'][1], 'rank', 'members',
-                            ('id', person.id), ('system', system))
+            database.change(chat_configs['ranks'][1], 'rank', 'members', ('id', person.id),
+                            ('system', system))
     else:
         reply(message, "Нельзя сделать отрицательное количество предупреждений")
 
@@ -119,27 +123,30 @@ def ban(message, person, comment=True, unban_then=False):
     if not unban_then:
         end_forwarding = get_target_message(message).message_id
         start_forwarding = end_forwarding - how_many
-        send(blowout, "В чате {} забанили участника {}. Прысылаю {} сообщений".
-             format(chat_info_in_html(message.chat), person_info_in_html(person), how_many),
+        send(blowout,
+             "В чате {} забанили участника {}. Прысылаю {} сообщений".format(
+                 chat_info_in_html(message.chat), person_info_in_html(person), how_many),
              parse_mode='HTML')
         for msg_id in range(start_forwarding, end_forwarding + 1):
             forward(blowout, message.chat.id, msg_id)
     if comment:
-        send(message.chat.id, "Ну всё, этому челу " + "бан"*(not unban_then) + "кик"*unban_then)
+        send(message.chat.id, "Ну всё, этому челу " + "бан" * (not unban_then) + "кик" * unban_then)
     chat = database.get('chats', ('id', message.chat.id))
     system = chat['system']
     chat_configs = get_system_configs(system)
     if not unban_then:
-        database.change(chat_configs['ranks'][0], 'rank', 'members',
-                        ('id', person.id), ('system', system))
+        database.change(chat_configs['ranks'][0], 'rank', 'members', ('id', person.id),
+                        ('system', system))
     for chat in full_chat_list(database, system):
         kick(chat['id'], person.id)
     for channel in channel_list(database):
         kick(channel['id'], person.id)
     adm_place = admin_place(message, database)
     if adm_place:
-        send(adm_place, "Пользователь {} получил(а) бан".format(
-            person_info_in_html(person)+', но сразу и разбан'*unban_then), parse_mode='HTML')
+        send(adm_place,
+             "Пользователь {} получил(а) бан".format(
+                 person_info_in_html(person) + ', но сразу и разбан' * unban_then),
+             parse_mode='HTML')
     if unban_then:
         unban_user(person)
 
@@ -152,11 +159,13 @@ def mute(message, person, parameters_dictionary):
     chat = database.get('chats', ('id', message.chat.id))
     system = chat['system']
     for chat in full_chat_list(database, system):
-        restrict(chat['id'], person.id, until_date=time()+hours*3600)
+        restrict(chat['id'], person.id, until_date=time() + hours * 3600)
     adm_place = admin_place(message, database)
     if adm_place:
-        send(adm_place, "Пользователь {} получил(а) мут на {} час(ов)".format(
-            person_info_in_html(person), hours), parse_mode='HTML')
+        send(adm_place,
+             "Пользователь {} получил(а) мут на {} час(ов)".format(person_info_in_html(person),
+                                                                   hours),
+             parse_mode='HTML')
     reply(message, "Мут выдан")
 
 
@@ -183,15 +192,16 @@ def money_pay(message, person, parameters_dictionary):
             person_money -= money
             if not_inf:
                 bot_money += money
-            sent = send(p_id, f"#Финансы\n\n"
-                              f"С вашего счёта было снято {money} денег в фонд чата. "
-                              f"У вас осталось {person_money} денег")
+            sent = send(
+                p_id, f"#Финансы\n\n"
+                f"С вашего счёта было снято {money} денег в фонд чата. "
+                f"У вас осталось {person_money} денег")
             # TODO Уточнять чат
             if sent:
                 sent = "🔔 уведомлён(а)"
             else:
                 sent = "🔕 не уведомлён(а)"
-            answer = "#Финансы " + "#Бюджет "*not_inf + f"#f{p_id}\n\n"
+            answer = "#Финансы " + "#Бюджет " * not_inf + f"#f{p_id}\n\n"
             if not_inf:
                 answer += f"Бюджет [{bot_money - money} --> {bot_money}]\n"
             answer += f"ID {p_id} [{person_money + money} --> {person_money}] {sent}"
@@ -204,9 +214,10 @@ def money_pay(message, person, parameters_dictionary):
             reply(message, "У нас нет столько в бюджете")
         else:
             person_money += money
-            sent = send(p_id, f"#Финансы\n\n"
-                              f"На ваш счёт было переведено {money} денег из фонда чата. "
-                              f"Теперь у вас {person_money} денег")
+            sent = send(
+                p_id, f"#Финансы\n\n"
+                f"На ваш счёт было переведено {money} денег из фонда чата. "
+                f"Теперь у вас {person_money} денег")
             # TODO рефакторинг уведомлялки и переименование недег
             if sent:
                 sent = "🔔 уведомлён(а)"
@@ -235,9 +246,14 @@ def give_admin(message, person, loud=True):
     # TODO пусть бот шлёт админу ссылку на чат админосостава и меняет её при входе
     # Дать челу админку во всех чатах, кроме Комитета и Админосостава
     for chat in chat_list(database, system):
-        promote(chat['id'], person.id,
-                can_change_info=True, can_delete_messages=True, can_invite_users=True,
-                can_restrict_members=True, can_pin_messages=True, can_promote_members=False)
+        promote(chat['id'],
+                person.id,
+                can_change_info=True,
+                can_delete_messages=True,
+                can_invite_users=True,
+                can_restrict_members=True,
+                can_pin_messages=True,
+                can_promote_members=False)
     for channel in channel_list(database):
         promote(channel['id'], person.id, can_post_messages=True, can_invite_users=True)
     if loud:
@@ -252,9 +268,14 @@ def del_admin(message, person, loud=True):
     system = chat['system']
     database.remove("appointments", ("appointment", "Admin"), ("id", person.id))
     for chat in chat_list(database, system):
-        promote(chat['id'], person.id,
-                can_change_info=False, can_delete_messages=False, can_invite_users=False,
-                can_restrict_members=False, can_pin_messages=False, can_promote_members=False)
+        promote(chat['id'],
+                person.id,
+                can_change_info=False,
+                can_delete_messages=False,
+                can_invite_users=False,
+                can_restrict_members=False,
+                can_pin_messages=False,
+                can_promote_members=False)
     for channel in channel_list(database):
         promote(channel['id'], person.id, can_post_messages=False, can_invite_users=False)
     if loud:
@@ -277,8 +298,9 @@ def rank_changer(message, person):
         database.change(rank, "rank", 'members', ('id', person.id), ('system', system))
         reply(message, f"Теперь это {rank} по званию!")
         if adm_place:
-            send(adm_place, "Пользователь {} получил(а) звание {}".format(
-                person_info_in_html(person), rank), parse_mode='HTML')
+            send(adm_place,
+                 "Пользователь {} получил(а) звание {}".format(person_info_in_html(person), rank),
+                 parse_mode='HTML')
     elif command in chat_configs["appointment_adders"]:
         appointment_index = chat_configs["appointment_adders"].index(command)
         appointment = chat_configs["appointments"][appointment_index]
@@ -287,8 +309,10 @@ def rank_changer(message, person):
             database.append((person.id, system, appointment), "appointments")
             reply(message, f"Теперь это {appointment}. Поздравим человека с повышением!")
             if adm_place:
-                send(adm_place, "Пользователь {} получил(а) должность {}".format(
-                    person_info_in_html(person), appointment), parse_mode='HTML')
+                send(adm_place,
+                     "Пользователь {} получил(а) должность {}".format(person_info_in_html(person),
+                                                                      appointment),
+                     parse_mode='HTML')
         else:
             reply(message, "У этого человека и так есть эта должность")
     elif command in chat_configs["appointment_removers"]:
@@ -298,8 +322,10 @@ def rank_changer(message, person):
                         ('appointment', appointment))
         reply(message, f"Теперь это не {appointment}")
         if adm_place:
-            send(adm_place, "Пользователь {} потерял(а) должность {}".format(
-                person_info_in_html(person), appointment), parse_mode='HTML')
+            send(adm_place,
+                 "Пользователь {} потерял(а) должность {}".format(person_info_in_html(person),
+                                                                  appointment),
+                 parse_mode='HTML')
     unban_user(person)
     if is_suitable(message, person, 'boss', loud=False):
         give_admin(message, person, loud=False)

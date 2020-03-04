@@ -145,13 +145,22 @@ def send_stuff_from_storage(message, stuff):
     log.log_print("send_stuff_from_storage invoked")
     result = choice(get_list_from_storage(stuff))
     if result[1] == 'photo':
-        send_photo(message.chat.id, result[0], reply_to_message_id=message.message_id, caption=result[2],
+        send_photo(message.chat.id,
+                   result[0],
+                   reply_to_message_id=message.message_id,
+                   caption=result[2],
                    parse_mode='HTML')
     elif result[1] == 'video':
-        send_video(message.chat.id, result[0], reply_to_message_id=message.message_id, caption=result[2],
+        send_video(message.chat.id,
+                   result[0],
+                   reply_to_message_id=message.message_id,
+                   caption=result[2],
                    parse_mode='HTML')
     elif result[1] == 'gif':
-        send_document(message.chat.id, result[0], reply_to_message_id=message.message_id, caption=result[2],
+        send_document(message.chat.id,
+                      result[0],
+                      reply_to_message_id=message.message_id,
+                      caption=result[2],
                       parse_mode='HTML')
     else:
         reply(message, "Произошла ошибка!")
@@ -178,9 +187,13 @@ def send_me(message, person):
     money_name = chat_config['money_name']
     member_update(system, person)  # Update person's messages, nickname and username
     p = get_person(person, system, database, system_configs=chat_config)
-    appointments = [x['appointment'] for x in database.get_many('appointments', ('id', person.id), ('system', system))]
+    appointments = [
+        x['appointment']
+        for x in database.get_many('appointments', ('id', person.id), ('system', system))
+    ]
     if database.get('messages', ('person_id', person.id), ('chat_id', message.chat.id)):
-        messages_here = database.get('messages', ('person_id', person.id), ('chat_id', message.chat.id))['messages']
+        messages_here = database.get('messages', ('person_id', person.id),
+                                     ('chat_id', message.chat.id))['messages']
     else:
         messages_here = 0
     msg = 'ID: {}\n'.format(p['id'])
@@ -205,8 +218,10 @@ def send_some_top(message, language, format_string, start='', sort_key=lambda x:
     # Declaring variables
     sent = False
     system = database.get('chats', ('id', message.chat.id))['system']
-    formating_dict = {'m_emo': get_system_configs(system)['money_emoji'],
-                      'bot_money': database.get('systems', ('id', system))['money']}
+    formating_dict = {
+        'm_emo': get_system_configs(system)['money_emoji'],
+        'bot_money': database.get('systems', ('id', system))['money']
+    }
     text = start.format(**formating_dict)
     members = database.get_many('members', ('system', system))
     members = list(filter(lambda x: function_returned_true(sort_key, x), members))
@@ -216,13 +231,13 @@ def send_some_top(message, language, format_string, start='', sort_key=lambda x:
     else:
         target_chat = message.chat.id
     # Main loop
-    for index in range(1, len(members)+1):
-        member = members[index-1]
+    for index in range(1, len(members) + 1):
+        member = members[index - 1]
         p_link = link_text_wrapper(html_cleaner(member["nickname"]), f't.me/{member["username"]}')
         formating_dict.update(member)
         formating_dict.update({'index': index, 'p_link': p_link, 'day': member['day_birthday']})
         if '{month}' in format_string:
-            formating_dict['month'] = MONTHS_GENITIVE[member['month_birthday']-1][language]
+            formating_dict['month'] = MONTHS_GENITIVE[member['month_birthday'] - 1][language]
         text += format_string.format(**formating_dict)
         if index % 50 == 0:
             sent = send(target_chat, text, parse_mode='HTML', disable_web_page_preview=True)
@@ -242,24 +257,26 @@ def send_short_top(message, language, format_string, start='', sort_key=lambda x
     database = Database()
     # Declaring variables
     system = database.get('chats', ('id', message.chat.id))['system']
-    formating_dict = {'m_emo': get_system_configs(system)['money_emoji'],
-                      'bot_money': database.get('systems', ('id', system))['money']}
+    formating_dict = {
+        'm_emo': get_system_configs(system)['money_emoji'],
+        'bot_money': database.get('systems', ('id', system))['money']
+    }
     text = start.format(**formating_dict)
     members = database.get_many('members', ('system', system))
     members = list(filter(lambda x: function_returned_true(sort_key, x), members))
     members.sort(key=sort_key, reverse=True)
     person_index = 0
-    for person_index in range(1, len(members)+1):
-        if members[person_index-1]['id'] == message.from_user.id:
+    for person_index in range(1, len(members) + 1):
+        if members[person_index - 1]['id'] == message.from_user.id:
             break
     # Main loop
-    for index in range(1, len(members)+1):
-        member = members[index-1]
+    for index in range(1, len(members) + 1):
+        member = members[index - 1]
         p_link = link_text_wrapper(html_cleaner(member["nickname"]), f't.me/{member["username"]}')
         formating_dict.update(member)
         formating_dict.update({'index': index, 'p_link': p_link, 'day': member['day_birthday']})
         if '{month}' in format_string:
-            formating_dict['month'] = MONTHS_GENITIVE[member['month_birthday']-1][language]
+            formating_dict['month'] = MONTHS_GENITIVE[member['month_birthday'] - 1][language]
         if index <= 5 or abs(index - person_index) <= 2:
             text += format_string.format(**formating_dict)
         elif '.\n.\n.\n' not in text and person_index >= 9:
@@ -292,10 +309,12 @@ def money_give(message, person, parameters_dictionary: dict):
         else:
             value_getter += money
             value_giver -= money
-            giv_m = send(giver, f"#Финансы\n\n Вы успешно перевели {money} денег на счёт {getter}. "
-                                f"Теперь у вас их {value_giver}. А у него/неё {value_getter}")
-            get_m = send(getter, f"#Финансы\n\n На ваш счёт было {money} денег со счёта {giver}. "
-                                 f"Теперь у вас их {value_getter}. А у него/неё {value_giver}")
+            giv_m = send(
+                giver, f"#Финансы\n\n Вы успешно перевели {money} денег на счёт {getter}. "
+                f"Теперь у вас их {value_giver}. А у него/неё {value_getter}")
+            get_m = send(
+                getter, f"#Финансы\n\n На ваш счёт было {money} денег со счёта {giver}. "
+                f"Теперь у вас их {value_getter}. А у него/неё {value_giver}")
             if get_m:
                 get_m = "🔔 уведомлён(а)"
             else:
@@ -304,12 +323,14 @@ def money_give(message, person, parameters_dictionary: dict):
                 giv_m = "🔔 уведомлён(а)"
             else:
                 giv_m = "🔕 не уведомлён(а)"
-            reply(message, f"#Финансы #Ф{getter} #Ф{giver}\n\n"
-                           f"ID {getter} [{value_getter - money} --> {value_getter}] {get_m}\n"
-                           f"ID {giver} [{value_giver + money} --> {value_giver}] {giv_m}\n")
-            send(admin_place(message, database), f"#Финансы #Ф{getter} #Ф{giver}\n\n"
-                                                 f"ID {getter} [{value_getter - money} --> {value_getter}] {get_m}\n"
-                                                 f"ID {giver} [{value_giver + money} --> {value_giver}] {giv_m}\n")
+            reply(
+                message, f"#Финансы #Ф{getter} #Ф{giver}\n\n"
+                f"ID {getter} [{value_getter - money} --> {value_getter}] {get_m}\n"
+                f"ID {giver} [{value_giver + money} --> {value_giver}] {giv_m}\n")
+            send(
+                admin_place(message, database), f"#Финансы #Ф{getter} #Ф{giver}\n\n"
+                f"ID {getter} [{value_getter - money} --> {value_getter}] {get_m}\n"
+                f"ID {giver} [{value_giver + money} --> {value_giver}] {giv_m}\n")
     database.change(value_getter, 'money', 'members', ('id', getter), ('system', system))
     database.change(value_giver, 'money', 'members', ('id', giver), ('system', system))
 
@@ -348,12 +369,18 @@ def admins(message):
     if isinstance(boss, list):
         all_ranks = ranks[ranks.index(boss[0]):ranks.index(boss[1]) + 1]
         for rank in all_ranks:
-            admins_username += ['@' + x['username'] for x in
-                                database.get_many('members', ('rank', rank), ('system', system))]
+            admins_username += [
+                '@' + x['username']
+                for x in database.get_many('members', ('rank', rank), ('system', system))
+            ]
     elif isinstance(boss, str):
-        admins_id = [admin['id'] for admin in database.get_many('appointments', ('appointment', boss))]
-        admins_username = ['@' + database.get('members', ('id', admin), ('system', system))['username'] for admin in
-                           admins_id]
+        admins_id = [
+            admin['id'] for admin in database.get_many('appointments', ('appointment', boss))
+        ]
+        admins_username = [
+            '@' + database.get('members', ('id', admin), ('system', system))['username']
+            for admin in admins_id
+        ]
     reply(message, 'Вызываю сюда админов: ' + ', '.join(admins_username))
 
 
@@ -452,7 +479,8 @@ def anon_message(message):
         if system_entry:
             if system_entry['admin_place']:
                 anon_message_text = ' '.join(message.text.split()[1:])
-                sent = send(system_entry['admin_place'], "#anon\n\n" + anon_message_text[system_specification_length:])
+                sent = send(system_entry['admin_place'],
+                            "#anon\n\n" + anon_message_text[system_specification_length:])
                 if sent:
                     reply(message, "Сообщение успешно отправлено. Спасибо за ваше мнение!")
                 else:
