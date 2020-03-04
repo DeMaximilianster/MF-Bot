@@ -3,7 +3,7 @@ from random import choice
 from view.output import reply, send_photo, send_sticker, send, send_video, send_document
 from presenter.config.config_func import member_update, int_check, \
     is_suitable, feature_is_available, get_system_configs, get_systems_json, get_person, get_list_from_storage,\
-    html_cleaner, link_text_wrapper, function_returned_true
+    html_cleaner, link_text_wrapper, function_returned_true, value_marker
 from presenter.config.database_lib import Database
 from presenter.config.config_var import admin_place, ORIGINAL_TO_ENGLISH, ENGLISH_TO_ORIGINAL, \
     MONTHS_GENITIVE, MONTHS_PREPOSITIONAL, FEATURES, FEATURES_TEXTS
@@ -292,10 +292,16 @@ def money_give(message, person, parameters_dictionary: dict):
         else:
             value_getter += money
             value_giver -= money
-            giv_m = send(giver, f"#Финансы\n\n Вы успешно перевели {money} денег на счёт {getter}. "
-                                f"Теперь у вас их {value_giver}. А у него/неё {value_getter}")
-            get_m = send(getter, f"#Финансы\n\n На ваш счёт было {money} денег со счёта {giver}. "
-                                 f"Теперь у вас их {value_getter}. А у него/неё {value_giver}")
+            giv_m = value_marker(
+                send(giver, f"#Финансы\n\n Вы успешно перевели {money} денег на счёт {getter}. "
+                            f"Теперь у вас их {value_giver}. А у него/неё {value_getter}"),
+                "🔔 уведомлён(а)", "🔕 не уведомлён(а)"
+            )
+            get_m = value_marker(
+                send(getter, f"#Финансы\n\n На ваш счёт было {money} денег со счёта {giver}. "
+                             f"Теперь у вас их {value_getter}. А у него/неё {value_giver}"),
+                "🔔 уведомлён(а)", "🔕 не уведомлён(а)"
+            )
             if get_m:
                 get_m = "🔔 уведомлён(а)"
             else:

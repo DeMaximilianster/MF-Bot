@@ -268,6 +268,17 @@ def link_text_wrapper(text, url):
     return f'<a href="{url}">{text}</a>'
 
 
+def value_marker(value: object, normal: str, void: str) -> str:
+    """
+    Replace an object with a string, depending on the value being incremented (True or False)
+    :param value: Value to replace with string
+    :param normal: String if value returns True
+    :param void: String if value returns False
+    :return: Replaced object
+    """
+    return normal if value else void
+
+
 def function_worked_correctly(function, *args, **kwargs):
     """Checks if function worked without throwing an exception"""
     try:
