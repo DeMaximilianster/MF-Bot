@@ -468,6 +468,14 @@ def html_echo_message_handler(message):
         developer_commands.html_echo_message(message)
 
 
+@BOT.message_handler(commands=['rights'])
+def rights_handler(message):
+    """ Check bot rights """
+    LOG.log_print("rights_handler invoked")
+    if config_func.in_mf(message, command_type=None):
+        developer_commands.get_bot_rights(message)
+
+
 @BOT.message_handler(commands=['minet', 'french_style_sex', 'blowjob'])
 def minet_handler(message):
     """Приносит удовольствие"""

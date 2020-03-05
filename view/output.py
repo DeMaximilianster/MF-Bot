@@ -240,3 +240,12 @@ def get_chat(chat_id):
         return BOT.get_chat(chat_id)
     except Exception as e:
         log.log_print(e)
+
+
+def get_me():
+    """ Get information about bot """
+    log.log_print("get_me invoked")
+    try:
+        return BOT.get_me()
+    except Exception as e:
+        log.log_print(e)

@@ -1,9 +1,10 @@
 from time import ctime, time
 
-from presenter.config.config_func import time_replace, entities_saver, get_text_and_entities, get_target_message
+from presenter.config.config_func import time_replace, entities_saver, get_text_and_entities, \
+    get_target_message, value_marker
 from presenter.config.config_func import code_text_wrapper as cd
 from presenter.config.log import Loger
-from view.output import reply
+from view.output import reply, get_me, get_member
 
 log = Loger()
 
@@ -12,24 +13,24 @@ def show_id(message):
     """Присылает различные ID'шники, зачастую бесполезные"""
     log.log_print(str(message.from_user.id) + ": show_id invoked")
 
-    answer = f'Время отправки вашего сообщения: {cd(ctime(message.date))}\n\n'\
-             f'Переводя, выходит: {cd(time_replace(message.date))}\n\n'\
-             f'Время отправки моего сообщения: {cd(ctime(time()))}\n\n'\
-             f'ID этого чата: {cd(message.chat.id)}\n\n'\
-             f'Ваш ID: {cd(message.from_user.id)}\n\n'\
-             f'Ваш language code: {cd(message.from_user.language_code)}\n\n'\
+    answer = f'Время отправки вашего сообщения: {cd(ctime(message.date))}\n\n' \
+             f'Переводя, выходит: {cd(time_replace(message.date))}\n\n' \
+             f'Время отправки моего сообщения: {cd(ctime(time()))}\n\n' \
+             f'ID этого чата: {cd(message.chat.id)}\n\n' \
+             f'Ваш ID: {cd(message.from_user.id)}\n\n' \
+             f'Ваш language code: {cd(message.from_user.language_code)}\n\n' \
              f'ID вашего сообщения: {cd(message.message_id)}\n\n'
 
     reply_msg = message.reply_to_message
     if reply_msg is not None:  # Сообщение является ответом
 
-        answer += f'ID человека, на сообщение которого ответили: {cd(reply_msg.from_user.id)}\n\n'\
-                  f'Его/её language code: {cd(reply_msg.from_user.language_code)}\n\n'\
-                  f'ID сообщения, на которое ответили: {cd(reply_msg.message_id)}\n\n'\
+        answer += f'ID человека, на сообщение которого ответили: {cd(reply_msg.from_user.id)}\n\n' \
+                  f'Его/её language code: {cd(reply_msg.from_user.language_code)}\n\n' \
+                  f'ID сообщения, на которое ответили: {cd(reply_msg.message_id)}\n\n' \
                   f'Время отправки сообщения, на которое вы ответили: {cd(ctime(reply_msg.date))}\n\n' \
                   f'Переводя, выходит: {cd(time_replace(reply_msg.date))}\n\n'
         if reply_msg.forward_from is not None:  # Сообщение, на которое ответили, является форвардом
-            answer += f'ID человека, написавшего пересланное сообщение: {cd(reply_msg.forward_from.id)}\n\n'\
+            answer += f'ID человека, написавшего пересланное сообщение: {cd(reply_msg.forward_from.id)}\n\n' \
                       f'Его/её language code: {cd(reply_msg.forward_from.language_code)}\n\n'
 
         elif reply_msg.forward_from_chat:  # Сообщение, на которое ответили, является форвардом из канала
@@ -85,5 +86,17 @@ def html_echo_message(message):
     else:
         reply(message, "У этого сообщения нет текста")
 
+
+def get_bot_rights(message):
+    info = get_member(message.chat.id, get_me().id)
+    response = f'''
+	{value_marker(info.can_change_info, '✅','❌')} Изменение профиля группы  
+{value_marker(info.can_delete_messages, '✅','❌')} Удаление сообщений  
+{value_marker(info.can_restrict_members, '✅','❌')} Блокировка участников  
+{value_marker(info.can_invite_users, '✅','❌')} Пригласительные ссылки  
+{value_marker(info.can_pin_messages, '✅','❌')} Закрепление сообщений  
+{value_marker(info.can_promote_members, '✅','❌')} Добавление администраторов
+	'''
+    reply(message, response)
 
 # TODO Команда для просмотра админских полномочий бота
