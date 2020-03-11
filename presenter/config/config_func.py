@@ -12,7 +12,7 @@ from presenter.config.database_lib import Database
 from presenter.config.files_paths import ADAPT_VOTES_FILE, MULTI_VOTES_FILE, VOTES_FILE, \
     SYSTEMS_FILE, STORAGE_FILE
 from presenter.config.log import Loger
-from view.output import reply, kick, answer_callback, send, edit_text, edit_markup, get_member,\
+from view.output import reply, kick, answer_callback, send, edit_text, edit_markup, get_member, \
     unban, get_chat
 
 LOG = Loger()
@@ -30,6 +30,7 @@ def test_function(excepted_result, gaven_result):
 
 class CaptchaBan(Thread):
     """Waits for person to complete the captcha or ban if time is passed"""
+
     def __init__(self, message, bots_message):
         Thread.__init__(self)
         LOG.log_print("CaptchaBan invoked")
@@ -48,6 +49,7 @@ class CaptchaBan(Thread):
 
 class SystemUpdate(Thread):
     """Updates all the entries in some system"""
+
     def __init__(self, chat_id, system_id, members, sent):
         Thread.__init__(self)
         LOG.log_print("SystemUpdate invoked")
@@ -66,6 +68,7 @@ class SystemUpdate(Thread):
 
 class WaitAndUnban(Thread):
     """Some timer passes some time and user if unbanned"""
+
     def __init__(self, chat_id, user_id):
         Thread.__init__(self)
         LOG.log_print("WaitAndUnban invoked")
@@ -396,6 +399,7 @@ def left_new_or_else_member(target_message):
 
 class Analyzer:
     """Class to get target_person and other paramters"""
+
     def __init__(self, message, value_necessary=True, default_value=None, value_positive=False):
         self.message = message
         self.parameters_dictionary = parameters_analyze(message.text,
@@ -425,20 +429,20 @@ class Analyzer:
             str_value_positive = 'ПОЛОЖИТЕЛЬНОЕ' if self.value_potive else ''
             reply(
                 self.message, "Пожалуйста, введите {} ".format(str_value_positive) +
-                "число-значение, необходимое для команды, например\n\n"
-                "/cmd 866828593 50 Комментарий\n\nили\n\n"
-                "[Ответ на сообщение]\n/cmd 50 Комментарий\n\n"
-                "Вы даже можете перемешивать параметры\n\n"
-                "/cmd Комментарий 50 866828593\n"
-                "/cmd 50 Комментарий 866828593\n"
-                "/cmd 866828593 Комментарий 50\n")
+                              "число-значение, необходимое для команды, например\n\n"
+                              "/cmd 866828593 50 Комментарий\n\nили\n\n"
+                              "[Ответ на сообщение]\n/cmd 50 Комментарий\n\n"
+                              "Вы даже можете перемешивать параметры\n\n"
+                              "/cmd Комментарий 50 866828593\n"
+                              "/cmd 50 Комментарий 866828593\n"
+                              "/cmd 866828593 Комментарий 50\n")
         elif person.id == self.message.from_user.id and not to_self:
             reply(
                 self.message, "Пожалуйста, введите ID нужного человека (можно найти в /members) "
-                "или ответьте командой на его сообщение\n\n"
-                "Этой командой нельзя пользоваться на себе, "
-                "так что ввести свой же ID или ответить "
-                "на своё же сообщение не выйдет)")
+                              "или ответьте командой на его сообщение\n\n"
+                              "Этой командой нельзя пользоваться на себе, "
+                              "так что ввести свой же ID или ответить "
+                              "на своё же сообщение не выйдет)")
             return False
         if person.id == BOT_ID and not to_bot:
             reply(self.message, "Этой командой нельзя пользоваться на мне")
@@ -695,7 +699,7 @@ def in_mf(message, command_type, or_private=True, loud=True):
              parse_mode='HTML')
         reply(
             message, "Hmm, I don't know this chat. Call @DeMaximilianster for help\n\n"
-            "Хмм, я не знаю этот чат. Обратитесь к @DeMaximilianster за помощью\n\n")
+                     "Хмм, я не знаю этот чат. Обратитесь к @DeMaximilianster за помощью\n\n")
 
 
 def is_correct_message(message):

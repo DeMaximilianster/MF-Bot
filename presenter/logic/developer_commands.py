@@ -90,12 +90,12 @@ def html_echo_message(message):
 def get_bot_rights(message):
     info = get_member(message.chat.id, get_me().id)
     response = f'''
-	{value_marker(info.can_change_info, '✅','❌')} Изменение профиля группы  
-{value_marker(info.can_delete_messages, '✅','❌')} Удаление сообщений  
-{value_marker(info.can_restrict_members, '✅','❌')} Блокировка участников  
-{value_marker(info.can_invite_users, '✅','❌')} Пригласительные ссылки  
-{value_marker(info.can_pin_messages, '✅','❌')} Закрепление сообщений  
-{value_marker(info.can_promote_members, '✅','❌')} Добавление администраторов
+	{value_marker(info.can_change_info, '✅', '❌')} Изменение профиля группы  
+{value_marker(info.can_delete_messages, '✅', '❌')} Удаление сообщений  
+{value_marker(info.can_restrict_members, '✅', '❌')} Блокировка участников  
+{value_marker(info.can_invite_users, '✅', '❌')} Пригласительные ссылки  
+{value_marker(info.can_pin_messages, '✅', '❌')} Закрепление сообщений  
+{value_marker(info.can_promote_members, '✅', '❌')} Добавление администраторов
 	'''
     reply(message, response)
 

@@ -21,7 +21,8 @@ def new_option(message, vote_id):
 def new_adapt_option(message, vote_id):
     """Send option to De'Max to check if it's adequate"""
     LOG.log_print(str(message.from_user.id) + ": new_adapt_option invoked")
-    send(381279599, "[{}, '{}']".format(vote_id, message.text), reply_markup=ADAPT_ADEQUATE_KEYBOARD)
+    send(381279599, "[{}, '{}']".format(vote_id, message.text),
+         reply_markup=ADAPT_ADEQUATE_KEYBOARD)
     reply(message, "Ваше мнение выслано на проверку")
 
 

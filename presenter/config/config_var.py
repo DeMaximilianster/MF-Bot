@@ -2,7 +2,7 @@
 """Module with important constants"""
 from telebot.types import InlineKeyboardButton, InlineKeyboardMarkup
 from presenter.config.log import Loger, log_to
-from presenter.config.texts import JANUARY, FEBRUARY, MARCH, APRIL, MAY,\
+from presenter.config.texts import JANUARY, FEBRUARY, MARCH, APRIL, MAY, \
     JUNE, JULY, AUGUST, SEPTEMBER, OCTOBER, NOVEMBER, DECEMBER
 
 LOG = Loger(log_to)
@@ -152,7 +152,7 @@ NEW_SYSTEM_JSON_ENTRY = {
     "greetings": {
         "standart": "Добро пожаловать, {name}",
         "captcha": "Добро пожаловать, {name}. Докажите, что не бот, "
-        "нажмите на КРЕВЕТКУ за 5 минут",
+                   "нажмите на КРЕВЕТКУ за 5 минут",
         "admin": "О, добро пожаловать, держи админку",
         "full_admin": "О, добро пожаловать, держи полную админку"
     }

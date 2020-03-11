@@ -10,7 +10,7 @@ from presenter.config.log import Loger, log_to
 from presenter.config.config_func import unban_user, is_suitable, int_check, \
     get_system_configs, photo_video_gif_get, get_target_message, \
     update_systems_json, create_system, create_chat, SystemUpdate, \
-    write_storage_json, get_storage_json, get_person,\
+    write_storage_json, get_storage_json, get_person, \
     person_info_in_html, chat_info_in_html
 from view.output import kick, reply, promote, send, forward, restrict
 
@@ -125,7 +125,7 @@ def ban(message, person, comment=True, unban_then=False):
         for msg_id in range(start_forwarding, end_forwarding + 1):
             forward(blowout, message.chat.id, msg_id)
     if comment:
-        send(message.chat.id, "Ну всё, этому челу " + "бан"*(not unban_then) + "кик"*unban_then)
+        send(message.chat.id, "Ну всё, этому челу " + "бан" * (not unban_then) + "кик" * unban_then)
     chat = database.get('chats', ('id', message.chat.id))
     system = chat['system']
     chat_configs = get_system_configs(system)
@@ -139,7 +139,7 @@ def ban(message, person, comment=True, unban_then=False):
     adm_place = admin_place(message, database)
     if adm_place:
         send(adm_place, "Пользователь {} получил(а) бан".format(
-            person_info_in_html(person)+', но сразу и разбан'*unban_then), parse_mode='HTML')
+            person_info_in_html(person) + ', но сразу и разбан' * unban_then), parse_mode='HTML')
     if unban_then:
         unban_user(person)
 
@@ -152,7 +152,7 @@ def mute(message, person, parameters_dictionary):
     chat = database.get('chats', ('id', message.chat.id))
     system = chat['system']
     for chat in full_chat_list(database, system):
-        restrict(chat['id'], person.id, until_date=time()+hours*3600)
+        restrict(chat['id'], person.id, until_date=time() + hours * 3600)
     adm_place = admin_place(message, database)
     if adm_place:
         send(adm_place, "Пользователь {} получил(а) мут на {} час(ов)".format(
@@ -191,7 +191,7 @@ def money_pay(message, person, parameters_dictionary):
                 sent = "🔔 уведомлён(а)"
             else:
                 sent = "🔕 не уведомлён(а)"
-            answer = "#Финансы " + "#Бюджет "*not_inf + f"#f{p_id}\n\n"
+            answer = "#Финансы " + "#Бюджет " * not_inf + f"#f{p_id}\n\n"
             if not_inf:
                 answer += f"Бюджет [{bot_money - money} --> {bot_money}]\n"
             answer += f"ID {p_id} [{person_money + money} --> {person_money}] {sent}"
@@ -238,7 +238,6 @@ def money_reset(message):
         database.increase(members_money, 'money', 'systems', ('id', system))
     database.change(0, 'money', 'members', ('system', system))
     reply(message, "OK")
-
 
 
 def give_admin(message, person, loud=True):
@@ -498,7 +497,6 @@ def money_name(message):
         reply(message, "OK!")
     else:
         reply(message, "После команды введите название валюты")
-
 
 # TODO Команда /add_channel
 # TODO Команда /del_chat

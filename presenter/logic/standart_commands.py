@@ -2,7 +2,8 @@
 from random import choice
 from view.output import reply, send_photo, send_sticker, send, send_video, send_document
 from presenter.config.config_func import member_update, int_check, \
-    is_suitable, feature_is_available, get_system_configs, get_systems_json, get_person, get_list_from_storage,\
+    is_suitable, feature_is_available, get_system_configs, get_systems_json, get_person, \
+    get_list_from_storage, \
     html_cleaner, link_text_wrapper, function_returned_true
 from presenter.config.database_lib import Database
 from presenter.config.config_var import admin_place, ORIGINAL_TO_ENGLISH, ENGLISH_TO_ORIGINAL, \
@@ -146,13 +147,16 @@ def send_stuff_from_storage(message, stuff):
     log.log_print("send_stuff_from_storage invoked")
     result = choice(get_list_from_storage(stuff))
     if result[1] == 'photo':
-        send_photo(message.chat.id, result[0], reply_to_message_id=message.message_id, caption=result[2],
+        send_photo(message.chat.id, result[0], reply_to_message_id=message.message_id,
+                   caption=result[2],
                    parse_mode='HTML')
     elif result[1] == 'video':
-        send_video(message.chat.id, result[0], reply_to_message_id=message.message_id, caption=result[2],
+        send_video(message.chat.id, result[0], reply_to_message_id=message.message_id,
+                   caption=result[2],
                    parse_mode='HTML')
     elif result[1] == 'gif':
-        send_document(message.chat.id, result[0], reply_to_message_id=message.message_id, caption=result[2],
+        send_document(message.chat.id, result[0], reply_to_message_id=message.message_id,
+                      caption=result[2],
                       parse_mode='HTML')
     else:
         reply(message, "Произошла ошибка!")
@@ -179,9 +183,11 @@ def send_me(message, person):
     money_name = chat_config['money_name']
     member_update(system, person)  # Update person's messages, nickname and username
     p = get_person(person, system, database, system_configs=chat_config)
-    appointments = [x['appointment'] for x in database.get_many('appointments', ('id', person.id), ('system', system))]
+    appointments = [x['appointment'] for x in
+                    database.get_many('appointments', ('id', person.id), ('system', system))]
     if database.get('messages', ('person_id', person.id), ('chat_id', message.chat.id)):
-        messages_here = database.get('messages', ('person_id', person.id), ('chat_id', message.chat.id))['messages']
+        messages_here = \
+        database.get('messages', ('person_id', person.id), ('chat_id', message.chat.id))['messages']
     else:
         messages_here = 0
     msg = 'ID: {}\n'.format(p['id'])
@@ -217,13 +223,13 @@ def send_some_top(message, language, format_string, start='', sort_key=lambda x:
     else:
         target_chat = message.chat.id
     # Main loop
-    for index in range(1, len(members)+1):
-        member = members[index-1]
+    for index in range(1, len(members) + 1):
+        member = members[index - 1]
         p_link = link_text_wrapper(html_cleaner(member["nickname"]), f't.me/{member["username"]}')
         formating_dict.update(member)
         formating_dict.update({'index': index, 'p_link': p_link, 'day': member['day_birthday']})
         if '{month}' in format_string:
-            formating_dict['month'] = MONTHS_GENITIVE[member['month_birthday']-1][language]
+            formating_dict['month'] = MONTHS_GENITIVE[member['month_birthday'] - 1][language]
         text += format_string.format(**formating_dict)
         if index % 50 == 0:
             sent = send(target_chat, text, parse_mode='HTML', disable_web_page_preview=True)
@@ -250,17 +256,17 @@ def send_short_top(message, language, format_string, start='', sort_key=lambda x
     members = list(filter(lambda x: function_returned_true(sort_key, x), members))
     members.sort(key=sort_key, reverse=True)
     person_index = 0
-    for person_index in range(1, len(members)+1):
-        if members[person_index-1]['id'] == message.from_user.id:
+    for person_index in range(1, len(members) + 1):
+        if members[person_index - 1]['id'] == message.from_user.id:
             break
     # Main loop
-    for index in range(1, len(members)+1):
-        member = members[index-1]
+    for index in range(1, len(members) + 1):
+        member = members[index - 1]
         p_link = link_text_wrapper(html_cleaner(member["nickname"]), f't.me/{member["username"]}')
         formating_dict.update(member)
         formating_dict.update({'index': index, 'p_link': p_link, 'day': member['day_birthday']})
         if '{month}' in format_string:
-            formating_dict['month'] = MONTHS_GENITIVE[member['month_birthday']-1][language]
+            formating_dict['month'] = MONTHS_GENITIVE[member['month_birthday'] - 1][language]
         if index <= 5 or abs(index - person_index) <= 2:
             text += format_string.format(**formating_dict)
         elif '.\n.\n.\n' not in text and person_index >= 9:
@@ -352,9 +358,12 @@ def admins(message):
             admins_username += ['@' + x['username'] for x in
                                 database.get_many('members', ('rank', rank), ('system', system))]
     elif isinstance(boss, str):
-        admins_id = [admin['id'] for admin in database.get_many('appointments', ('appointment', boss))]
-        admins_username = ['@' + database.get('members', ('id', admin), ('system', system))['username'] for admin in
-                           admins_id]
+        admins_id = [admin['id'] for admin in
+                     database.get_many('appointments', ('appointment', boss))]
+        admins_username = [
+            '@' + database.get('members', ('id', admin), ('system', system))['username'] for admin
+            in
+            admins_id]
     reply(message, 'Вызываю сюда админов: ' + ', '.join(admins_username))
 
 
@@ -453,7 +462,8 @@ def anon_message(message):
         if system_entry:
             if system_entry['admin_place']:
                 anon_message_text = ' '.join(message.text.split()[1:])
-                sent = send(system_entry['admin_place'], "#anon\n\n" + anon_message_text[system_specification_length:])
+                sent = send(system_entry['admin_place'],
+                            "#anon\n\n" + anon_message_text[system_specification_length:])
                 if sent:
                     reply(message, "Сообщение успешно отправлено. Спасибо за ваше мнение!")
                 else:

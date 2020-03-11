@@ -1,14 +1,17 @@
 # -*- coding: utf-8 -*-
-from presenter.config.config_func import update_adapt_vote, update_multi_vote, create_adapt_vote, create_vote, \
+from presenter.config.config_func import update_adapt_vote, update_multi_vote, create_adapt_vote, \
+    create_vote, \
     create_multi_vote, remove_captcher, kick_and_unban
 from presenter.config.config_var import TEST_KEYBOARD, IRONIC_KEYBOARD, \
     VOTE_KEYBOARD, admin_place
 from presenter.config.database_lib import Database
 from presenter.config.files_paths import MULTI_VOTES_FILE, ADAPT_VOTES_FILE, VOTES_FILE
-from view.output import edit_markup, answer_inline, reply, answer_callback, edit_text, delete, send, restrict
+from view.output import edit_markup, answer_inline, reply, answer_callback, edit_text, delete, send, \
+    restrict
 from presenter.config.log import Loger, log_to
 
-from telebot.types import InlineQueryResultArticle, InputTextMessageContent, InlineKeyboardButton, InlineKeyboardMarkup
+from telebot.types import InlineQueryResultArticle, InputTextMessageContent, InlineKeyboardButton, \
+    InlineKeyboardMarkup
 from time import time
 
 log = Loger(log_to)
@@ -232,7 +235,8 @@ def add_vote(call):
                 votey['against']):  # это сутки
             reply_markup = None
             text += 'Голосование окончено. Новые голоса не принимаются\n\n'
-        elif user_id in votey[call.data].keys():  # Челик нажал на кнопку, на которой есть его мнение
+        elif user_id in votey[
+            call.data].keys():  # Челик нажал на кнопку, на которой есть его мнение
             # удаляем челика из словаря
             votey[call.data].pop(user_id)
         else:
@@ -274,6 +278,5 @@ def vote(message):
         where_keyboard.add(InlineKeyboardButton("На канал недостримов", callback_data="nedostream"))
     '''
     reply(message, "А запостить куда?", reply_markup=where_keyboard)
-
 
 # TODO разделить этот модуль на сообщения с кнопками и триггеры кнопок

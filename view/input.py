@@ -12,6 +12,7 @@ from presenter.logic.start import starter
 LOG = Loger(log_to)
 WORK = True
 
+
 # Реакции на медиа, новых участников и выход участников
 
 
@@ -262,7 +263,7 @@ def money_name_handler(message):
 
 
 @BOT.message_handler(commands=config_var.FEATURES_OFFERS + config_var.FEATURES_ONERS +
-                     config_var.FEATURES_DEFAULTERS)
+                              config_var.FEATURES_DEFAULTERS)
 def chat_options_handler(message):
     """ Change chat options """
     LOG.log_print("chat_options_handler invoked")
@@ -613,7 +614,7 @@ def month_set_handler(message):
         else:
             output.reply(
                 message, "Последнее слово должно быть положительным числом от 1 до 12 — "
-                "номером месяца")
+                         "номером месяца")
 
 
 @BOT.message_handler(commands=['day'])
@@ -629,7 +630,7 @@ def day_set_handler(message):
         else:
             output.reply(
                 message, "Последнее слово должно быть положительным числом от 1 до 31 — "
-                "номером дня")
+                         "номером дня")
 
 
 @BOT.message_handler(commands=['bdays', 'birthdays'])
@@ -699,9 +700,10 @@ def database_send_handler(message):
     """ Send all databases to creator """
     LOG.log_print('database_send_handler invoked')
     if message.chat.id == 381279599:
-        for file in (files_paths.DATABASE_FILE, files_paths.VOTES_FILE, files_paths.ADAPT_VOTES_FILE,
-                     files_paths.MULTI_VOTES_FILE, files_paths.SYSTEMS_FILE,
-                     files_paths.STORAGE_FILE):
+        for file in (
+        files_paths.DATABASE_FILE, files_paths.VOTES_FILE, files_paths.ADAPT_VOTES_FILE,
+        files_paths.MULTI_VOTES_FILE, files_paths.SYSTEMS_FILE,
+        files_paths.STORAGE_FILE):
             file_send = open(file, 'rb')
             output.send_document(message.chat.id, file_send)
             file_send.close()

@@ -99,13 +99,13 @@ def elite(message):  # TODO Привести эти команды в поряд
                             ('id', message.from_user.id))
             all_questions.remove(question)
     for i in range(1, 7):
-        if database.get('basic_logic_tested', ('id', message.from_user.id))[f'answer_{i}'] == "None":
+        if database.get('basic_logic_tested', ('id', message.from_user.id))[
+            f'answer_{i}'] == "None":
             ask_question(message, i)
 
             break
     else:
         submit(message)  # TODO тест когда-то проходили, пересдача
-
 
 # TODO Продвинутая логика
 # TODO Сочинение

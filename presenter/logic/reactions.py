@@ -2,8 +2,8 @@
 """Module with reactions bot does if there's no certain command"""
 from time import time
 from presenter.config.log import Loger, log_to
-from presenter.config.config_func import Database, is_suitable,\
-    feature_is_available, get_system_configs, create_captcha_keyboard,\
+from presenter.config.config_func import Database, is_suitable, \
+    feature_is_available, get_system_configs, create_captcha_keyboard, \
     create_chat, CaptchaBan, person_info_in_html, chat_info_in_html, html_cleaner
 from view.output import delete, kick, send, promote, reply, restrict
 
@@ -47,7 +47,7 @@ def new_member(message, member):
     name = html_cleaner(member.first_name)
     system = database.get('chats', ('id', message.chat.id))['system']
     chat_configs = get_system_configs(system)
-    if database.get('members', ('id', member.id), ('rank', chat_configs['ranks'][0])) and\
+    if database.get('members', ('id', member.id), ('rank', chat_configs['ranks'][0])) and \
             feature_is_available(message.chat.id, system, 'violators_ban'):
         kick(message.chat.id, member.id)
     elif is_suitable(message, member, 'uber', loud=False) and feature_is_available(
@@ -72,7 +72,7 @@ def new_member(message, member):
                 can_pin_messages=True,
                 can_promote_members=False)
         text += chat_configs['greetings']['admin'].format(name=name)
-    elif feature_is_available(message.chat.id, system, 'newbies_captched') and\
+    elif feature_is_available(message.chat.id, system, 'newbies_captched') and \
             member.id == message.from_user.id and time() - message.date < 60:
         text = chat_configs['greetings']['captcha'].format(name=name)
         keyboard = create_captcha_keyboard()

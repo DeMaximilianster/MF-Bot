@@ -7,6 +7,7 @@ log = Loger(log_to)
 
 class Database:
     """Управление базой данных"""
+
     def __init__(self, to_log=True):
         """Подключается к базе данных"""
         if to_log:
@@ -93,7 +94,6 @@ class Database:
             log.log_print("[SQL]: " + sql)
         self.cursor.execute(sql)
         self.connection.commit()
-
 
     def append(self, values, table):
         """Добавляет запись в базу данных"""

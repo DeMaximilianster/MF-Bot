@@ -72,7 +72,8 @@ def send_document(chat_id, data, reply_to_message_id=None, caption=None, parse_m
         log.log_print(e)
 
 
-def reply(message, message_text, parse_mode=None, reply_markup=None, disable_web_page_preview=False):
+def reply(message, message_text, parse_mode=None, reply_markup=None,
+          disable_web_page_preview=False):
     """Ответить на сообщение"""
     log.log_print("reply invoked")
     try:
