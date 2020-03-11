@@ -121,8 +121,9 @@ def money_helper(message):
 
     answer += '/give [Кол-во] - Дать челу деньги из вашего личного счёта\n\n'
 
+    answer += '/money_reset - Обнулить деньги всех участников и вернуть их в казну'
+
     # TODO answer += '/fund [Кол-во] - Заплатить в фонд чата'
-    # TODO сбрасывалка денег чата
     reply(message, answer, parse_mode='HTML')
 
 

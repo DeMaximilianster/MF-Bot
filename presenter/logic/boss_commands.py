@@ -226,6 +226,21 @@ def money_pay(message, person, parameters_dictionary):
     # TODO Засунуть эти зассанские уебанские денежные функции в отдельный блять модуль
 
 
+def money_reset(message):
+    database = Database()
+    system = database.get('chats', ('id', message.chat.id))['system']
+    system_money = database.get('systems', ('id', system))['money']
+    members = database.get_many('members', ('system', system))
+
+    # Get the amount of money of chat members
+    members_money = sum([member['money'] for member in members])
+    if system_money != 'inf':
+        database.increase(members_money, 'money', 'systems', ('id', system))
+    database.change(0, 'money', 'members', ('system', system))
+    reply(message, "OK")
+
+
+
 def give_admin(message, person, loud=True):
     """Назначает человека админом"""
     LOG.log_print("give_admin invoked")

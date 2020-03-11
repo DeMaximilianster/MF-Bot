@@ -80,6 +80,21 @@ class Database:
         self.cursor.execute(sql)
         self.connection.commit()  # Сохраняем изменения
 
+    def increase(self, increase_value, increase_where, table, *column_value):
+        """Increase value in table"""
+        reqs = []
+        for value in column_value:
+            val = str(value[1]).replace('"', '').replace("'", "")
+            reqs.append(f"{value[0]}='{val}'")
+        sql = f"UPDATE {table}\n"
+        sql += f"SET {increase_where} = {increase_where}+{increase_value}\n"
+        sql += "WHERE " + " AND ".join(reqs)
+        if self.to_log:
+            log.log_print("[SQL]: " + sql)
+        self.cursor.execute(sql)
+        self.connection.commit()
+
+
     def append(self, values, table):
         """Добавляет запись в базу данных"""
         try:

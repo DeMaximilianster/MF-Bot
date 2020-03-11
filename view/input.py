@@ -235,6 +235,14 @@ def money_mode_change_handler(message):
         boss_commands.money_mode_change(message)
 
 
+@BOT.message_handler(commands=['money_reset'])
+def money_reset_handler(message):
+    LOG.log_print("money_reset_handler invoked")
+    if config_func.in_mf(message, command_type=None, or_private=False) and config_func.is_suitable(
+            message, message.from_user, "chat_changer"):
+        boss_commands.money_reset(message)
+
+
 @BOT.message_handler(commands=['m_emoji'])
 def money_emoji_handler(message):
     """ Put emoji to indicate the amount of currency """
