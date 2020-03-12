@@ -4,7 +4,7 @@ import presenter.config.log as log
 log = log.Loger(log.LOG_TO_CONSOLE)
 
 
-def send(chat_id, message_text, parse_mode=None, reply_markup=None, disable_web_page_preview=False):
+def send(chat_id, message_text, parse_mode=None, reply_markup=None, disable_web_page_preview=True):
     """Отправить сообщение"""
     log.log_print("send invoked")
     try:
@@ -73,7 +73,7 @@ def send_document(chat_id, data, reply_to_message_id=None, caption=None, parse_m
 
 
 def reply(message, message_text, parse_mode=None, reply_markup=None,
-          disable_web_page_preview=False):
+          disable_web_page_preview=True):
     """Ответить на сообщение"""
     log.log_print("reply invoked")
     try:
@@ -109,7 +109,7 @@ def edit_text(text,
               message_id,
               parse_mode=None,
               reply_markup=None,
-              disable_web_page_preview=False):
+              disable_web_page_preview=True):
     """Отредактировать текст сообщения"""
     log.log_print("edit_text invoked")
     try:

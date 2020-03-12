@@ -272,6 +272,42 @@ def chat_options_handler(message):
         boss_commands.chat_options(message)
 
 
+@BOT.message_handler(commands=['standart_greetings'])
+def update_standart_greetings_handler(message):
+    """ Change standart greeting """
+    LOG.log_print("update_standart_greetings_handler invoked")
+    if config_func.in_mf(message, command_type=False, or_private=False) and config_func.is_suitable(
+            message, message.from_user, "chat_changer"):
+        boss_commands.update_greetings_json(message, 'standart')
+
+
+@BOT.message_handler(commands=['captcha_greetings'])
+def update_captcha_greetings_handler(message):
+    """ Change captcha greeting """
+    LOG.log_print("update_captcha_greetings_handler invoked")
+    if config_func.in_mf(message, command_type=False, or_private=False) and config_func.is_suitable(
+            message, message.from_user, "chat_changer"):
+        boss_commands.update_greetings_json(message, 'captcha')
+
+
+@BOT.message_handler(commands=['admin_greetings'])
+def update_admin_greetings_handler(message):
+    """ Change admin's greeting """
+    LOG.log_print("update_admin_greetings_handler invoked")
+    if config_func.in_mf(message, command_type=False, or_private=False) and config_func.is_suitable(
+            message, message.from_user, "chat_changer"):
+        boss_commands.update_greetings_json(message, 'admin')
+
+
+@BOT.message_handler(commands=['full_admin_greetings'])
+def update_full_admin_greetings_handler(message):
+    """ Change full admin's greeting """
+    LOG.log_print("update_full_admin_greetings_handler invoked")
+    if config_func.in_mf(message, command_type=False, or_private=False) and config_func.is_suitable(
+            message, message.from_user, "chat_changer"):
+        boss_commands.update_greetings_json(message, 'full_admin')
+
+
 @BOT.message_handler(commands=config_var.SYSTEM_FEATURES_ONERS + config_var.SYSTEM_FEATURES_OFFERS)
 def system_options_handler(message):
     """ Change chat system options """

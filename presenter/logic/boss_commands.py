@@ -12,6 +12,7 @@ from presenter.config.config_func import unban_user, is_suitable, int_check, \
     update_systems_json, create_system, create_chat, SystemUpdate, \
     write_storage_json, get_storage_json, get_person, \
     person_info_in_html, chat_info_in_html
+import presenter.config.config_func as cf  # TODO Поменять все импорты из конфиг функа на этот
 from view.output import kick, reply, promote, send, forward, restrict
 
 LOG = Loger(log_to)
@@ -497,6 +498,20 @@ def money_name(message):
         reply(message, "OK!")
     else:
         reply(message, "После команды введите название валюты")
+
+
+def update_greetings_json(message, which_greeting: str):
+    """Changes greetings in some system"""
+    database = Database()
+    data = cf.get_systems_json()
+    system = database.get('chats', ('id', message.chat.id))['system']
+    system_configs = data[system]
+    text = cf.entities_saver(message.text, message.entities)
+    text = ' '.join(text.split()[1:])
+    system_configs['greetings'][which_greeting] = text
+    data[system] = system_configs
+    cf.write_systems_json(data)
+    reply(message, 'Поставлен текст: "{}"'.format(text), parse_mode='HTML')
 
 # TODO Команда /add_channel
 # TODO Команда /del_chat
