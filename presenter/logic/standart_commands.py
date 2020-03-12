@@ -4,7 +4,7 @@ from view.output import reply, send_photo, send_sticker, send, send_video, send_
 from presenter.config.config_func import member_update, int_check, \
     is_suitable, feature_is_available, get_system_configs, get_systems_json, get_person, \
     get_list_from_storage, \
-    html_cleaner, link_text_wrapper, function_returned_true
+    html_cleaner, link_text_wrapper, function_returned_true, value_marker
 from presenter.config.database_lib import Database
 from presenter.config.config_var import admin_place, ORIGINAL_TO_ENGLISH, ENGLISH_TO_ORIGINAL, \
     MONTHS_GENITIVE, MONTHS_PREPOSITIONAL, FEATURES, FEATURES_TEXTS
@@ -94,7 +94,7 @@ def helper(message):
             answer += '/standart_greetings [текст] — Изменить приветствие для простого человека\n' \
                       '/captcha_greetings [текст] — Изменить приветствие при капче\n' \
                       '/admin_greetings [текст] — Изменить приветствие для админа\n' \
-                      '/full_greetings [текст] — Изменить приветствие для полного админа\n'  \
+                      '/full_greetings [текст] — Изменить приветствие для полного админа\n' \
                       "<i>Вставьте в текст '{name}' без кавычек там, " \
                       "где нужно обратиться к участнику по нику</i>\n\n"
 
@@ -194,7 +194,8 @@ def send_me(message, person):
                     database.get_many('appointments', ('id', person.id), ('system', system))]
     if database.get('messages', ('person_id', person.id), ('chat_id', message.chat.id)):
         messages_here = \
-        database.get('messages', ('person_id', person.id), ('chat_id', message.chat.id))['messages']
+            database.get('messages', ('person_id', person.id), ('chat_id', message.chat.id))[
+                'messages']
     else:
         messages_here = 0
     msg = 'ID: {}\n'.format(p['id'])
@@ -321,11 +322,51 @@ def money_give(message, person, parameters_dictionary: dict):
             reply(message, f"#Финансы #Ф{getter} #Ф{giver}\n\n"
                            f"ID {getter} [{value_getter - money} --> {value_getter}] {get_m}\n"
                            f"ID {giver} [{value_giver + money} --> {value_giver}] {giv_m}\n")
-            send(admin_place(message, database), f"#Финансы #Ф{getter} #Ф{giver}\n\n"
+            send(admin_place(message, database), f"#Финансы #Ф{getter} #f{giver}\n\n"
                                                  f"ID {getter} [{value_getter - money} --> {value_getter}] {get_m}\n"
                                                  f"ID {giver} [{value_giver + money} --> {value_giver}] {giv_m}\n")
     database.change(value_getter, 'money', 'members', ('id', getter), ('system', system))
     database.change(value_giver, 'money', 'members', ('id', giver), ('system', system))
+
+
+def money_fund(message, parameters_dictionary):
+    """Transfer money to the chat fund"""
+    # TODO fix bugs with command parameters
+    log.log_print("money_fund invoked")
+    database = Database()
+
+    giver = message.from_user.id
+    money = parameters_dictionary['value']
+    chat = database.get('chats', ('id', message.chat.id))
+    system = chat['system']
+    value_giver = database.get('members', ('id', giver), ('system', system))['money']
+    value_system = database.get('systems', ('id', system))['money']
+    if money < 0:
+        reply(message, "Я вам запрещаю воровать")
+    elif money == 0:
+        reply(message, "Я вам запрещаю делать подобные бессмысленные запросы")
+    else:
+        if money > value_giver:
+            reply(message, "Деньжат не хватает")
+        else:
+            if value_system != 'inf':
+                value_system = int(value_system)
+                value_system += money
+            value_giver -= money
+            giv_m = value_marker(send(giver, f"#Финансы\n\n Вы успешно перевели"
+                                             f" {money} денег в фонд чата. Теперь у вас их"
+                                             f" {value_giver}."),
+                                 " уведомлён(а)", " не уведомлён(а)")
+
+            answer = f"#Финансы #f{giver}\n\n"
+            if value_system != 'inf':
+                answer += f"#Бюджет [{value_system - money} --> {value_system}]\n"
+            answer += f"ID {giver} [{value_giver + money} --> {value_giver}] {giv_m}\n"
+
+            reply(message, answer)
+            send(admin_place(message, database), answer)
+            database.change(value_giver, 'money', 'members', ('id', giver), ('system', system))
+            database.change(value_system, 'money', 'systems', ('id', system))
 
 
 # TODO More comfortable way to insert birthday

@@ -597,6 +597,16 @@ def money_give_handler(message):
             standart_commands.money_give(message, person, parameters_dictionary)
 
 
+@BOT.message_handler(commands=['fund'])
+def money_fund_handler(message):
+    LOG.log_print(f"money_fund_handler invoked")
+    if config_func.in_mf(message, 'financial_commands', or_private=False):
+        analyzer = config_func.Analyzer(message, value_positive=True)
+        parameters_dictionary = analyzer.parameters_dictionary
+        if parameters_dictionary:
+            standart_commands.money_fund(message, parameters_dictionary)
+
+
 @BOT.message_handler(commands=['top', 'money_top'])
 def money_top_handler(message):
     """Топ ЯМ"""

@@ -192,9 +192,9 @@ def money_pay(message, person, parameters_dictionary):
                 sent = "🔔 уведомлён(а)"
             else:
                 sent = "🔕 не уведомлён(а)"
-            answer = "#Финансы " + "#Бюджет " * not_inf + f"#f{p_id}\n\n"
+            answer = "#Финансы " + f"#f{p_id}\n\n"
             if not_inf:
-                answer += f"Бюджет [{bot_money - money} --> {bot_money}]\n"
+                answer += f"#Бюджет [{bot_money - money} --> {bot_money}]\n"
             answer += f"ID {p_id} [{person_money + money} --> {person_money}] {sent}"
             reply(message, answer)
             send(admin_place(message, database), answer)
@@ -213,10 +213,10 @@ def money_pay(message, person, parameters_dictionary):
                 sent = "🔔 уведомлён(а)"
             else:
                 sent = "🔕 не уведомлён(а)"
-            answer = "#Финансы " + "#Бюджет " * not_inf + f"#f{p_id}\n\n"
+            answer = "#Финансы " + f"#f{p_id}\n\n"
             if not_inf:
                 bot_money -= money
-                answer += f"Бюджет [{bot_money + money} --> {bot_money}]\n"
+                answer += f"#Бюджет [{bot_money + money} --> {bot_money}]\n"
             answer += f"ID {p_id} [{person_money - money} --> {person_money}] {sent}"
             reply(message, answer)
 
