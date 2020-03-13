@@ -205,7 +205,7 @@ def messages_change_handler(message):
     if config_func.in_mf(message, 'boss_commands', or_private=False) and config_func.is_suitable(
             message, message.from_user, "boss"):
         analyzer = config_func.Analyzer(message, value_positive=True)
-        person = analyzer.return_target_person()
+        person = analyzer.return_target_person(to_self=True)
         parameters_dictionary = analyzer.parameters_dictionary
         if person and parameters_dictionary:
             boss_commands.message_change(message, person, parameters_dictionary)
@@ -601,7 +601,7 @@ def money_give_handler(message):
 def money_fund_handler(message):
     LOG.log_print(f"money_fund_handler invoked")
     if config_func.in_mf(message, 'financial_commands', or_private=False):
-        analyzer = config_func.Analyzer(message, value_positive=True)
+        analyzer = config_func.Analyzer(message)
         parameters_dictionary = analyzer.parameters_dictionary
         if parameters_dictionary:
             standart_commands.money_fund(message, parameters_dictionary)

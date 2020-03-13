@@ -406,7 +406,18 @@ class Analyzer:
                                                         value_necessary=value_necessary,
                                                         default_value=default_value,
                                                         value_positive=value_positive)
-        self.value_potive = value_positive
+        self.value_positive = value_positive
+        if not self.parameters_dictionary:
+            str_value_positive = 'ПОЛОЖИТЕЛЬНОЕ' if self.value_positive else ''
+            reply(
+                self.message, "Пожалуйста, введите {} ".format(str_value_positive) +
+                              "число-значение, необходимое для команды, например\n\n"
+                              "/cmd 866828593 50 Комментарий\n\nили\n\n"
+                              "[Ответ на сообщение]\n/cmd 50 Комментарий\n\n"
+                              "Вы даже можете перемешивать параметры\n\n"
+                              "/cmd Комментарий 50 866828593\n"
+                              "/cmd 50 Комментарий 866828593\n"
+                              "/cmd 866828593 Комментарий 50\n")
 
     def return_target_person(self, to_self=False, to_bot=False):
         """Get and check target person"""
@@ -425,18 +436,7 @@ class Analyzer:
     def check_person(self, person, to_self, to_bot):
         """Checks if target person chosen correctly"""
         LOG.log_print("person_check invoked")
-        if not self.parameters_dictionary:
-            str_value_positive = 'ПОЛОЖИТЕЛЬНОЕ' if self.value_potive else ''
-            reply(
-                self.message, "Пожалуйста, введите {} ".format(str_value_positive) +
-                              "число-значение, необходимое для команды, например\n\n"
-                              "/cmd 866828593 50 Комментарий\n\nили\n\n"
-                              "[Ответ на сообщение]\n/cmd 50 Комментарий\n\n"
-                              "Вы даже можете перемешивать параметры\n\n"
-                              "/cmd Комментарий 50 866828593\n"
-                              "/cmd 50 Комментарий 866828593\n"
-                              "/cmd 866828593 Комментарий 50\n")
-        elif person.id == self.message.from_user.id and not to_self:
+        if person.id == self.message.from_user.id and not to_self and self.parameters_dictionary:
             reply(
                 self.message, "Пожалуйста, введите ID нужного человека (можно найти в /members) "
                               "или ответьте командой на его сообщение\n\n"
@@ -497,19 +497,14 @@ test_function({
     'value': 20
 }, parameters_analyze('/give 381279599 20'))
 test_function({'command': 'give', 'value': 20}, parameters_analyze('/give 20'))
-test_function({
-    'command': 'give',
-    'value': 20,
-    'comment': 'Take this'
-}, parameters_analyze('/give Take 20 this'))
-test_function({
-    'command': 'warn',
-    'value': 1,
-    'comment': 'Take this'
-}, parameters_analyze('/warn Take this', default_value=1, value_positive=True))
+test_function({'command': 'give', 'value': 20, 'comment': 'Take this'},
+              parameters_analyze('/give Take 20 this'))
+test_function({'command': 'warn', 'value': 1, 'comment': 'Take this'},
+              parameters_analyze('/warn Take this', default_value=1, value_positive=True))
 test_function(dict(), parameters_analyze('/give'))
 test_function(dict(), parameters_analyze('/pay 381279599'))
 test_function(dict(), parameters_analyze('/warn 0', default_value=1, value_positive=True))
+test_function(dict(), parameters_analyze('/fund'))
 
 
 def rank_superiority(message, person):
