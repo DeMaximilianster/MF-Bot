@@ -8,9 +8,9 @@ from presenter.config.database_lib import Database
 from presenter.config.config_var import full_chat_list, channel_list, BOT_ID, admin_place, chat_list
 from presenter.config.log import Loger, log_to
 from presenter.config.config_func import unban_user, is_suitable, int_check, \
-    get_system_configs, photo_video_gif_get, get_target_message, \
-    update_systems_json, create_system, create_chat, SystemUpdate, \
-    write_storage_json, get_storage_json, get_person, \
+    get_system_configs, photo_video_gif_get, get_target_message, number_to_case, \
+    update_systems_json, create_system, create_chat, SystemUpdate, case_analyzer,  \
+    write_storage_json, get_storage_json, get_person, person_link, \
     person_info_in_html, chat_info_in_html
 import presenter.config.config_func as cf  # TODO Поменять все импорты из конфиг функа на этот
 from view.output import kick, reply, promote, send, forward, restrict
@@ -175,9 +175,13 @@ def money_pay(message, person, parameters_dictionary):
         bot_money = int(bot_money)
     p_id = person.id
     money = parameters_dictionary['value']
+    money_name = get_system_configs(system)['money_name']
+    number, case = number_to_case(abs(money), 'Russian')
+    money_name_plural_genitivus = case_analyzer(money_name, 'Russian', 'plural', 'genitivus')
+    money_name = case_analyzer(money_name, 'Russian', number, case)
     person_money = get_person(person, system, database)['money']
     if money == 0:
-        reply(message, "Не")
+        reply(message, "Я вам запрещаю делать подобные бессмысленные запросы")
     elif money < 0:
         money = -int(money)  # Делаем из отрицательного числа положительное
         if person_money - money >= 0:
@@ -185,42 +189,43 @@ def money_pay(message, person, parameters_dictionary):
             if not_inf:
                 bot_money += money
             sent = send(p_id, f"#Финансы\n\n"
-                              f"С вашего счёта было снято {money} денег в фонд чата. "
-                              f"У вас осталось {person_money} денег")
+                              f"С вашего счёта было снято {money} {money_name} в банк. "
+                              f"Теперь у вас {person_money}")
             # TODO Уточнять чат
             if sent:
                 sent = "🔔 уведомлён(а)"
             else:
                 sent = "🔕 не уведомлён(а)"
+            reply(message, 'У {} забрали {} {} в банк!'.format(person_link(person), money, money_name),
+                  parse_mode='HTML')
             answer = "#Финансы " + f"#f{p_id}\n\n"
             if not_inf:
                 answer += f"#Бюджет [{bot_money - money} --> {bot_money}]\n"
-            answer += f"ID {p_id} [{person_money + money} --> {person_money}] {sent}"
-            reply(message, answer)
-            send(admin_place(message, database), answer)
+            answer += f"{person_link(person)} [{person_money + money} --> {person_money}] {sent}"
+            send(admin_place(message, database), answer, parse_mode='HTML')
         else:
-            reply(message, "У людей число денег должно быть больше нуля")
+            reply(message, "У людей число {} должно быть больше нуля".format(money_name_plural_genitivus))
     else:
         if not_inf and bot_money < money:
-            reply(message, "У нас нет столько в бюджете")
+            reply(message, "У нас нет столько {} в банке".format(money_name_plural_genitivus))
         else:
             person_money += money
             sent = send(p_id, f"#Финансы\n\n"
-                              f"На ваш счёт было переведено {money} денег из фонда чата. "
-                              f"Теперь у вас {person_money} денег")
+                              f"На ваш счёт было переведено {money} {money_name} из банка. "
+                              f"Теперь у вас {person_money}")
             # TODO рефакторинг уведомлялки и переименование недег
             if sent:
                 sent = "🔔 уведомлён(а)"
             else:
                 sent = "🔕 не уведомлён(а)"
+            reply(message, '{} получил(а) из банка {} {}!'.format(person_link(person), money, money_name),
+                  parse_mode='HTML')
             answer = "#Финансы " + f"#f{p_id}\n\n"
             if not_inf:
                 bot_money -= money
                 answer += f"#Бюджет [{bot_money + money} --> {bot_money}]\n"
-            answer += f"ID {p_id} [{person_money - money} --> {person_money}] {sent}"
-            reply(message, answer)
-
-            send(admin_place(message, database), answer)
+            answer += f"{person_link(person)} [{person_money - money} --> {person_money}] {sent}"
+            send(admin_place(message, database), answer, parse_mode='HTML')
     database.change(person_money, 'money', 'members', ('id', p_id), ('system', system))
     if not_inf:
         database.change(bot_money, 'money', 'systems', ('id', system))

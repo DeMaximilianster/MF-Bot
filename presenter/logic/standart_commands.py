@@ -3,7 +3,7 @@ from random import choice
 from view.output import reply, send_photo, send_sticker, send, send_video, send_document
 from presenter.config.config_func import member_update, int_check, \
     is_suitable, feature_is_available, get_system_configs, get_systems_json, get_person, \
-    get_list_from_storage, \
+    get_list_from_storage, number_to_case, case_analyzer, person_link, \
     html_cleaner, link_text_wrapper, function_returned_true, value_marker
 from presenter.config.database_lib import Database
 from presenter.config.config_var import admin_place, ORIGINAL_TO_ENGLISH, ENGLISH_TO_ORIGINAL, \
@@ -207,7 +207,7 @@ def send_me(message, person):
         msg += 'Кол-во сообщений во всей системе: {}\n'.format(p['messages'])
     msg += 'Кол-во предупреждений: {}\n'.format(p['warns'])
     if chat_config['money']:
-        msg += 'Кол-во {}: {}\n'.format(money_name, p['money'])
+        msg += 'Кол-во {}: {}\n'.format(case_analyzer(money_name, 'Russian', 'plural', 'genitivus'), p['money'])
     if appointments:
         msg += 'Должности: ' + ', '.join(appointments)
     reply(message, msg)
@@ -287,30 +287,37 @@ def send_short_top(message, language, format_string, start='', sort_key=lambda x
 
 def money_give(message, person, parameters_dictionary: dict):
     """Функция обмена деньгами между людьми"""
-    # TODO add nice link's to people instead of id's
     log.log_print(f"money_give invoked to person {person.id}")
     database = Database()
-    getter = person.id
-    giver = message.from_user.id
+    getter = person
+    giver = message.from_user
     money = parameters_dictionary['value']
     chat = database.get('chats', ('id', message.chat.id))
     system = chat['system']
-    value_getter = database.get('members', ('id', getter), ('system', system))['money']
-    value_giver = database.get('members', ('id', giver), ('system', system))['money']
+    # TODO Replace these strings in each 3 money function with get_person()
+    value_getter = database.get('members', ('id', getter.id), ('system', system))['money']
+    value_giver = database.get('members', ('id', giver.id), ('system', system))['money']
+    #
+    money_name = get_system_configs(system)['money_name']
+    number, case = number_to_case(money, 'Russian')
+    money_name_plural_genitivus = case_analyzer(money_name, 'Russian', 'plural', 'genitivus')
+    money_name = case_analyzer(money_name, 'Russian', number, case)
     if money < 0:
         reply(message, "Я вам запрещаю воровать")
     elif money == 0:
         reply(message, "Я вам запрещаю делать подобные бессмысленные запросы")
     else:
         if money > value_giver:
-            reply(message, "Деньжат не хватает")
+            reply(message, "Не хватает {}".format(money_name_plural_genitivus))
         else:
             value_getter += money
             value_giver -= money
-            giv_m = send(giver, f"#Финансы\n\n Вы успешно перевели {money} денег на счёт {getter}. "
-                                f"Теперь у вас их {value_giver}. А у него/неё {value_getter}")
-            get_m = send(getter, f"#Финансы\n\n На ваш счёт было {money} денег со счёта {giver}. "
-                                 f"Теперь у вас их {value_getter}. А у него/неё {value_giver}")
+            giv_m = send(giver.id, "#Финансы\n\nВы успешно перевели {} {} на счёт {}. "
+                                   "Теперь у вас их {}".format(money, money_name, person_link(getter), value_giver),
+                         parse_mode='HTML')
+            get_m = send(getter.id, "#Финансы\n\nНа ваш счёт переведено {} {} со счёта {}. "
+                                    "Теперь у вас их {}".format(money, money_name, person_link(giver), value_getter),
+                         parse_mode='HTML')
             if get_m:
                 get_m = "🔔 уведомлён(а)"
             else:
@@ -319,53 +326,58 @@ def money_give(message, person, parameters_dictionary: dict):
                 giv_m = "🔔 уведомлён(а)"
             else:
                 giv_m = "🔕 не уведомлён(а)"
-            reply(message, f"#Финансы #Ф{getter} #Ф{giver}\n\n"
-                           f"ID {getter} [{value_getter - money} --> {value_getter}] {get_m}\n"
-                           f"ID {giver} [{value_giver + money} --> {value_giver}] {giv_m}\n")
-            send(admin_place(message, database), f"#Финансы #Ф{getter} #f{giver}\n\n"
-                                                 f"ID {getter} [{value_getter - money} --> {value_getter}] {get_m}\n"
-                                                 f"ID {giver} [{value_giver + money} --> {value_giver}] {giv_m}\n")
-    database.change(value_getter, 'money', 'members', ('id', getter), ('system', system))
-    database.change(value_giver, 'money', 'members', ('id', giver), ('system', system))
+            reply(message, "{} передал(а) {} {} {}!".
+                  format(person_link(giver), person_link(getter), money, money_name),
+                  parse_mode='HTML')
+            send(admin_place(message, database),
+                 f"#Финансы #f{getter.id} #f{giver.id}\n\n"
+                 f"{person_link(getter)} [{value_getter - money} --> {value_getter}] {get_m}\n"
+                 f"{person_link(giver)} [{value_giver + money} --> {value_giver}] {giv_m}\n",
+                 parse_mode='HTML')
+    database.change(value_getter, 'money', 'members', ('id', getter.id), ('system', system))
+    database.change(value_giver, 'money', 'members', ('id', giver.id), ('system', system))
 
 
 def money_fund(message, parameters_dictionary):
     """Transfer money to the chat fund"""
-    # TODO fix bugs with command parameters
     log.log_print("money_fund invoked")
     database = Database()
 
-    giver = message.from_user.id
+    giver = message.from_user
     money = parameters_dictionary['value']
     chat = database.get('chats', ('id', message.chat.id))
     system = chat['system']
-    value_giver = database.get('members', ('id', giver), ('system', system))['money']
+    value_giver = database.get('members', ('id', giver.id), ('system', system))['money']
     value_system = database.get('systems', ('id', system))['money']
+    money_name = get_system_configs(system)['money_name']
+    number, case = number_to_case(money, 'Russian')
+    money_name_plural_genitivus = case_analyzer(money_name, 'Russian', 'plural', 'genitivus')
+    money_name = case_analyzer(money_name, 'Russian', number, case)
     if money < 0:
         reply(message, "Я вам запрещаю воровать")
     elif money == 0:
         reply(message, "Я вам запрещаю делать подобные бессмысленные запросы")
     else:
         if money > value_giver:
-            reply(message, "Деньжат не хватает")
+            reply(message, "Не хватает {}".format(money_name_plural_genitivus))
         else:
             if value_system != 'inf':
                 value_system = int(value_system)
                 value_system += money
             value_giver -= money
-            giv_m = value_marker(send(giver, f"#Финансы\n\n Вы успешно перевели"
-                                             f" {money} денег в фонд чата. Теперь у вас их"
-                                             f" {value_giver}."),
-                                 " уведомлён(а)", " не уведомлён(а)")
+            giv_m = value_marker(send(giver.id, f"#Финансы\n\nВы успешно перевели"
+                                                f" {money} {money_name} в фонд чата. Теперь у вас их"
+                                                f" {value_giver}."),
+                                 "🔔 уведомлён(а)", "🔕 не уведомлён(а)")
 
-            answer = f"#Финансы #f{giver}\n\n"
+            reply(message, "{} заплатил(а) в банк {} {}!".format(person_link(giver), money, money_name),
+                  parse_mode='HTML')
+            answer = f"#Финансы #f{giver.id}\n\n"
             if value_system != 'inf':
                 answer += f"#Бюджет [{value_system - money} --> {value_system}]\n"
-            answer += f"ID {giver} [{value_giver + money} --> {value_giver}] {giv_m}\n"
-
-            reply(message, answer)
-            send(admin_place(message, database), answer)
-            database.change(value_giver, 'money', 'members', ('id', giver), ('system', system))
+            answer += f"{person_link(giver)} [{value_giver + money} --> {value_giver}] {giv_m}\n"
+            send(admin_place(message, database), answer, parse_mode='HTML')
+            database.change(value_giver, 'money', 'members', ('id', giver.id), ('system', system))
             database.change(value_system, 'money', 'systems', ('id', system))
 
 

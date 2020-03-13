@@ -271,6 +271,13 @@ def link_text_wrapper(text, url):
     return f'<a href="{url}">{text}</a>'
 
 
+def person_link(person) -> str:
+    """Creates a link to a person"""
+    if person.username:
+        return link_text_wrapper(person.first_name, 't.me/'+person.username)
+    return id_link_text_wrapper(person.first_name, person.id)
+
+
 def value_marker(value: object, normal: str, void: str) -> str:
     """
     Replace an object with a string, depending on the value being incremented (True or False)
@@ -373,19 +380,51 @@ def language_analyzer(message, only_one):
         return languages
 
 
-def case_analyzer(word, language):
+def case_analyzer(word: str, language: str, number: str, case: str) -> str:
     """For now it's some stupid command
     But in the future it will be able to comprehend cases in different languages
 
     Don't touch this
     """
+    end = ''
     if language == 'Russian':
-        if word[-1] in ('ь', 'й'):
-            return word[:-1] + 'е'
+        if word[-1] in 'аьй':
+            end = word[-1]
+        if number == 'singular':
+            if case == 'genitivus':
+                if not end:
+                    return word + 'а'
+                elif end in 'аь':
+                    return word[:-1] + 'и'
+                else:
+                    return word[:-1] + 'ев'
+        elif number == 'plural':
+            if case == 'nominativus':
+                if not end:
+                    return word + 'и'
+                else:
+                    return word[:-1] + 'и'
+            elif case == 'genitivus':
+                if not end:
+                    return word + 'ов'
+                elif end == 'а':
+                    return word[:-1]
+                elif end == 'ь':
+                    return word[:-1] + 'ей'
+                elif end == 'й':
+                    return word[:-1] + 'ев'
+    return word
+
+
+def number_to_case(number: int, language: str) -> tuple:
+    if language == 'Russian':
+        if number % 10 == 1 and not 10 <= number <= 20:
+            return 'singular', 'nominativus'
+        elif number % 10 in (2, 3, 4):
+            return 'singular', 'genitivus'
         else:
-            return word + 'е'
-    else:
-        return word
+            return 'plural', 'genitivus'
+    return 'singular', 'nominativus'
 
 
 def left_new_or_else_member(target_message):
