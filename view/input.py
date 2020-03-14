@@ -218,6 +218,15 @@ def add_chat_handler(message):  # TODO Она работает в личке, а
     boss_commands.add_chat(message)
 
 
+@BOT.message_handler(commands=['del_chat'])
+def del_chat_handler(message):
+    """Removes chat from the system."""
+    LOG.log_print('del_chat_handler invoked')
+    if config_func.in_mf(message, command_type=None, or_private=False) and config_func.is_suitable(
+            message, message.from_user, "chat_changer"):
+        boss_commands.del_chat(message)
+
+
 @BOT.message_handler(commands=['admin_place'])
 def add_admin_place_handler(message):
     """Add admin place to system"""

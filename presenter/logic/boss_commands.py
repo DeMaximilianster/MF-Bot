@@ -9,7 +9,7 @@ from presenter.config.config_var import full_chat_list, channel_list, BOT_ID, ad
 from presenter.config.log import Loger, log_to
 from presenter.config.config_func import unban_user, is_suitable, int_check, \
     get_system_configs, photo_video_gif_get, get_target_message, number_to_case, \
-    update_systems_json, create_system, create_chat, SystemUpdate, case_analyzer,  \
+    update_systems_json, create_system, create_chat, SystemUpdate, case_analyzer, \
     write_storage_json, get_storage_json, get_person, person_link, \
     person_info_in_html, chat_info_in_html
 import presenter.config.config_func as cf  # TODO Поменять все импорты из конфиг функа на этот
@@ -196,7 +196,8 @@ def money_pay(message, person, parameters_dictionary):
                 sent = "🔔 уведомлён(а)"
             else:
                 sent = "🔕 не уведомлён(а)"
-            reply(message, 'У {} забрали {} {} в банк!'.format(person_link(person), money, money_name),
+            reply(message,
+                  'У {} забрали {} {} в банк!'.format(person_link(person), money, money_name),
                   parse_mode='HTML')
             answer = "#Финансы " + f"#f{p_id}\n\n"
             if not_inf:
@@ -204,7 +205,8 @@ def money_pay(message, person, parameters_dictionary):
             answer += f"{person_link(person)} [{person_money + money} --> {person_money}] {sent}"
             send(admin_place(message, database), answer, parse_mode='HTML')
         else:
-            reply(message, "У людей число {} должно быть больше нуля".format(money_name_plural_genitivus))
+            reply(message,
+                  "У людей число {} должно быть больше нуля".format(money_name_plural_genitivus))
     else:
         if not_inf and bot_money < money:
             reply(message, "У нас нет столько {} в банке".format(money_name_plural_genitivus))
@@ -218,7 +220,8 @@ def money_pay(message, person, parameters_dictionary):
                 sent = "🔔 уведомлён(а)"
             else:
                 sent = "🔕 не уведомлён(а)"
-            reply(message, '{} получил(а) из банка {} {}!'.format(person_link(person), money, money_name),
+            reply(message,
+                  '{} получил(а) из банка {} {}!'.format(person_link(person), money, money_name),
                   parse_mode='HTML')
             answer = "#Финансы " + f"#f{p_id}\n\n"
             if not_inf:
@@ -390,6 +393,17 @@ def add_chat(message):
         reply(message, "Создана новая система чатов с ID {}".format(new_id))
     else:
         reply(message, "Для этой операции прошу вызвать @DeMaximilianster")
+
+
+def del_chat(message):
+    """Removes chat from the system."""
+    LOG.log_print("del_chat invoked")
+    chat = message.chat.id
+    database = Database()
+
+    if database.get('chats', ('id', chat)):
+        database.remove('chats', ('id', chat))
+        reply(message, "Чат успешно удалён")
 
 
 def add_admin_place(message):
