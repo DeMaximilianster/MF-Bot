@@ -878,13 +878,13 @@ def update_old_systems_json():
     write_systems_json(data)
 
 
-def create_chat(message, system_id, typee, link, database):
+def create_chat(message, system_id, chat_type, link, database):
     """Create entry about some chat in some system"""
     chat_tuple = (
         message.chat.id,
         system_id,
         message.chat.title,
-        typee,
+        chat_type,
         link,
         2,  # standart commands
         2,  # erotic commands

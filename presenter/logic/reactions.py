@@ -132,9 +132,9 @@ def chat_id_update(message):
     database = Database()
     old_chat = database.get('chats', ('id', message.migrate_from_chat_id))
     if old_chat:
-        typee = 'private'
+        chat_type = 'private'
         link = 'None'
         if message.chat.username:
-            typee = 'public'
+            chat_type = 'public'
             link = message.chat.username
-        create_chat(message, old_chat['system'], typee, link, database)
+        create_chat(message, old_chat['system'], chat_type, link, database)

@@ -362,10 +362,10 @@ def add_chat(message):
     message_words = message.text.split()
     if len(message_words) == 2:
         system = message_words[-1]
-    typee = 'private'
+    chat_type = 'private'
     link = 'None'
     if message.chat.username:
-        typee = 'public'
+        chat_type = 'public'
         link = message.chat.username
     if database.get('chats', ('id', message.chat.id)):
         reply(message, "Этот чат уже записан")
@@ -373,7 +373,7 @@ def add_chat(message):
         if database.get('systems', ('id', system)):  # Adding new chat to existing system
             if database.get('members', ('id', message.from_user.id), ('system', system)):
                 if is_suitable(message, message.from_user, "chat_changer", system=system):
-                    create_chat(message, system, typee, link, database)
+                    create_chat(message, system, chat_type, link, database)
                     reply(message, "Теперь я здесь работаю! Проверьте /help")
                 else:
                     reply(message, "Произошла ошибка!")
@@ -385,7 +385,7 @@ def add_chat(message):
         all_systems = database.get_all('systems', 'id')
         ids = [int(sys['id']) for sys in all_systems]
         new_id = str(max(ids) + 1)
-        create_chat(message, new_id, typee, link, database)
+        create_chat(message, new_id, chat_type, link, database)
         create_system(message, new_id, database)
         reply(message, "Создана новая система чатов с ID {}".format(new_id))
     else:
