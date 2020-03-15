@@ -764,6 +764,15 @@ def database_send_handler(message):
             file_send.close()
 
 
+@BOT.message_handler(commands=['error'])
+def simulate_error_handler(message):
+    """Simulates an error"""
+    if message.from_user.id == 381279599:
+        developer_commands.simulate_error(message)
+    else:
+        output.reply(message, "Эта команда только для моего хозяина")
+
+
 # Последний хэндлер. Просто считает сообщения, что не попали в другие хэндлеры
 
 

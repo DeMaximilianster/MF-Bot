@@ -10,10 +10,19 @@ print(view.input.WORK)
 
 update_old_systems_json()
 if INFINITE_MODE:
-    BOT.infinity_polling()  # Запуск бота
+    while True:
+        try:
+            BOT.send_message(381279599, "Приступаю к работе в бесконечном режиме, босс!")
+            BOT.infinity_polling()  # Запуск бота
+        except Exception as e:
+            BOT.send_message(381279599, "Меня подкосило исключение:\n\n"+str(e))
 else:
     #  telebot.logger.setLevel("DEBUG")  # Иногда помогает, но обычно не нужна
-    BOT.polling(none_stop=True)
+    try:
+        BOT.send_message(381279599, "Приступаю к работе, босс!")
+        BOT.polling(none_stop=True)
+    except Exception as e:
+        BOT.send_message(381279599, "Меня подкосило исключение:\n\n" + str(e))
 
 # TODO провокацио-голосовашки и оск-голосовашки
 # TODO Антифлуд механизм
