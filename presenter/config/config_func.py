@@ -741,7 +741,6 @@ def check_access_to_a_storage(message, storage_name, is_write_mode):
     """Checks if some storage can be accessed"""
     database = Database()
     storages_dict = get_storage_json()
-    system = database.get('chats', ('id', message.chat.id))['system']
     if storage_name in storages_dict.keys():
         storage = storages_dict[storage_name]
         if is_write_mode:
@@ -749,7 +748,10 @@ def check_access_to_a_storage(message, storage_name, is_write_mode):
                 reply(message, "У вас отсутствует разрешение добавлять контент в это хранилище :-(")
                 return False
             return True
-        elif storage['is_vulgar']:
+        elif message.chat.id > 0:
+            return True
+        system = database.get('chats', ('id', message.chat.id))['system']
+        if storage['is_vulgar']:
             return loud_feature_is_available(message, message.chat.id, system, 'erotic_commands')
         return loud_feature_is_available(message, message.chat.id, system, 'standart_commands')
     else:

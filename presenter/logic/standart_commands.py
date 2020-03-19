@@ -169,7 +169,7 @@ def send_stuff_from_storage(message, storage_name):
     log.log_print("send_stuff_from_storage invoked")
     contents = get_list_from_storage(storage_name)['contents']
     if len(contents) > 0:
-        result = choice()
+        result = choice(contents)
         args_to_send = [message.chat.id, result[0]]
         kwargs_to_send = {'reply_to_message_id': message.message_id, 'caption': result[2], 'parse_mode': 'HTML'}
         if result[1] == 'photo':
