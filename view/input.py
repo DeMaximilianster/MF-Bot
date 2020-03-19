@@ -55,35 +55,96 @@ def elite_handler(message):
 
 # Админские обычные команды
 
-# @bot.message_handler(commands=['search'])
-# def chat_search_handler(message):
-#     # Ищет чаты
-#     if in_mf(message) and rank_required(message, "Админ"):
-#         chat_search(message)
 
-
-@BOT.message_handler(commands=config_var.COMMANDS_TO_ADD_VULGAR_STUFF)
-def upload_vulgar_stuff_to_storage_handler(message):
-    """ Add vulgar stuff to a media storage """
-    LOG.log_print("upload_vulgar_stuff_to_storage_handler invoked")
-    command = config_func.convert_command_to_storage_content(message.text)
-    if config_func.in_mf(message, 'erotic_commands'):
-        if message.from_user.id in config_var.PORN_ADDERS:
-            boss_commands.add_stuff_to_storage(message, command)
-        else:
-            output.reply(message, "Не-а, вы не числитесь в рядах добавлятелей 'контента'")
-
-
-@BOT.message_handler(commands=config_var.COMMANDS_TO_ADD_STUFF)
+@BOT.message_handler(commands=['add'])
 def upload_stuff_to_storage_handler(message):
     """ Add stuff to a media storage """
     LOG.log_print("upload_stuff_to_storage_handler invoked")
-    command = config_func.convert_command_to_storage_content(message.text)
+    analyzer = config_func.Analyzer(message, value_necessary=False)
+    storage_name = analyzer.parameters_dictionary['comment']
     if config_func.in_mf(message, command_type=None):
-        if message.from_user.id in config_var.STUFF_ADDERS:
-            boss_commands.add_stuff_to_storage(message, command)
+        if config_func.check_access_to_a_storage(message, storage_name, is_write_mode=True):
+            boss_commands.add_stuff_to_storage(message, storage_name)
+
+
+@BOT.message_handler(commands=['remove'])
+def remove_stuff_from_storage_handler(message):
+    """Removes some media from media storage"""
+    LOG.log_print("remove_stuff_from_storage_handler invoked")
+    analyzer = config_func.Analyzer(message, value_necessary=False)
+    comment = analyzer.parameters_dictionary['comment']
+    if config_func.in_mf(message, command_type=None):
+        list_of_words = comment.split()
+        if len(list_of_words) >= 2:
+            storage_name = list_of_words[0]
+            file_id = list_of_words[1]
+            if config_func.check_access_to_a_storage(message, storage_name, is_write_mode=True):
+                boss_commands.remove_stuff_from_storage(message, storage_name, file_id)
         else:
-            output.reply(message, "Не-а, вы не числитесь в рядах добавлятелей контента")
+            output.reply(message, "Нужно название хранилища и ID файла")
+
+
+@BOT.message_handler(commands=['create'])
+def create_new_storage_handler(message):
+    """ Creates new media storage """
+    LOG.log_print('create_new_storage_handler invoked')
+    analyzer = config_func.Analyzer(message, value_necessary=False)
+    storage_name = analyzer.parameters_dictionary['comment']
+    if config_func.in_mf(message, command_type=None):
+        if message.from_user.id == 381279599:
+            if storage_name:
+                boss_commands.create_new_storage(message, storage_name, False)
+            else:
+                output.reply(message, "Не хватает названия")
+        else:
+            output.reply(message, "Эта команда только для моего хозяина")
+
+
+@BOT.message_handler(commands=['create_vulgar'])
+def create_new_vulgar_storage_handler(message):
+    """ Creates new vulgar media storage """
+    LOG.log_print('create_new_vulgar_storage_handler invoked')
+    analyzer = config_func.Analyzer(message, value_necessary=False)
+    storage_name = analyzer.parameters_dictionary['comment']
+    if config_func.in_mf(message, command_type=None):
+        if message.from_user.id == 381279599:
+            if storage_name:
+                boss_commands.create_new_storage(message, storage_name, True)
+            else:
+                output.reply(message, "Не хватает названия")
+        else:
+            output.reply(message, "Эта команда только для моего хозяина")
+
+
+@BOT.message_handler(commands=['add_moder'])
+def add_moderator_to_storage_handler(message):
+    """ Adds a moderator to a storage """
+    LOG.log_print('add_moderator_to_storage_handler invoked')
+    analyzer = config_func.Analyzer(message, value_necessary=False)
+    person = analyzer.return_target_person(to_self=True)
+    storage_name = analyzer.parameters_dictionary['comment']
+    if config_func.in_mf(message, command_type=None) and person and \
+            config_func.check_access_to_a_storage(message, storage_name, False):
+        if message.from_user.id == 381279599:
+            # TODO function is_demax, checks if demax uses it + says if it is demax only
+            boss_commands.add_moderator_to_storage(message, storage_name, person.id)
+        else:
+            output.reply(message, "Эта команда только для моего хозяина")
+
+
+@BOT.message_handler(commands=['remove_moder'])
+def remove_moderator_from_storage_handler(message):
+    """ Removes a moderator from a storage """
+    LOG.log_print('remove_moderator_from_storage_handler invoked')
+    analyzer = config_func.Analyzer(message, value_necessary=False)
+    person = analyzer.return_target_person(to_self=True)
+    storage_name = analyzer.parameters_dictionary['comment']
+    if config_func.in_mf(message, command_type=None) and person and \
+            config_func.check_access_to_a_storage(message, storage_name, False):
+        if message.from_user.id == 381279599:
+            boss_commands.remove_moderator_from_storage(message, storage_name, person.id)
+        else:
+            output.reply(message, "Эта команда только для моего хозяина")
 
 
 @BOT.message_handler(commands=['update'])
@@ -173,13 +234,6 @@ def money_pay_handler(message):
         parameters_dictionary = analyzer.parameters_dictionary
         if person and parameters_dictionary:
             boss_commands.money_pay(message, person, parameters_dictionary)
-
-
-# @bot.message_handler(commands=['delete_mode'])
-# def deleter_mode_handler(message):
-#     LOG.log_print(f"{__name__} invoked")
-#     if in_mf(message, 'boss_commands', False) and is_suitable(message, message.from_user, "boss"):
-#         deleter_mode(message)
 
 
 @BOT.message_handler(func=lambda message: config_func.in_system_commands(message))
@@ -490,6 +544,14 @@ def money_helper_handler(message):
         standart_commands.money_helper(message)
 
 
+@BOT.message_handler(commands=['storages'])
+def send_list_of_storages_handler(message):
+    """ Sends list of all storages """
+    LOG.log_print("send_list_of_storages_handler invoked")
+    if config_func.in_mf(message, command_type=None):
+        standart_commands.send_list_of_storages(message)
+
+
 @BOT.message_handler(commands=['id'])
 def show_id_handler(message):
     """Присылает различные ID'шники, зачастую бесполезные"""
@@ -540,23 +602,26 @@ def minet_handler(message):
             standart_commands.minet(message, language)
 
 
-@BOT.message_handler(commands=['drakken', 'art'])
+@BOT.message_handler(commands=['get'])
 def send_stuff_from_storage_handler(message):
     """Send random media from the storage"""
     LOG.log_print("send_stuff_from_storage_handler invoked")
-    command = config_func.remove_slash_and_bot_mention(message.text)
-    if config_func.in_mf(message, 'standart_commands') and config_func.cooldown(message, command):
-        standart_commands.send_stuff_from_storage(message, command)
+    analyzer = config_func.Analyzer(message, value_necessary=False)
+    storage_name = analyzer.parameters_dictionary['comment']
+    if config_func.in_mf(message, 'standart_commands') and config_func.check_access_to_a_storage(
+            message, storage_name, False) and config_func.cooldown(message, storage_name, timeout=300):
+        standart_commands.send_stuff_from_storage(message, storage_name)
 
 
-@BOT.message_handler(commands=['breasts', 'ass'])
-def send_vulgar_stuff_from_storage_handler(message):
-    """ Send vulgar stuff from media storage """
-    LOG.log_print("send_vulgar_stuff_from_storage_handler invoked")
-    command = config_func.remove_slash_and_bot_mention(message.text)
-    if config_func.in_mf(message, 'erotic_commands') and config_func.cooldown(
-            message, command, timeout=60):
-        standart_commands.send_stuff_from_storage(message, command)
+@BOT.message_handler(commands=['size'])
+def check_storage_size_handler(message):
+    """ Checks how many moderators and how much media there is in a storage """
+    LOG.log_print('check_storage_size_handler invoked')
+    analyzer = config_func.Analyzer(message, value_necessary=False)
+    storage_name = analyzer.parameters_dictionary['comment']
+    if config_func.in_mf(message, 'standart_commands') and config_func.check_access_to_a_storage(
+            message, storage_name, False):
+        standart_commands.check_storage_size(message, storage_name)
 
 
 @BOT.message_handler(regexp='есть один мем')
@@ -727,13 +792,6 @@ def system_check_handler(message):
     LOG.log_print("system_check_handler invoked")
     if config_func.in_mf(message, command_type=None, or_private=False):
         standart_commands.system_check(message)
-
-
-# @bot.message_handler(commands=['chats'])
-# def chats_handler(message):
-#     """Send chat list"""
-#     if in_mf(message, 'standart_commands'):
-#         chats(message)
 
 
 @BOT.message_handler(commands=['anon'])

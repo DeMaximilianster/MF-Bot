@@ -4,7 +4,7 @@ from view.output import reply, send_photo, send_sticker, send, send_video, send_
 from presenter.config.config_func import member_update, int_check, \
     is_suitable, feature_is_available, get_system_configs, get_systems_json, get_person, \
     get_list_from_storage, number_to_case, case_analyzer, person_link, \
-    html_cleaner, link_text_wrapper, function_returned_true, value_marker
+    html_cleaner, link_text_wrapper, function_returned_true, value_marker, get_storage_json
 from presenter.config.database_lib import Database
 from presenter.config.config_var import admin_place, ORIGINAL_TO_ENGLISH, ENGLISH_TO_ORIGINAL, \
     MONTHS_GENITIVE, MONTHS_PREPOSITIONAL, FEATURES, FEATURES_TEXTS
@@ -62,17 +62,15 @@ def helper(message):
         answer += '/help - Прислать это сообщение\n'
         answer += '/money_help - Финансовый режим\n'
         answer += '/chat - Показать настройки в чате\n'
-        answer += '/system - Показать настройки по умолчанию\n\n'
+        answer += '/system - Показать настройки по умолчанию\n\n'\
+                  '<b>Хранилище:</b>\n'\
+                  '/storages - Посмотреть список хранилищ\n'\
+                  '/get [хранилище] - Получать случайный контент из хранилища\n'\
+                  '/size [хранилище] - Получить инфо о количестве контента и модеров хранилища\n\n'
         if feature_is_available(message.chat.id, system, 'standart_commands'):
             answer += '<b>Развлекательные команды:</b>\n'
             answer += '/minet - Делает приятно\n'
-            answer += '/drakken - Присылает арт с Доктором Драккеном\n'
             answer += '/meme - Присылает мем\n'
-            answer += '/art - Присылает картину\n\n'
-        if feature_is_available(message.chat.id, system, 'erotic_commands'):
-            answer += '<b>Эротические команды:</b>\n'
-            answer += '/breasts - Присылает грудь\n'
-            answer += '/ass - Присылает задницу\n\n'
         if is_suitable(message, message.from_user, 'boss', loud=False):
             answer += '<b>Базовые админские команды:</b>\n'
             answer += '/update - Пересчитывает сообщения, никнеймы и юзернеймы всех участников чата\n'
@@ -135,6 +133,23 @@ def money_helper(message):
     reply(message, answer, parse_mode='HTML')
 
 
+def send_list_of_storages(message):
+    """ Sends list of all storages """
+    log.log_print("send_list_of_storages invoked")
+    storages_dict = get_storage_json()
+    vulgar_storages = []
+    non_vulgar_storages = []
+    for storage in storages_dict:
+        if storages_dict[storage]['is_vulgar']:
+            vulgar_storages.append(storage)
+        else:
+            non_vulgar_storages.append(storage)
+    str_vulgar_storages = '<code>' + '</code>, <code>'.join(vulgar_storages) + '</code>'
+    str_non_vulgar_storages = '<code>' + '</code>, <code>'.join(non_vulgar_storages) + '</code>'
+    text = "Обычные хранилища: {}\n\nЭротичные хранилища: {}".format(str_non_vulgar_storages, str_vulgar_storages)
+    reply(message, text, parse_mode='HTML')
+
+
 def minet(message, language):
     """Приносит удовольствие"""
     log.log_print(str(message.from_user.id) + ": minet invoked")
@@ -150,23 +165,34 @@ def minet(message, language):
             send_sticker(message.chat.id, rep, reply_to_message_id=message.message_id)
 
 
-def send_stuff_from_storage(message, stuff):
+def send_stuff_from_storage(message, storage_name):
     log.log_print("send_stuff_from_storage invoked")
-    result = choice(get_list_from_storage(stuff))
-    if result[1] == 'photo':
-        send_photo(message.chat.id, result[0], reply_to_message_id=message.message_id,
-                   caption=result[2],
-                   parse_mode='HTML')
-    elif result[1] == 'video':
-        send_video(message.chat.id, result[0], reply_to_message_id=message.message_id,
-                   caption=result[2],
-                   parse_mode='HTML')
-    elif result[1] == 'gif':
-        send_document(message.chat.id, result[0], reply_to_message_id=message.message_id,
-                      caption=result[2],
-                      parse_mode='HTML')
+    contents = get_list_from_storage(storage_name)['contents']
+    if len(contents) > 0:
+        result = choice()
+        args_to_send = [message.chat.id, result[0]]
+        kwargs_to_send = {'reply_to_message_id': message.message_id, 'caption': result[2], 'parse_mode': 'HTML'}
+        if result[1] == 'photo':
+            send_photo(*args_to_send, **kwargs_to_send)
+        elif result[1] == 'video':
+            send_video(*args_to_send, **kwargs_to_send)
+        elif result[1] == 'gif':
+            send_document(*args_to_send, **kwargs_to_send)
+        else:
+            reply(message, "Произошла ошибка!")
     else:
-        reply(message, "Произошла ошибка!")
+        reply(message, "На данный момент хранилище пусто :-(")
+
+
+def check_storage_size(message, storage_name):
+    """ Checks how many moderators and how much media there is in a storage """
+    log.log_print('check_storage_size invoked')
+    storage = get_list_from_storage(storage_name)
+    moderators_number = len(storage['moders'])
+    media_number = len(storage['contents'])
+    moderator = case_analyzer('модератор', 'Russian', *number_to_case(moderators_number, 'Russian'))
+    reply(message, "На данный момент в хранилище {} {} медиа и {} {}".format(
+          storage_name, media_number, moderators_number, moderator))
 
 
 def send_meme(message):

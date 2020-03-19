@@ -18,27 +18,80 @@ from view.output import kick, reply, promote, send, forward, restrict
 LOG = Loger(log_to)
 
 
-def add_stuff_to_storage(message, stuff):
+def add_stuff_to_storage(message, storage_name):
     """Add some media to media storage"""
-    LOG.log_print("add_stuff_to_storage")
+    LOG.log_print("add_stuff_to_storage invoked")
     rep = message.reply_to_message
-    data = get_storage_json()
+    storages_dict = get_storage_json()
     if rep:
         insert = photo_video_gif_get(rep)
         if insert:
-            if list(insert) in data[stuff]:
+            if list(insert) in storages_dict[storage_name]['contents']:
                 reply(message, "У меня это уже есть)")
             else:
-                data[stuff].append(insert)
+                storages_dict[storage_name]['contents'].append(insert)
                 forward(381279599, message.chat.id, rep.message_id)
                 send(381279599, f"Норм контент?) user={message.from_user.id}, "
-                                f"text={message.text}, id={insert[0]}")
-                write_storage_json(data)
+                                f"text={message.text}, id=<code>{insert[0]}</code>", parse_mode='HTML')
+                write_storage_json(storages_dict)
                 reply(message, "ОК!")
         else:
             reply(message, "Ответить надо на гифку, фотографию или видео")
     else:
         reply(message, "Надо ответить на медиа, которое нужно добавить")
+
+
+def remove_stuff_from_storage(message, storage_name, file_id):
+    """Removes some media from media storage"""
+    LOG.log_print("remove_stuff_from_storage invoked")
+    storages_dict = get_storage_json()
+    storage = storages_dict[storage_name]
+    for index in range(len(storage['contents'])):
+        if file_id == storage['contents'][index][0]:
+            storages_dict[storage_name]['contents'].pop(index)
+            write_storage_json(storages_dict)
+            reply(message, "ОК!")
+            break
+    else:
+        reply(message, "Не вижу такого в хранилище")
+
+
+def create_new_storage(message, storage_mame, is_vulgar):
+    """ Creates new media storage """
+    LOG.log_print('create_new_storage invoked')
+    storages_dict = get_storage_json()
+    if storage_mame not in storages_dict.keys():
+        new_storage = {'is_vulgar': is_vulgar, 'moders': [381279599], 'contents': []}
+        storages_dict[storage_mame] = new_storage
+        write_storage_json(storages_dict)
+        vulgar_text = ' вульгарное' if is_vulgar else ''
+        reply(message, "Созданное новое{} хранилище {}".format(vulgar_text, storage_mame))
+    else:
+        reply(message, "Такое хранилище уже есть")
+
+
+def add_moderator_to_storage(message, storage_name, person_id):
+    """ Adds a moderator to a storage """
+    LOG.log_print('add_moderator_to_storage invoked')
+    storages_dict = get_storage_json()
+    if person_id not in storages_dict[storage_name]['moders']:
+        storages_dict[storage_name]['moders'].append(person_id)
+        write_storage_json(storages_dict)
+        reply(message, "ОК!")
+    else:
+        reply(message, "Этот человек уже модератор хранилища")
+
+
+def remove_moderator_from_storage(message, storage_name, person_id):
+    """ Removes a moderator from a storage """
+    LOG.log_print('remove_moderator_from_storage invoked')
+    storages_dict = get_storage_json()
+    if person_id in storages_dict[storage_name]['moders']:
+        storages_dict[storage_name]['moders'].remove(person_id)
+        write_storage_json(storages_dict)
+        reply(message, "ОК!")
+    else:
+        reply(message, "Этот человек и так не модератор хранилища")
 
 
 def update_all_members(message):

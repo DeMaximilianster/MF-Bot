@@ -190,29 +190,6 @@ def create_captcha_keyboard():
     return keyboard
 
 
-def convert_command_to_storage_content(command: str) -> str:
-    """Convert command about adding something to storage into content name
-
-    :param command: examples '/add_art', '/artadd', '/art_add@MultiFandomRuBot'
-    :type command: str
-
-    :return: content name like 'art'
-    :rtype: str
-    :raises: Exception if converting failed
-    """
-    command = remove_slash_and_bot_mention(command)
-    print(command)
-    if command[-4:] == '_add':
-        return command[:-4]
-    if command[:4] == 'add_':
-        return command[4:]
-    if command[-3:] == 'add':
-        return command[:-3]
-    if command[:3] == 'add':
-        return command[3:]
-    raise Exception
-
-
 def remove_slash_and_bot_mention(command: str) -> str:
     """Convert command about adding something to storage into content name
 
@@ -521,29 +498,11 @@ def parameters_analyze(text: str,
             dictionary_of_parameters['value'] = int(part)
             parts_of_the_message.remove(part)
             break
-    comment = ' '.join(parts_of_the_message)
-    if comment:
-        dictionary_of_parameters['comment'] = comment
+    dictionary_of_parameters['comment'] = ' '.join(parts_of_the_message)
     if not value_necessary or ('value' in dictionary_of_parameters.keys() and
                                (dictionary_of_parameters['value'] > 0 or not value_positive)):
         return dictionary_of_parameters
     return dict()
-
-
-test_function({
-    'command': 'give',
-    'person_id': 381279599,
-    'value': 20
-}, parameters_analyze('/give 381279599 20'))
-test_function({'command': 'give', 'value': 20}, parameters_analyze('/give 20'))
-test_function({'command': 'give', 'value': 20, 'comment': 'Take this'},
-              parameters_analyze('/give Take 20 this'))
-test_function({'command': 'warn', 'value': 1, 'comment': 'Take this'},
-              parameters_analyze('/warn Take this', default_value=1, value_positive=True))
-test_function(dict(), parameters_analyze('/give'))
-test_function(dict(), parameters_analyze('/pay 381279599'))
-test_function(dict(), parameters_analyze('/warn 0', default_value=1, value_positive=True))
-test_function(dict(), parameters_analyze('/fund'))
 
 
 def rank_superiority(message, person):
@@ -678,6 +637,7 @@ def cooldown(message, command, timeout=3600):
         seconds %= 60
         answer = "Воу, придержи коней, ковбой. Ты сможешь воспользоваться этой командой только "
         answer += f"через {minutes} минут и {seconds} секунд 🤠"
+        # TODO use cases for this message (check /give command for example)
         reply(message, answer)
 
         return False
@@ -769,6 +729,33 @@ def feature_is_available(chat_id, system, command_type):
     return command_mode == 2 and database.get('systems', ('id', system), (command_type, 2))
 
 
+def loud_feature_is_available(message, chat_id, system, command_type):
+    """Checks if some feature is available in this system and tells user if it's not"""
+    is_available = feature_is_available(chat_id, system, command_type)
+    if not is_available:
+        reply(message, "В данном чате такие команды не поддерживаются")
+    return is_available
+
+
+def check_access_to_a_storage(message, storage_name, is_write_mode):
+    """Checks if some storage can be accessed"""
+    database = Database()
+    storages_dict = get_storage_json()
+    system = database.get('chats', ('id', message.chat.id))['system']
+    if storage_name in storages_dict.keys():
+        storage = storages_dict[storage_name]
+        if is_write_mode:
+            if message.from_user.id not in storage['moders']:
+                reply(message, "У вас отсутствует разрешение добавлять контент в это хранилище :-(")
+                return False
+            return True
+        elif storage['is_vulgar']:
+            return loud_feature_is_available(message, message.chat.id, system, 'erotic_commands')
+        return loud_feature_is_available(message, message.chat.id, system, 'standart_commands')
+    else:
+        reply(message, "Хранилища '{}' не существует".format(storage_name))
+
+
 def counter(message, person):
     """Подсчитывает сообщения, отправленные челом"""
     LOG.log_print("counter invoked")
@@ -823,10 +810,10 @@ def get_storage_json():
         return json.load(read_file)
 
 
-def write_storage_json(data):
+def write_storage_json(storages_dict):
     """Write info about all the storage into json file"""
     with open(STORAGE_FILE, 'w', encoding='utf-8') as write_file:
-        json.dump(data, write_file, indent=4, ensure_ascii=False)
+        json.dump(storages_dict, write_file, indent=4, ensure_ascii=False)
 
 
 def write_systems_json(data):
