@@ -1,0 +1,30 @@
+{
+  "types": {
+    "refactor": {
+      "description": "Changes which neither fix a bug nor add a feature."
+    },
+    "fix": {
+      "description": "Changes which patch a bug."
+    },
+    "feat": {
+      "description": "Changes which introduce a new feature.",
+      "scopes": {
+        "commands" :{"description" : "Telegram bot commands"},
+        "functions": {"description": "Functions that do not go beyond code"},
+        "files": {"description": "Files in the project tree"}
+      }
+    },
+    "style": {
+      "description": "Changes which don't affect code logic.\nWhite-space, formatting, missing semi-colons, etc."
+    },
+    "docs": {
+      "description": "Changes which affect documentation."
+    },
+    "revert": {
+      "description": "Changes which revert a previous commit."
+    },
+    "remove": {
+      "description": "Removing code/files from a project"
+    }
+  }
+}
