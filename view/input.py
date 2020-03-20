@@ -246,7 +246,7 @@ def rank_changer_handler(message):
             person = config_func.Analyzer(message, value_necessary=False).return_target_person()
             if person:
                 boss_commands.rank_changer(message, person)
-        elif config_func.is_suitable(message, message.from_user, 'boss'):
+        elif config_func.is_suitable(message, message.from_user, 'uber'):
             person = config_func.Analyzer(message, value_necessary=False).return_target_person()
             if person and config_func.rank_superiority(message, person):
                 boss_commands.rank_changer(message, person)
