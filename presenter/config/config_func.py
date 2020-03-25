@@ -45,6 +45,7 @@ class CaptchaBan(Thread):
             kick_and_unban(self.message.chat.id, self.message.new_chat_members[0].id)
             edit_text("Испытание креветкой провалено! (время истекло)", self.bots_message.chat.id,
                       self.bots_message.message_id)
+            CAPTCHERS.remove((self.message.new_chat_members[0].id, self.message.chat.id))
 
 
 class SystemUpdate(Thread):
