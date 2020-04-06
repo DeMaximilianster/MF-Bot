@@ -1,25 +1,27 @@
+"""Commands which involve creating and pushing buttons"""
 # -*- coding: utf-8 -*-
+from time import time
+from ast import literal_eval
+from telebot.types import InlineQueryResultArticle, InputTextMessageContent, InlineKeyboardButton, \
+    InlineKeyboardMarkup
+from view.output import edit_markup, answer_inline, reply, \
+    answer_callback, edit_text, delete, send, restrict
 from presenter.config.config_func import update_adapt_vote, update_multi_vote, create_adapt_vote, \
-    create_vote, \
-    create_multi_vote, remove_captcher, kick_and_unban
+    create_vote, create_multi_vote, remove_captcher, kick_and_unban
 from presenter.config.config_var import TEST_KEYBOARD, IRONIC_KEYBOARD, \
     VOTE_KEYBOARD, admin_place
 from presenter.config.database_lib import Database
 from presenter.config.files_paths import MULTI_VOTES_FILE, ADAPT_VOTES_FILE, VOTES_FILE
-from view.output import edit_markup, answer_inline, reply, answer_callback, edit_text, delete, send, \
-    restrict
 from presenter.config.log import Loger, log_to
 
-from telebot.types import InlineQueryResultArticle, InputTextMessageContent, InlineKeyboardButton, \
-    InlineKeyboardMarkup
-from time import time
 
-log = Loger(log_to)
-work = True
+LOG = Loger(log_to)
+WORK = True
 
 
 def captcha_completed(call):
-    log.log_print("captcha_completed invoked")
+    """Bot reacts to someone clicked correct button"""
+    LOG.log_print("captcha_completed invoked")
     if remove_captcher(call):
         restrict(call.message.chat.id,
                  call.from_user.id,
@@ -35,7 +37,8 @@ def captcha_completed(call):
 
 
 def captcha_failed(call):
-    log.log_print("captcha_failed invoked")
+    """Bot reacts to someone clicked wrong button"""
+    LOG.log_print("captcha_failed invoked")
     if remove_captcher(call):
         kick_and_unban(call.message.chat.id, call.from_user.id)
         answer_callback(call.id)
@@ -47,15 +50,15 @@ def captcha_failed(call):
 
 def adequate(call):
     """Вариант адекватен"""
-    log.log_print("adequate invoked")
+    LOG.log_print("adequate invoked")
     file_place = None
     if call.data == 'adequate':
         file_place = MULTI_VOTES_FILE
     elif call.data == 'a_adequate':
         file_place = ADAPT_VOTES_FILE
     file = open(file_place, encoding='utf-8')
-    votes_shelve = eval(file.read())
-    info = eval(call.message.text)
+    votes_shelve = literal_eval(file.read())
+    info = literal_eval(call.message.text)
     vote_id = info[0]
     votey = votes_shelve[vote_id]  # Получаем необходимую нам голосовашку в хранилище
     votey["keyboard"].append(info[1])
@@ -73,13 +76,13 @@ def adequate(call):
 
 def inadequate(call):
     """Вариант неадекватен"""
-    log.log_print("inadequate invoked")
+    LOG.log_print("inadequate invoked")
     edit_markup(call.message.chat.id, call.message.message_id)
 
 
 def response(inline_query):
     """Тестовая инлайновая команда, бесполезная"""
-    log.log_print("response invoked")
+    LOG.log_print("response invoked")
     results = [
         InlineQueryResultArticle('1',
                                  'Тестовый заголовок',
@@ -91,14 +94,15 @@ def response(inline_query):
 
 def insult(message):
     """Спращивает, иронично ли признание оскорблением"""
-    log.log_print("insult invoked")
-    text = "Иронично? \n\n(В случае нажатия 'Неиронично' в админосостав будет послана жалоба. Будьте добры не пользоваться каналом жалоб, если вас не оскорбили)"
+    LOG.log_print("insult invoked")
+    text = "Иронично? \n\n(В случае нажатия 'Неиронично' в админосостав будет послана жалоба. " \
+           "Будьте добры не пользоваться каналом жалоб, если вас не оскорбили)"
     reply(message, text, reply_markup=IRONIC_KEYBOARD)
 
 
 def non_ironic(call):
     """Реакция, если обвинение было неироничным"""
-    log.log_print("non_ironic invoked")
+    LOG.log_print("non_ironic invoked")
     # Проверка, нажал ли на кнопку не тот, кто нужен
     edit_text("Неиронично!", call.message.chat.id, call.message.message_id)
     # TODO добавить сюда голосовашку
@@ -107,22 +111,19 @@ def non_ironic(call):
              call.message.reply_to_message.chat.username, call.message.reply_to_message.message_id),
          parse_mode="Markdown",
          disable_web_page_preview=True)
-    try:
-        answer_callback(call.id)
-    except Exception as e:
-        print(e)
+    answer_callback(call.id)
 
 
 def ironic(call):
     """Реакция, если обвинение было ироничным"""
-    log.log_print("ironic invoked")
+    LOG.log_print("ironic invoked")
     edit_text("Иронично, так иронично", call.message.chat.id, call.message.message_id)
     answer_callback(call.id)
 
 
 def place_here(call):
     """Выбирает, куда прислать голосовашку"""
-    log.log_print("place_here invoked")
+    LOG.log_print("place_here invoked")
     # Проверка, нажал ли на кнопку не тот, кто нужен
     where = None
     if call.data == 'here' or call.data == 'm_here' or call.data == 'a_here':
@@ -137,19 +138,21 @@ def place_here(call):
                             reply_markup=VOTE_KEYBOARD)
         create_vote(vote_message)
     elif call.message.reply_to_message.text.split()[0] == '/multi_vote':
-        answer = 'Мульти-голосование (вы можете предлагать варианты и выбирать несколько ответов)\n\n"{}"\n'
+        answer = 'Мульти-голосование (вы можете предлагать варианты ' \
+                 'и выбирать несколько ответов)\n\n"{}"\n'
         vote_message = send(where, answer.format(call.message.reply_to_message.text[12:]))
         create_multi_vote(vote_message)
     elif call.message.reply_to_message.text.split()[0] == '/adapt_vote':
-        answer = 'Адапт-голосование (вы можете предлагать варианты, но выбирать только 1 вариант)\n\n"{}"\n'
+        answer = 'Адапт-голосование (вы можете предлагать варианты, ' \
+                 'но выбирать только 1 вариант)\n\n"{}"\n'
         vote_message = send(where, answer.format(call.message.reply_to_message.text[12:]))
         create_adapt_vote(vote_message)
     delete(call.message.chat.id, call.message.message_id)
 
 
-def mv(call):
+def multi_vote(call):
     """Обновляет мульти-голосовашку"""
-    log.log_print("mv invoked")
+    LOG.log_print("mv invoked")
     user = call.from_user
     user_username = user.username  # юзернейм жмакнувшего челика
     user_nickname = user.first_name
@@ -159,7 +162,7 @@ def mv(call):
     link = f'<a href="t.me/{user_username}">{user_nickname}</a>'
     which = int(call.data[-1])  # Где менять мнение
     file = open(MULTI_VOTES_FILE, encoding='utf-8')
-    votes_shelve = eval(file.read())
+    votes_shelve = literal_eval(file.read())
     votey = votes_shelve[msg_id]  # Получаем необходимую нам голосовашку в хранилище
     file.close()
 
@@ -180,9 +183,9 @@ def mv(call):
     update_multi_vote(call.message.message_id)  # TODO возможность стопнуть мульти-голосовашку
 
 
-def av(call):
+def adapt_vote(call):
     """Обновляет адапт-голосовашку"""
-    log.log_print("av invoked")
+    LOG.log_print("av invoked")
     user = call.from_user
     user_username = user.username  # юзернейм жмакнувшего челика
     user_nickname = user.first_name
@@ -192,7 +195,7 @@ def av(call):
     link = f'<a href="t.me/{user_username}">{user_nickname}</a>'
     which = int(call.data[-1])  # Где менять мнение
     file = open(ADAPT_VOTES_FILE, encoding='utf-8')
-    votes_shelve = eval(file.read())
+    votes_shelve = literal_eval(file.read())
     votey = votes_shelve[msg_id]  # Получаем необходимую нам голосовашку в хранилище
     file.close()
     if msg_id in votes_shelve.keys():
@@ -216,7 +219,7 @@ def av(call):
 
 def add_vote(call):
     """Вставляет голос в голосоовашку"""
-    log.log_print("add_vote invoked")
+    LOG.log_print("add_vote invoked")
     reply_markup = VOTE_KEYBOARD
     text = ''
     user = call.from_user
@@ -227,7 +230,7 @@ def add_vote(call):
     # Как этот челик будет отображаться в сообщении
     link = f'<a href="t.me/{user_username}">{user_nickname}</a>'
     file = open(VOTES_FILE, 'r', encoding='utf-8')
-    votes_shelve = eval(file.read())
+    votes_shelve = literal_eval(file.read())
     file.close()
     if msg_id in votes_shelve.keys():
         votey = votes_shelve[msg_id]  # Получаем необходимую нам голосовашку в хранилище
@@ -235,8 +238,8 @@ def add_vote(call):
                 votey['against']):  # это сутки
             reply_markup = None
             text += 'Голосование окончено. Новые голоса не принимаются\n\n'
-        elif user_id in votey[
-            call.data].keys():  # Челик нажал на кнопку, на которой есть его мнение
+        # Person clicked a button containing their opinion
+        elif user_id in votey[call.data].keys():
             # удаляем челика из словаря
             votey[call.data].pop(user_id)
         else:
@@ -252,7 +255,8 @@ def add_vote(call):
         text += '\nВоздерживающиеся: ' + ', '.join(votey["abstain"].values())
     else:
         reply_markup = None
-        text += 'Голосование окончено по причине ненахода записи об этой голосовашки. Новые голоса не принимаются\n\n'
+        text += 'Голосование окончено по причине ненахода записи об этой голосовашки. ' \
+                'Новые голоса не принимаются\n\n'
         text += call.message.text
     file = open(VOTES_FILE, 'w', encoding='utf-8')
     file.write(str(votes_shelve))
@@ -267,16 +271,11 @@ def add_vote(call):
 
 
 def vote(message):
-    log.log_print(f'{__name__} invoked')
+    """Create poll"""
+    LOG.log_print(f'vote invoked')
     where_keyboard = InlineKeyboardMarkup()
     where_keyboard.row_width = 1
     where_keyboard.add(InlineKeyboardButton("Сюда", callback_data="here"))
-    '''
-    if appointment_required(message, 'Admin', loud=False):
-        where_keyboard.add(InlineKeyboardButton("На канал голосовашек", callback_data="there"))
-    if appointment_required(message, 'Content-maker', loud=False):
-        where_keyboard.add(InlineKeyboardButton("На канал недостримов", callback_data="nedostream"))
-    '''
     reply(message, "А запостить куда?", reply_markup=where_keyboard)
 
 # TODO разделить этот модуль на сообщения с кнопками и триггеры кнопок

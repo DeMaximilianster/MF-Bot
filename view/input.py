@@ -485,7 +485,7 @@ def mv_handler(call):
     # TODO Убрать привязку к МФным голосовашкам
     if call.chat_instance != "-8294084429973252853" or config_func.is_suitable(
             call, call.from_user, "advanced"):
-        complicated_commands.mv(call)
+        complicated_commands.multi_vote(call)
 
 
 @BOT.callback_query_handler(func=lambda call: 'av_' in call.data)
@@ -494,7 +494,7 @@ def av_handler(call):
     LOG.log_print(f"av_handler invoked")
     if call.chat_instance != "-8294084429973252853" or config_func.is_suitable(
             call, call.from_user, "advanced"):
-        complicated_commands.av(call)
+        complicated_commands.adapt_vote(call)
 
 
 @BOT.callback_query_handler(
@@ -517,7 +517,7 @@ def language_getter_handler(message):
     LOG.log_print("language_getter_handler invoked")  # TODO Более удобную ставилку языков
     if config_func.in_mf(message, command_type=None, or_private=True):
         if message.chat.id > 0 or config_func.is_suitable(message, message.from_user, 'boss'):
-            standart_commands.language_getter(message)
+            standart_commands.language_setter(message)
 
 
 @BOT.message_handler(commands=['start'])
