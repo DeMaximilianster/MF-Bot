@@ -1,17 +1,18 @@
-from presenter.config.config_func import Database
-from telebot.types import ReplyKeyboardMarkup, ReplyKeyboardRemove
-from view.output import send, register_handler, reply
-from random import choice
-from presenter.config.log import Loger, log_to
-from random import shuffle
+"""Module for elite testing"""
 
-log = Loger(log_to)
-elite_work = True
+from random import shuffle, choice
+from telebot.types import ReplyKeyboardMarkup, ReplyKeyboardRemove
+from presenter.config.config_func import Database
+from presenter.config.log import Loger, log_to
+from view.output import send, register_handler, reply
+
+
+LOG = Loger(log_to)
 
 
 def ask_question(message, question):
     """Задаём вопрос"""
-    log.log_print("ask_question invoked")
+    LOG.log_print("ask_question invoked")
     database = Database()
     ask = database.get('basic_logic_tested',
                        ('id', message.from_user.id))[f'question_{question}']  # Получаем вопрос
@@ -29,7 +30,7 @@ def ask_question(message, question):
 
 def submit(message):  # TODO возможность отменить свои ответы
     """Подсчитывает результаты"""
-    log.log_print("submit invoked")
+    LOG.log_print("submit invoked")
     database = Database()
     markup = ReplyKeyboardRemove(selective=False)  # убираем клаву
     success = 0  # Переменная для подсчёта правильных ответов
@@ -43,11 +44,10 @@ def submit(message):  # TODO возможность отменить свои о
     # TODO В некоторые вопросы и ответы теста добавить капс лок
     # TODO Записывать результаты в elite_results
     if success >= 4:
-        send(
-            person.id,
-            "Поздравляю! Количество ваших правильных ответов ({}) достаточно для прохождения".format(
-                success),
-            reply_markup=markup)
+        send(person.id,
+             "Поздравляю! Ваше количество баллов ({}) достаточно для прохождения".format(
+                 success),
+             reply_markup=markup)
         send(
             -1001233124059, '#тест_на_логику {} ({}) [{}] осилил(а) тест со счётом {}'.format(
                 person.first_name, person.username, person.id, success))
@@ -64,28 +64,29 @@ def submit(message):  # TODO возможность отменить свои о
 
 def check(message, ques):
     """Запись ответа"""
-    log.log_print("check invoked")
+    LOG.log_print("check invoked")
     if message.text[0] == '/':
         reply(message,
               "Тест приостановлен, введите вашу команду ещё раз",
               reply_markup=ReplyKeyboardRemove(selective=False))
-        return None
-    database = Database()
-    database.change(message.text, f'answer_{ques}', 'basic_logic_tested',
-                    ('id', message.from_user.id))
-    if ques != 6:
-        ask_question(message, ques + 1)
     else:
-        submit(message)
+        database = Database()
+        database.change(message.text, f'answer_{ques}', 'basic_logic_tested',
+                        ('id', message.from_user.id))
+        if ques != 6:
+            ask_question(message, ques + 1)
+        else:
+            submit(message)
 
 
 def elite(message):  # TODO Привести эти команды в порядок
-    log.log_print("elite invoked")
+    """Start the basic logic test"""
+    LOG.log_print("elite invoked")
     database = Database()
     if database.get('basic_logic_tested', ('id', message.from_user.id)) is None:
         send(
             message.chat.id,
-            "Сейчас я буду давать вам утверждения, а вы выбирайте те, что из них логически вытекают")
+            "Сейчас я буду давать вам утверждения. Выбирайте те, что из них логически вытекают")
         person = (message.from_user.id, 'None', 'None', 'None', 'None', 'None', 'None', 'None',
                   'None', 'None', 'None', 'None', 'None', 'None')
         database.append(person, 'basic_logic_tested')
@@ -100,7 +101,7 @@ def elite(message):  # TODO Привести эти команды в поряд
             all_questions.remove(question)
     for i in range(1, 7):
         if database.get('basic_logic_tested', ('id', message.from_user.id))[
-            f'answer_{i}'] == "None":
+                f'answer_{i}'] == "None":
             ask_question(message, i)
 
             break

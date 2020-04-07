@@ -5,6 +5,7 @@ from presenter.config.log import Loger, log_to
 from presenter.config.config_func import Database, is_suitable, \
     feature_is_available, get_system_configs, create_captcha_keyboard, \
     create_chat, CaptchaBan, person_info_in_html, chat_info_in_html, html_cleaner
+import presenter.config.config_func as cf  # TODO Поменять все импорты из конфиг функа на этот
 from view.output import delete, kick, send, promote, reply, restrict
 
 LOG = Loger(log_to)
@@ -132,9 +133,5 @@ def chat_id_update(message):
     database = Database()
     old_chat = database.get('chats', ('id', message.migrate_from_chat_id))
     if old_chat:
-        chat_type = 'private'
-        link = 'None'
-        if message.chat.username:
-            chat_type = 'public'
-            link = message.chat.username
+        chat_type, link = cf.get_chat_type_and_chat_link(message.chat)
         create_chat(message, old_chat['system'], chat_type, link, database)

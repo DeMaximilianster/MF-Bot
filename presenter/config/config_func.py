@@ -6,6 +6,7 @@ import json
 import time
 from threading import Thread
 from random import shuffle
+from ast import literal_eval
 from telebot.types import InlineKeyboardButton, InlineKeyboardMarkup, CallbackQuery
 from presenter.config.config_var import BOT_ID, NEW_SYSTEM_JSON_ENTRY
 from presenter.config.database_lib import Database
@@ -300,7 +301,7 @@ def photo_video_gif_get(target_message):
 
 def int_check(string, positive):
     """Checks if string is a integet (isdigit() passes ² which crashes (int))"""
-    # TODO Replace this function with function_worked_correctly()
+    # TODO Replace this function with isdecimal
     if positive:
         if set(string) & set('0123456789') == set(string):
             return int(string)
@@ -372,16 +373,14 @@ def case_analyzer(word: str, language: str, number: str, case: str) -> str:
             if case == 'genitivus':
                 if not end:
                     return word + 'а'
-                elif end in 'аь':
+                if end in 'аь':
                     return word[:-1] + 'и'
-                else:
-                    return word[:-1] + 'ев'
+                return word[:-1] + 'ев'
         elif number == 'plural':
             if case == 'nominativus':
                 if not end:
                     return word + 'и'
-                else:
-                    return word[:-1] + 'и'
+                return word[:-1] + 'и'
             elif case == 'genitivus':
                 if not end:
                     return word + 'ов'
@@ -395,13 +394,13 @@ def case_analyzer(word: str, language: str, number: str, case: str) -> str:
 
 
 def number_to_case(number: int, language: str) -> tuple:
+    """Get case by the number"""
     if language == 'Russian':
         if number % 10 == 1 and not 10 <= number <= 20:
             return 'singular', 'nominativus'
-        elif number % 10 in (2, 3, 4):
+        if number % 10 in (2, 3, 4):
             return 'singular', 'genitivus'
-        else:
-            return 'plural', 'genitivus'
+        return 'plural', 'genitivus'
     return 'singular', 'nominativus'
 
 
@@ -409,7 +408,7 @@ def left_new_or_else_member(target_message):
     """Get the target person in leave/entering messages"""
     if target_message.new_chat_members:
         return target_message.new_chat_members[0]
-    elif target_message.left_chat_member:
+    if target_message.left_chat_member:
         return target_message.left_chat_member
     return target_message.from_user
 
@@ -441,6 +440,7 @@ class Analyzer:
         target_person = self.get_person(self.parameters_dictionary)
         if self.check_person(target_person, to_self, to_bot):
             return target_person
+        return None
 
     def get_person(self, parameters_dictionary: dict):
         """Gets possible target person"""
@@ -615,6 +615,7 @@ def is_suitable(inputed, person, command_type, system=None, loud=True):
         return rank_required(inputed, person, system, requirements[0], requirements[1], loud=loud)
     if isinstance(requirements, str):  # Requirement is a string
         return appointment_required(message, person, system, requirements, loud=loud)
+    return False
 
 
 def cooldown(message, command, timeout=3600):
@@ -682,10 +683,9 @@ def in_mf(message, command_type, or_private=True, loud=True):
         if command_type:
             if feature_is_available(chat_id, system, command_type):
                 return True
-            else:
-                if loud and not database.get('systems', ('id', system), (command_type, 0)):
-                    reply(message, "В данном чате команды такого типа не поддерживаются")
-                return False
+            if loud and not database.get('systems', ('id', system), (command_type, 0)):
+                reply(message, "В данном чате команды такого типа не поддерживаются")
+            return False
         return True
     if loud:
         text = "Люди из чата {}, в частности {} попытались мной воспользоваться"
@@ -695,6 +695,7 @@ def in_mf(message, command_type, or_private=True, loud=True):
         reply(
             message, "Hmm, I don't know this chat. Call @DeMaximilianster for help\n\n"
                      "Хмм, я не знаю этот чат. Обратитесь к @DeMaximilianster за помощью\n\n")
+    return False
 
 
 def is_correct_message(message):
@@ -749,14 +750,14 @@ def check_access_to_a_storage(message, storage_name, is_write_mode):
                 reply(message, "У вас отсутствует разрешение добавлять контент в это хранилище :-(")
                 return False
             return True
-        elif message.chat.id > 0:
+        if message.chat.id > 0:
             return True
         system = database.get('chats', ('id', message.chat.id))['system']
         if storage['is_vulgar']:
             return loud_feature_is_available(message, message.chat.id, system, 'erotic_commands')
         return loud_feature_is_available(message, message.chat.id, system, 'standart_commands')
-    else:
-        reply(message, "Хранилища '{}' не существует".format(storage_name))
+    reply(message, "Хранилища '{}' не существует".format(storage_name))
+    return False
 
 
 def counter(message, person):
@@ -898,7 +899,7 @@ def create_vote(vote_message):
     file = open(VOTES_FILE, 'r', encoding='utf-8')
     votes_shelve = file.read()
     if votes_shelve:
-        votes_shelve = eval(votes_shelve)
+        votes_shelve = literal_eval(votes_shelve)
     else:
         votes_shelve = {}
     file.close()
@@ -924,7 +925,7 @@ def create_multi_vote(vote_message):
     file = open(MULTI_VOTES_FILE, encoding='utf-8')
     votes_shelve = file.read()
     if votes_shelve:
-        votes_shelve = eval(votes_shelve)
+        votes_shelve = literal_eval(votes_shelve)
     else:
         votes_shelve = {}
     file.close()
@@ -950,7 +951,7 @@ def create_adapt_vote(vote_message):
     file = open(ADAPT_VOTES_FILE, encoding='utf-8')
     votes_shelve = file.read()
     if votes_shelve:
-        votes_shelve = eval(votes_shelve)
+        votes_shelve = literal_eval(votes_shelve)
     else:
         votes_shelve = {}
     file.close()
@@ -972,7 +973,7 @@ def update_multi_vote(vote_id):
     file = open(MULTI_VOTES_FILE, encoding='utf-8')
     votes_shelve = file.read()
     if votes_shelve:
-        votes_shelve = eval(votes_shelve)
+        votes_shelve = literal_eval(votes_shelve)
     else:
         votes_shelve = {}
     file.close()
@@ -987,15 +988,9 @@ def update_multi_vote(vote_id):
     text = votey["text"]
     for i in votey['votes']:
         text += '\n{}: '.format(i[0]) + ', '.join(i[1].values())
-    try:
-        edit_text(text=text,
-                  chat_id=votey['chat'],
-                  message_id=vote_id,
-                  reply_markup=keyboard,
-                  parse_mode="HTML",
-                  disable_web_page_preview=True)
-    except Exception as exception:
-        print(exception)
+    edit_text(text=text, chat_id=votey['chat'], message_id=vote_id,
+              reply_markup=keyboard, parse_mode="HTML",
+              disable_web_page_preview=True)
 
 
 def update_adapt_vote(vote_id):
@@ -1004,7 +999,7 @@ def update_adapt_vote(vote_id):
     file = open(ADAPT_VOTES_FILE, encoding='utf-8')
     votes_shelve = file.read()
     if votes_shelve:
-        votes_shelve = eval(votes_shelve)
+        votes_shelve = literal_eval(votes_shelve)
     else:
         votes_shelve = {}
     file.close()
@@ -1019,15 +1014,9 @@ def update_adapt_vote(vote_id):
     text = votey["text"]
     for i in votey['votes']:
         text += '\n{}: '.format(i[0]) + ', '.join(i[1].values())
-    try:
-        edit_text(text=text,
-                  chat_id=votey['chat'],
-                  message_id=vote_id,
-                  reply_markup=keyboard,
-                  parse_mode="HTML",
-                  disable_web_page_preview=True)
-    except Exception as exception:
-        print(exception)
+    edit_text(text=text, chat_id=votey['chat'], message_id=vote_id,
+              reply_markup=keyboard, parse_mode="HTML",
+              disable_web_page_preview=True)
 
 
 def unban_user(person):
@@ -1040,3 +1029,16 @@ def unban_user(person):
         member = get_member(chat['id'], person.id)
         if member and member.status in ('left', 'kicked'):
             unban(chat['id'], person.id)
+
+
+def get_chat_type_and_chat_link(chat) -> tuple:
+    """
+    :param chat: chat we are checking
+    :return: chat_type (private/public), link (@_)
+    :rtype: tuple"""
+    chat_type = 'private'
+    link = 'None'
+    if chat.username:
+        chat_type = 'public'
+        link = chat.username
+    return chat_type, link

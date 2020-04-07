@@ -32,7 +32,8 @@ def add_stuff_to_storage(message, storage_name):
                 storages_dict[storage_name]['contents'].append(insert)
                 forward(381279599, message.chat.id, rep.message_id)
                 send(381279599, f"Норм контент?) user={message.from_user.id}, "
-                                f"text={message.text}, id=<code>{insert[0]}</code>", parse_mode='HTML')
+                                f"text={message.text}, id=<code>{insert[0]}</code>",
+                     parse_mode='HTML')
                 write_storage_json(storages_dict)
                 reply(message, "ОК!")
         else:
@@ -223,15 +224,14 @@ def money_pay(message, person, parameters_dictionary):
     chat = database.get('chats', ('id', message.chat.id))
     system = chat['system']
     bot_money = database.get('systems', ('id', system))['money']
-    not_inf = bot_money != 'inf'
-    if not_inf:
+    if bot_money != 'inf':
         bot_money = int(bot_money)
     p_id = person.id
     money = parameters_dictionary['value']
     money_name = get_system_configs(system)['money_name']
-    number, case = number_to_case(abs(money), 'Russian')
+    number_and_case = number_to_case(abs(money), 'Russian')
     money_name_plural_genitivus = case_analyzer(money_name, 'Russian', 'plural', 'genitivus')
-    money_name = case_analyzer(money_name, 'Russian', number, case)
+    money_name = case_analyzer(money_name, 'Russian', *number_and_case)
     person_money = get_person(person, system, database)['money']
     if money == 0:
         reply(message, "Я вам запрещаю делать подобные бессмысленные запросы")
@@ -239,21 +239,18 @@ def money_pay(message, person, parameters_dictionary):
         money = -int(money)  # Делаем из отрицательного числа положительное
         if person_money - money >= 0:
             person_money -= money
-            if not_inf:
+            if bot_money != 'inf':
                 bot_money += money
             sent = send(p_id, f"#Финансы\n\n"
                               f"С вашего счёта было снято {money} {money_name} в банк. "
                               f"Теперь у вас {person_money}")
+            sent = cf.value_marker(sent, "🔔 уведомлён(а)", "🔕 не уведомлён(а)")
             # TODO Уточнять чат
-            if sent:
-                sent = "🔔 уведомлён(а)"
-            else:
-                sent = "🔕 не уведомлён(а)"
             reply(message,
                   'У {} забрали {} {} в банк!'.format(person_link(person), money, money_name),
                   parse_mode='HTML')
             answer = "#Финансы " + f"#f{p_id}\n\n"
-            if not_inf:
+            if bot_money != 'inf':
                 answer += f"#Бюджет [{bot_money - money} --> {bot_money}]\n"
             answer += f"{person_link(person)} [{person_money + money} --> {person_money}] {sent}"
             send(admin_place(message, database), answer, parse_mode='HTML')
@@ -261,7 +258,7 @@ def money_pay(message, person, parameters_dictionary):
             reply(message,
                   "У людей число {} должно быть больше нуля".format(money_name_plural_genitivus))
     else:
-        if not_inf and bot_money < money:
+        if bot_money != 'inf' and bot_money < money:
             reply(message, "У нас нет столько {} в банке".format(money_name_plural_genitivus))
         else:
             person_money += money
@@ -269,26 +266,24 @@ def money_pay(message, person, parameters_dictionary):
                               f"На ваш счёт было переведено {money} {money_name} из банка. "
                               f"Теперь у вас {person_money}")
             # TODO рефакторинг уведомлялки и переименование недег
-            if sent:
-                sent = "🔔 уведомлён(а)"
-            else:
-                sent = "🔕 не уведомлён(а)"
+            sent = cf.value_marker(sent, "🔔 уведомлён(а)", "🔕 не уведомлён(а)")
             reply(message,
                   '{} получил(а) из банка {} {}!'.format(person_link(person), money, money_name),
                   parse_mode='HTML')
             answer = "#Финансы " + f"#f{p_id}\n\n"
-            if not_inf:
+            if bot_money != 'inf':
                 bot_money -= money
                 answer += f"#Бюджет [{bot_money + money} --> {bot_money}]\n"
             answer += f"{person_link(person)} [{person_money - money} --> {person_money}] {sent}"
             send(admin_place(message, database), answer, parse_mode='HTML')
     database.change(person_money, 'money', 'members', ('id', p_id), ('system', system))
-    if not_inf:
+    if bot_money != 'inf':
         database.change(bot_money, 'money', 'systems', ('id', system))
     # TODO Засунуть эти зассанские уебанские денежные функции в отдельный блять модуль
 
 
 def money_reset(message):
+    """Take all users' money to a system fund"""
     database = Database()
     system = database.get('chats', ('id', message.chat.id))['system']
     system_money = database.get('systems', ('id', system))['money']
@@ -418,11 +413,7 @@ def add_chat(message):
     message_words = message.text.split()
     if len(message_words) == 2:
         system = message_words[-1]
-    chat_type = 'private'
-    link = 'None'
-    if message.chat.username:
-        chat_type = 'public'
-        link = message.chat.username
+    chat_type, link = cf.get_chat_type_and_chat_link(message.chat)
     if database.get('chats', ('id', message.chat.id)):
         reply(message, "Этот чат уже записан")
     elif system:
@@ -557,10 +548,10 @@ def money_emoji(message):
         reply(message, "После команды введите смайлик-сокращение валюты")
 
 
-def money_name(message):
+def set_money_name(message):
     """Change money's name in json"""
     # TODO Добавить проверку по падежам
-    LOG.log_print("money_name invoked")
+    LOG.log_print("set_money_name invoked")
     database = Database()
     mode = ' '.join(message.text.split()[1:])
     chat = database.get('chats', ('id', message.chat.id))

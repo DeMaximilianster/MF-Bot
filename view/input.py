@@ -322,7 +322,7 @@ def money_name_handler(message):
     LOG.log_print("money_name_handler invoked")
     if config_func.in_mf(message, command_type=None, or_private=False) and config_func.is_suitable(
             message, message.from_user, "chat_changer"):
-        boss_commands.money_name(message)
+        boss_commands.set_money_name(message)
 
 
 @BOT.message_handler(commands=config_var.FEATURES_OFFERS + config_var.FEATURES_ONERS +
