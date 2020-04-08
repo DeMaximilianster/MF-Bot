@@ -88,8 +88,7 @@ def new_member(message, member):
         sent = reply(message,
                      text,
                      reply_markup=keyboard,
-                     parse_mode='HTML',
-                     disable_web_page_preview=True)
+                     parse_mode='HTML')
     # Notify admins if admin's chat exists
     admin_place = database.get('systems', ('id', system))['admin_place']
     if admin_place:

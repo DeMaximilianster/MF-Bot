@@ -277,9 +277,9 @@ def send_some_top(message, language, format_string, start='', sort_key=lambda x:
             formating_dict['month'] = MONTHS_GENITIVE[member['month_birthday'] - 1][language]
         text += format_string.format(**formating_dict)
         if index % 50 == 0:
-            sent = send(target_chat, text, parse_mode='HTML', disable_web_page_preview=True)
+            sent = send(target_chat, text, parse_mode='HTML')
             text = ''
-    sent = send(target_chat, text, parse_mode='HTML', disable_web_page_preview=True) or sent
+    sent = send(target_chat, text, parse_mode='HTML') or sent
     if len(members) > 50:
         if sent:
             reply(message, "Выслал инфу в личку")
@@ -318,7 +318,7 @@ def send_short_top(message, language, format_string, start='', sort_key=lambda x
         elif '.\n.\n.\n' not in text and person_index >= 9:
             text += '.\n.\n.\n'
     if text:
-        send(message.chat.id, text, parse_mode='HTML', disable_web_page_preview=True)
+        send(message.chat.id, text, parse_mode='HTML')
     else:
         reply(message, "Ничего нет!")
 

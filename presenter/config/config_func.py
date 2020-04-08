@@ -989,8 +989,7 @@ def update_multi_vote(vote_id):
     for i in votey['votes']:
         text += '\n{}: '.format(i[0]) + ', '.join(i[1].values())
     edit_text(text=text, chat_id=votey['chat'], message_id=vote_id,
-              reply_markup=keyboard, parse_mode="HTML",
-              disable_web_page_preview=True)
+              reply_markup=keyboard, parse_mode="HTML")
 
 
 def update_adapt_vote(vote_id):
@@ -1015,8 +1014,7 @@ def update_adapt_vote(vote_id):
     for i in votey['votes']:
         text += '\n{}: '.format(i[0]) + ', '.join(i[1].values())
     edit_text(text=text, chat_id=votey['chat'], message_id=vote_id,
-              reply_markup=keyboard, parse_mode="HTML",
-              disable_web_page_preview=True)
+              reply_markup=keyboard, parse_mode="HTML")
 
 
 def unban_user(person):
