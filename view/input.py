@@ -1,6 +1,6 @@
 """ All bot message and call handlers are here """
 from presenter.config.token import BOT
-from presenter.config.log import Loger, log_to
+from presenter.config.log import Logger, log_to
 from view import output
 from presenter.config import config_func
 from presenter.logic import (boss_commands, complicated_commands, reactions, standart_commands,
@@ -9,7 +9,7 @@ from presenter.config import config_var, files_paths
 from presenter.logic.elite import elite
 from presenter.logic.start import starter
 
-LOG = Loger(log_to)
+LOG = Logger(log_to)
 WORK = True
 
 
@@ -91,7 +91,7 @@ def create_new_storage_handler(message):
     analyzer = config_func.Analyzer(message, value_necessary=False)
     storage_name = analyzer.parameters_dictionary['comment']
     if config_func.in_mf(message, command_type=None):
-        if message.from_user.id == 381279599:
+        if message.from_user.id == config_var.CREATOR_ID:
             if storage_name:
                 boss_commands.create_new_storage(message, storage_name, False)
             else:
@@ -107,7 +107,7 @@ def create_new_vulgar_storage_handler(message):
     analyzer = config_func.Analyzer(message, value_necessary=False)
     storage_name = analyzer.parameters_dictionary['comment']
     if config_func.in_mf(message, command_type=None):
-        if message.from_user.id == 381279599:
+        if message.from_user.id == config_var.CREATOR_ID:
             if storage_name:
                 boss_commands.create_new_storage(message, storage_name, True)
             else:
@@ -125,7 +125,7 @@ def add_moderator_to_storage_handler(message):
     storage_name = analyzer.parameters_dictionary['comment']
     if config_func.in_mf(message, command_type=None) and person and \
             config_func.check_access_to_a_storage(message, storage_name, False):
-        if message.from_user.id == 381279599:
+        if message.from_user.id == config_var.CREATOR_ID:
             # TODO function is_demax, checks if demax uses it + says if it is demax only
             boss_commands.add_moderator_to_storage(message, storage_name, person.id)
         else:
@@ -141,7 +141,7 @@ def remove_moderator_from_storage_handler(message):
     storage_name = analyzer.parameters_dictionary['comment']
     if config_func.in_mf(message, command_type=None) and person and \
             config_func.check_access_to_a_storage(message, storage_name, False):
-        if message.from_user.id == 381279599:
+        if message.from_user.id == config_var.CREATOR_ID:
             boss_commands.remove_moderator_from_storage(message, storage_name, person.id)
         else:
             output.reply(message, "Эта команда только для моего хозяина")
@@ -242,7 +242,7 @@ def rank_changer_handler(message):
     LOG.log_print("rank_changer_handler invoked")
     if config_func.in_mf(message, command_type=None, or_private=False):
         # TODO Сделать так, чтоб добавлять можно было только лидера
-        if message.from_user.id == 381279599:
+        if message.from_user.id == config_var.CREATOR_ID:
             person = config_func.Analyzer(message, value_necessary=False).return_target_person()
             if person:
                 boss_commands.rank_changer(message, person)
@@ -610,7 +610,11 @@ def send_stuff_from_storage_handler(message):
     storage_name = analyzer.parameters_dictionary['comment']
     if config_func.in_mf(message, 'standart_commands') and config_func.check_access_to_a_storage(
             message, storage_name, False) and config_func.cooldown(message, storage_name, timeout=300):
-        standart_commands.send_stuff_from_storage(message, storage_name)
+        if "value" in analyzer.parameters_dictionary:
+            stuff_number = analyzer.parameters_dictionary["value"]
+            standart_commands.send_numbered_stuff_from_storage(message, storage_name, stuff_number)
+        else:
+            standart_commands.send_random_stuff_from_storage(message, storage_name)
 
 
 @BOT.message_handler(commands=['size'])
@@ -620,7 +624,7 @@ def check_storage_size_handler(message):
     analyzer = config_func.Analyzer(message, value_necessary=False)
     storage_name = analyzer.parameters_dictionary['comment']
     if config_func.in_mf(message, 'standart_commands') and config_func.check_access_to_a_storage(
-            message, storage_name, False):
+            message, storage_name, False, to_check_vulgarity=False):
         standart_commands.check_storage_size(message, storage_name)
 
 
@@ -810,9 +814,9 @@ def anon_message_handler(message):
 
 @BOT.message_handler(commands=['test'])
 def database_send_handler(message):
-    """ Send all databases to creator """
+    """ Send all databases to config_var.CREATOR_ID """
     LOG.log_print('database_send_handler invoked')
-    if message.chat.id == 381279599:
+    if message.chat.id == config_var.CREATOR_ID:
         for file in (
         files_paths.DATABASE_FILE, files_paths.VOTES_FILE, files_paths.ADAPT_VOTES_FILE,
         files_paths.MULTI_VOTES_FILE, files_paths.SYSTEMS_FILE,
@@ -825,7 +829,7 @@ def database_send_handler(message):
 @BOT.message_handler(commands=['error'])
 def simulate_error_handler(message):
     """Simulates an error"""
-    if message.from_user.id == 381279599:
+    if message.from_user.id == config_var.CREATOR_ID:
         developer_commands.simulate_error(message)
     else:
         output.reply(message, "Эта команда только для моего хозяина")

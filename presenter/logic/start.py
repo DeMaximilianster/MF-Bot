@@ -1,27 +1,27 @@
 # -*- coding: utf-8 -*-
 """Special module for all /start commands"""
 from view.output import send, reply, register_handler
-from presenter.config.log import Loger, log_to
+from presenter.config.log import Logger, log_to
 import presenter.config.files_paths as files
-from presenter.config.config_var import ADEQUATE_KEYBOARD, ADAPT_ADEQUATE_KEYBOARD
+from presenter.config.config_var import ADEQUATE_KEYBOARD, ADAPT_ADEQUATE_KEYBOARD, CREATOR_ID
 from presenter.config.config_func import language_analyzer
 
 WORK = True
 
-LOG = Loger(log_to)
+LOG = Logger(log_to)
 
 
 def new_option(message, vote_id):
     """Send option to De'Max to check if it's adequate"""
     LOG.log_print(str(message.from_user.id) + ": new_option invoked")
-    send(381279599, "[{}, '{}']".format(vote_id, message.text), reply_markup=ADEQUATE_KEYBOARD)
+    send(CREATOR_ID, "[{}, '{}']".format(vote_id, message.text), reply_markup=ADEQUATE_KEYBOARD)
     reply(message, "Ваше мнение выслано на проверку")
 
 
 def new_adapt_option(message, vote_id):
     """Send option to De'Max to check if it's adequate"""
     LOG.log_print(str(message.from_user.id) + ": new_adapt_option invoked")
-    send(381279599, "[{}, '{}']".format(vote_id, message.text),
+    send(CREATOR_ID, "[{}, '{}']".format(vote_id, message.text),
          reply_markup=ADAPT_ADEQUATE_KEYBOARD)
     reply(message, "Ваше мнение выслано на проверку")
 

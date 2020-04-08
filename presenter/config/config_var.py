@@ -1,15 +1,17 @@
 # -*- coding: utf-8 -*-
 """Module with important constants"""
 from telebot.types import InlineKeyboardButton, InlineKeyboardMarkup
-from presenter.config.log import Loger, log_to
+from presenter.config.log import Logger, log_to
 from presenter.config.texts import JANUARY, FEBRUARY, MARCH, APRIL, MAY, \
     JUNE, JULY, AUGUST, SEPTEMBER, OCTOBER, NOVEMBER, DECEMBER
 
-LOG = Loger(log_to)
+LOG = Logger(log_to)
+
+CREATOR_ID = 388661254 #381279599
 
 BOT_ID = 575704111
-PORN_ADDERS = (918715899, 381279599, 711157379)
-STUFF_ADDERS = (918715899, 381279599, 432348248)
+PORN_ADDERS = (918715899, CREATOR_ID, 711157379)
+STUFF_ADDERS = (918715899, CREATOR_ID, 432348248)
 
 ORIGINAL_TO_ENGLISH = {'Русский': 'Russian', 'English': 'English'}
 ENGLISH_TO_ORIGINAL = {'Russian': 'Русский', 'English': 'English'}

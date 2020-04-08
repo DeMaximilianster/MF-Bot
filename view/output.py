@@ -4,7 +4,7 @@ from telebot.apihelper import ApiException
 from presenter.config.token import BOT
 import presenter.config.log as log
 
-LOG = log.Loger(log.LOG_TO_CONSOLE)
+LOG = log.Logger(log.LOG_TO_CONSOLE)
 
 
 def send(chat_id, message_text, **kwargs):

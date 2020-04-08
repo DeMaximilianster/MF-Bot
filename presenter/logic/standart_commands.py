@@ -9,10 +9,10 @@ from presenter.config.config_func import member_update, int_check, \
 from presenter.config.database_lib import Database
 from presenter.config.config_var import admin_place, ORIGINAL_TO_ENGLISH, ENGLISH_TO_ORIGINAL, \
     MONTHS_GENITIVE, MONTHS_PREPOSITIONAL, FEATURES, FEATURES_TEXTS
-from presenter.config.log import Loger
+from presenter.config.log import Logger
 from presenter.config.texts import MINETS
 
-LOG = Loger()
+LOG = Logger()
 
 
 def language_setter(message):
@@ -66,7 +66,8 @@ def helper(message):
         answer += '/system - Показать настройки по умолчанию\n\n'\
                   '<b>Хранилище:</b>\n'\
                   '/storages - Посмотреть список хранилищ\n'\
-                  '/get [хранилище] - Получать случайный контент из хранилища\n'\
+                  '/get [хранилище] [номер] - Получать контент из хранилища, если номер не указан, '\
+                  'будет прислан случайный контент из хранилища\n'\
                   '/size [хранилище] - Получить инфо о количестве контента и модеров хранилища\n\n'
         if feature_is_available(message.chat.id, system, 'standart_commands'):
             answer += '<b>Развлекательные команды:</b>\n'
@@ -174,12 +175,38 @@ def minet(message, language):
             send_sticker(message.chat.id, rep, reply_to_message_id=message.message_id)
 
 
-def send_stuff_from_storage(message, storage_name):
-    """Send a piece of media from a storage"""
-    LOG.log_print("send_stuff_from_storage invoked")
+def send_random_stuff_from_storage(message, storage_name):
+    """Send a random piece of media from a storage"""
+    LOG.log_print("send_random_stuff_from_storage invoked")
     contents = get_list_from_storage(storage_name)['contents']
     if len(contents) > 0:
         result = choice(contents)
+        args_to_send = [message.chat.id, result[0]]
+        kwargs_to_send = {'reply_to_message_id': message.message_id,
+                          'caption': result[2], 'parse_mode': 'HTML'}
+        if result[1] == 'photo':
+            send_photo(*args_to_send, **kwargs_to_send)
+        elif result[1] == 'video':
+            send_video(*args_to_send, **kwargs_to_send)
+        elif result[1] == 'gif':
+            send_document(*args_to_send, **kwargs_to_send)
+        else:
+            reply(message, "Произошла ошибка!")
+    else:
+        reply(message, "На данный момент хранилище пусто :-(")
+
+
+def send_numbered_stuff_from_storage(message, storage_name, stuff_number):
+    """Send a numbered piece of media from a storage"""
+    LOG.log_print("send_numbered_stuff_from_storage invoked")
+    contents = get_list_from_storage(storage_name)['contents']
+    if len(contents) > 0:
+        try:
+            result = contents[stuff_number]
+        except IndexError:
+            reply(message, "Не вижу такого номера в этом хранилище :-(")
+            return # ничего не возвращает, но досрочно завершает работу функции
+        
         args_to_send = [message.chat.id, result[0]]
         kwargs_to_send = {'reply_to_message_id': message.message_id,
                           'caption': result[2], 'parse_mode': 'HTML'}

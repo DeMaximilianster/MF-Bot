@@ -2,9 +2,9 @@
 
 import sqlite3
 from presenter.config.files_paths import DATABASE_FILE
-from presenter.config.log import Loger, log_to
+from presenter.config.log import Logger, log_to
 
-LOG = Loger(log_to)
+LOG = Logger(log_to)
 
 
 class Database:

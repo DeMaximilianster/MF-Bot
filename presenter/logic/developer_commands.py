@@ -5,10 +5,10 @@ from time import ctime, time
 from presenter.config.config_func import time_replace, entities_saver, get_text_and_entities, \
     get_target_message, value_marker
 from presenter.config.config_func import code_text_wrapper as cd
-from presenter.config.log import Loger
+from presenter.config.log import Logger
 from view.output import reply, get_me, get_member
 
-LOG = Loger()
+LOG = Logger()
 
 
 def show_id(message):

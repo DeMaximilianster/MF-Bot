@@ -4,6 +4,7 @@
 #  from urllib3.exceptions import NewConnectionError, MaxRetryError, ReadTimeoutError
 import view.input
 from presenter.config.token import INFINITE_MODE, BOT
+from presenter.config.config_var import CREATOR_ID
 from presenter.config.config_func import update_old_systems_json
 
 print(view.input.WORK)
@@ -12,17 +13,17 @@ update_old_systems_json()
 if INFINITE_MODE:
     while True:
         try:
-            BOT.send_message(381279599, "Приступаю к работе в бесконечном режиме, босс!")
+            BOT.send_message(CREATOR_ID, "Приступаю к работе в бесконечном режиме, босс!")
             BOT.infinity_polling()  # Запуск бота
         except Exception as e:
-            BOT.send_message(381279599, "Меня подкосило исключение:\n\n"+str(e))
+            BOT.send_message(CREATOR_ID, "Меня подкосило исключение:\n\n"+str(e))
 else:
     #  telebot.logger.setLevel("DEBUG")  # Иногда помогает, но обычно не нужна
     try:
-        BOT.send_message(381279599, "Приступаю к работе, босс!")
+        BOT.send_message(CREATOR_ID, "Приступаю к работе, босс!")
         BOT.polling(none_stop=True)
     except Exception as e:
-        BOT.send_message(381279599, "Меня подкосило исключение:\n\n" + str(e))
+        BOT.send_message(CREATOR_ID, "Меня подкосило исключение:\n\n" + str(e))
 
 # TODO провокацио-голосовашки и оск-голосовашки
 # TODO Антифлуд механизм

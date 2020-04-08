@@ -8,15 +8,16 @@ from threading import Thread
 from random import shuffle
 from ast import literal_eval
 from telebot.types import InlineKeyboardButton, InlineKeyboardMarkup, CallbackQuery
-from presenter.config.config_var import BOT_ID, NEW_SYSTEM_JSON_ENTRY
+from presenter.config.config_var import BOT_ID, NEW_SYSTEM_JSON_ENTRY, CREATOR_ID
 from presenter.config.database_lib import Database
 from presenter.config.files_paths import ADAPT_VOTES_FILE, MULTI_VOTES_FILE, VOTES_FILE, \
     SYSTEMS_FILE, STORAGE_FILE
-from presenter.config.log import Loger
+from presenter.config.log import Logger
 from view.output import reply, kick, answer_callback, send, edit_text, edit_markup, get_member, \
-    unban, get_chat
+    unban, get_chat, get_me
 
-LOG = Loger()
+
+LOG = Logger()
 CAPTCHERS = []
 
 
@@ -662,7 +663,7 @@ def in_mf(message, command_type, or_private=True, loud=True):
     person = left_new_or_else_member(message)
     if message.chat.id > 0:
         if loud and not or_private:
-            send(381279599,
+            send(CREATOR_ID,
                  "Некто {} попыталcя использовать команду {} в личке".format(
                      person_info_in_html(message.from_user), message.text),
                  parse_mode='HTML')
@@ -689,7 +690,7 @@ def in_mf(message, command_type, or_private=True, loud=True):
         return True
     if loud:
         text = "Люди из чата {}, в частности {} попытались мной воспользоваться"
-        send(381279599,
+        send(CREATOR_ID,
              text.format(chat_info_in_html(message.chat), person_info_in_html(message.from_user)),
              parse_mode='HTML')
         reply(
@@ -701,7 +702,7 @@ def in_mf(message, command_type, or_private=True, loud=True):
 def is_correct_message(message):
     """ Checks if a command has been sent to this bot or if the command is not a forwarding """
     cmd = message.text.split("@")
-    return not message.forward_from and (len(cmd) == 1 or cmd[1] == "MultiFandomRuBot")
+    return not message.forward_from and (len(cmd) == 1 or cmd[1] == get_me().username)
 
 
 def in_system_commands(message):
@@ -739,7 +740,7 @@ def loud_feature_is_available(message, chat_id, system, command_type):
     return is_available
 
 
-def check_access_to_a_storage(message, storage_name, is_write_mode):
+def check_access_to_a_storage(message, storage_name, is_write_mode, to_check_vulgarity=True):
     """Checks if some storage can be accessed"""
     database = Database()
     storages_dict = get_storage_json()
@@ -753,7 +754,7 @@ def check_access_to_a_storage(message, storage_name, is_write_mode):
         if message.chat.id > 0:
             return True
         system = database.get('chats', ('id', message.chat.id))['system']
-        if storage['is_vulgar']:
+        if to_check_vulgarity and storage['is_vulgar']:
             return loud_feature_is_available(message, message.chat.id, system, 'erotic_commands')
         return loud_feature_is_available(message, message.chat.id, system, 'standart_commands')
     reply(message, "Хранилища '{}' не существует".format(storage_name))

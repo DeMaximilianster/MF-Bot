@@ -5,8 +5,8 @@ and that require some special ranks
 from time import time
 
 from presenter.config.database_lib import Database
-from presenter.config.config_var import full_chat_list, channel_list, BOT_ID, admin_place, chat_list
-from presenter.config.log import Loger, log_to
+from presenter.config.config_var import full_chat_list, channel_list, BOT_ID, admin_place, chat_list, CREATOR_ID
+from presenter.config.log import Logger, log_to
 from presenter.config.config_func import unban_user, is_suitable, int_check, \
     get_system_configs, photo_video_gif_get, get_target_message, number_to_case, \
     update_systems_json, create_system, create_chat, SystemUpdate, case_analyzer, \
@@ -15,7 +15,7 @@ from presenter.config.config_func import unban_user, is_suitable, int_check, \
 import presenter.config.config_func as cf  # TODO Поменять все импорты из конфиг функа на этот
 from view.output import kick, reply, promote, send, forward, restrict
 
-LOG = Loger(log_to)
+LOG = Logger(log_to)
 
 
 def add_stuff_to_storage(message, storage_name):
@@ -30,8 +30,8 @@ def add_stuff_to_storage(message, storage_name):
                 reply(message, "У меня это уже есть)")
             else:
                 storages_dict[storage_name]['contents'].append(insert)
-                forward(381279599, message.chat.id, rep.message_id)
-                send(381279599, f"Норм контент?) user={message.from_user.id}, "
+                forward(CREATOR_ID, message.chat.id, rep.message_id)
+                send(CREATOR_ID, f"Норм контент?) user={message.from_user.id}, "
                                 f"text={message.text}, id=<code>{insert[0]}</code>",
                      parse_mode='HTML')
                 write_storage_json(storages_dict)
@@ -62,7 +62,7 @@ def create_new_storage(message, storage_mame, is_vulgar):
     LOG.log_print('create_new_storage invoked')
     storages_dict = get_storage_json()
     if storage_mame not in storages_dict.keys():
-        new_storage = {'is_vulgar': is_vulgar, 'moders': [381279599], 'contents': []}
+        new_storage = {'is_vulgar': is_vulgar, 'moders': [CREATOR_ID], 'contents': []}
         storages_dict[storage_mame] = new_storage
         write_storage_json(storages_dict)
         vulgar_text = ' вульгарное' if is_vulgar else ''
@@ -428,7 +428,7 @@ def add_chat(message):
                 reply(message, "У вас в этой системе нет полномочий для добавления чатов в неё)")
         else:
             reply(message, "Такой системы не существует")
-    elif message.from_user.id in [381279599]:  # Creating new system if adder is an MF diplomate
+    elif message.from_user.id in [CREATOR_ID]:  # Creating new system if adder is an MF diplomate
         all_systems = database.get_all('systems', 'id')
         ids = [int(sys['id']) for sys in all_systems]
         new_id = str(max(ids) + 1)

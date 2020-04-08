@@ -11,7 +11,7 @@ LOG_BOTH = 0  # Записать и в файл, и в консоль
 log_to = LOG_BOTH
 
 
-class Loger:
+class Logger:
     def __init__(self, log_place=2):
         self.log_place = log_place
         self.log_files = LOG_FILES
@@ -24,7 +24,7 @@ class Loger:
         year, month, day, hour, minute, second, *_ = self.time_now()
 
         for arg in args:
-            date = f'[{day}.{month}.{year}|{hour:0>2}:{minute:0>2}:{second:0>2}]'
+            date = f'[{day:0>2}.{month:0>2}.{year}|{hour:0>2}:{minute:0>2}:{second:0>2}]'
             if isinstance(arg, Exception):
                 temp = StringIO()
                 print_exc(file=temp)
