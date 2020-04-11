@@ -81,7 +81,7 @@ def reply(message, message_text, **kwargs):
     :key reply_markup"""
     LOG.log_print("reply invoked")
     try:
-        return BOT.reply_to(message, message_text, disable_web_page_preview=True, **kwargs)
+        return BOT.reply_to(message, str(message_text), disable_web_page_preview=True, **kwargs)
     except ApiException as exception:
         LOG.log_print(exception)
 

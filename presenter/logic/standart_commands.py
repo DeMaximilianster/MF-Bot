@@ -1,6 +1,8 @@
 """Standart commands, available for everyone"""
 # -*- coding: utf-8 -*-
 from random import choice
+from collections import Counter, defaultdict
+
 from view.output import reply, send_photo, send_sticker, send, send_video, send_document
 from presenter.config.config_func import member_update, int_check, \
     is_suitable, feature_is_available, get_system_configs, get_systems_json, get_person, \
@@ -221,6 +223,39 @@ def send_numbered_stuff_from_storage(message, storage_name, stuff_number):
     else:
         reply(message, "На данный момент хранилище пусто :-(")
 
+def number_to_intcase(amount):
+    """ converts number of items to number of case """
+    if 10 < amount < 20:
+        return 2
+    last_number = amount % 10
+    if last_number == 1:
+        return 0
+    elif last_number in (2, 3, 4):
+        return 1
+    else:
+        return 2
+
+
+def dict_to_natural_language(d):
+    translate_dict = defaultdict(
+        lambda:(['???']*3),
+        {
+            'photo': ['фото'] * 3,
+            'video': ['видео'] * 3,
+            'gif': ['гифка', 'гифки', 'гифок'],
+        }
+    )
+    if len(d) == 0:
+        return ""
+    elif len(d) == 1:
+        key = tuple(d.keys())[0]
+        return f"все из них {translate_dict[key][1]}"
+    else:
+        media_list = []
+        for key, value in d.items():
+            media_list.append(f"{value} {translate_dict[key][number_to_intcase(value)]}")
+        return 'из них ' + ', '.join(media_list[:-1]) + ' и ' + media_list[-1]
+
 
 def check_storage_size(message, storage_name):
     """ Checks how many moderators and how much media there is in a storage """
@@ -229,8 +264,14 @@ def check_storage_size(message, storage_name):
     moderators_number = len(storage['moders'])
     media_number = len(storage['contents'])
     moderator = case_analyzer('модератор', 'Russian', *number_to_case(moderators_number, 'Russian'))
-    reply(message, "На данный момент в хранилище {} {} медиа и {} {}".format(
-        storage_name, media_number, moderators_number, moderator))
+    
+    descr = dict_to_natural_language(Counter(map(lambda x: x[1],storage['contents'])))
+    if descr:
+        reply(message, "На данный момент в хранилище {} {} {} и {} медиа, {}".format(
+            storage_name, moderators_number, moderator, media_number, descr))
+    else:
+        reply(message, "На данный момент в хранилище {} {} {} и {} медиа".format(
+            storage_name, moderators_number, moderator, media_number))
 
 
 def send_meme(message):
