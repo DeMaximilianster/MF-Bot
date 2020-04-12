@@ -1,4 +1,6 @@
 """ All bot message and call handlers are here """
+from random import shuffle
+
 from presenter.config.token import BOT
 from presenter.config.log import Logger, log_to
 from view import output
@@ -12,6 +14,25 @@ from presenter.logic.start import starter
 LOG = Logger(log_to)
 WORK = True
 
+
+# лотерея
+
+@BOT.message_handler(commands=['lottery'])
+def lottery_handler(message):
+    """ make a lottery """
+    LOG.log_print("lottery_handler invoked")
+    analyzer = config_func.Analyzer(message, value_necessary=False)
+    members = analyzer.parameters_dictionary['comment'].split()
+    if not members:
+        output.reply(message, 'Пожалуйста, напишите список участников и количество победителей если надо')
+    shuffle(members)
+    if 'value' in analyzer.parameters_dictionary:
+        winners_count = analyzer.parameters_dictionary['value']
+        winners_list = members[:winners_count]
+    else:
+        winners_list = members
+    out = '\n'.join(f'{i + 1}. {j}' for i, j in enumerate(winners_list))
+    output.reply(message, out)
 
 # Реакции на медиа, новых участников и выход участников
 
