@@ -109,8 +109,7 @@ def non_ironic(call):
     send(admin_place(call.message, Database()),
          "Произошло оскорбление! " + "[Ссылка на инцидент](t.me/{}/{})".format(
              call.message.reply_to_message.chat.username, call.message.reply_to_message.message_id),
-         parse_mode="Markdown",
-         disable_web_page_preview=True)
+         parse_mode="Markdown")
     answer_callback(call.id)
 
 
@@ -265,8 +264,7 @@ def add_vote(call):
               chat_id=call.message.chat.id,
               message_id=call.message.message_id,
               reply_markup=reply_markup,
-              parse_mode="HTML",
-              disable_web_page_preview=True)
+              parse_mode="HTML")
     answer_callback(call.id, text="Жмак учтён!")
 
 
