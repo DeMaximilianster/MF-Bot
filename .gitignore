@@ -12,3 +12,5 @@
 
 #игнор настроек PyCharm
 /.idea
+/.idea/
+/idea/*
