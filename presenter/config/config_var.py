@@ -1,11 +1,11 @@
 # -*- coding: utf-8 -*-
 """Module with important constants"""
 from telebot.types import InlineKeyboardButton, InlineKeyboardMarkup
-from presenter.config.log import Logger, log_to
+from presenter.config.log import Logger, LOG_TO
 from presenter.config.texts import JANUARY, FEBRUARY, MARCH, APRIL, MAY, \
     JUNE, JULY, AUGUST, SEPTEMBER, OCTOBER, NOVEMBER, DECEMBER
 
-LOG = Logger(log_to)
+LOG = Logger(LOG_TO)
 
 CREATOR_ID = 381279599
 

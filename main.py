@@ -11,19 +11,12 @@ print(view.input.WORK)
 
 update_old_systems_json()
 if INFINITE_MODE:
-    while True:
-        try:
-            BOT.send_message(CREATOR_ID, "Приступаю к работе в бесконечном режиме, босс!")
-            BOT.infinity_polling()  # Запуск бота
-        except Exception as e:
-            BOT.send_message(CREATOR_ID, "Меня подкосило исключение:\n\n"+str(e))
+    BOT.send_message(CREATOR_ID, "Приступаю к работе в бесконечном режиме, босс!")
+    BOT.infinity_polling()  # Запуск бота
 else:
     #  telebot.logger.setLevel("DEBUG")  # Иногда помогает, но обычно не нужна
-    try:
-        BOT.send_message(CREATOR_ID, "Приступаю к работе, босс!")
-        BOT.polling(none_stop=True)
-    except Exception as e:
-        BOT.send_message(CREATOR_ID, "Меня подкосило исключение:\n\n" + str(e))
+    BOT.send_message(CREATOR_ID, "Приступаю к работе, босс!")
+    BOT.polling(none_stop=True)
 
 # TODO провокацио-голосовашки и оск-голосовашки
 # TODO Антифлуд механизм
@@ -39,6 +32,7 @@ else:
 # TODO Тэги в хранилище
 # TODO Панелька для выключения/включения тех или иных уведомлений в админском чате
 # TODO Апгрейд хранилища до возможности организовать цитатник
-# TODO при использовании команды /messages бот должен включать функцию update_person или как она там называется
+# TODO при использовании команды /messages бот должен включать функцию
+#  update_person или как она там называется
 # TODO добавить в counter инкремент главного счётчика сообщений
 # TODO Слежение за юзеркой и ником чела. Хранить всю историю и время обнаружения изменений

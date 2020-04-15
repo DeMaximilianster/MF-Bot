@@ -12,10 +12,10 @@ from presenter.config.config_var import TEST_KEYBOARD, IRONIC_KEYBOARD, \
     VOTE_KEYBOARD, admin_place
 from presenter.config.database_lib import Database
 from presenter.config.files_paths import MULTI_VOTES_FILE, ADAPT_VOTES_FILE, VOTES_FILE
-from presenter.config.log import Logger, log_to
+from presenter.config.log import Logger, LOG_TO
 
 
-LOG = Logger(log_to)
+LOG = Logger(LOG_TO)
 WORK = True
 
 

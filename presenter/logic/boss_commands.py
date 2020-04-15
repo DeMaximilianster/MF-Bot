@@ -5,8 +5,9 @@ and that require some special ranks
 from time import time
 
 from presenter.config.database_lib import Database
-from presenter.config.config_var import full_chat_list, channel_list, BOT_ID, admin_place, chat_list, CREATOR_ID
-from presenter.config.log import Logger, log_to
+from presenter.config.config_var import full_chat_list, channel_list, BOT_ID, \
+    admin_place, chat_list, CREATOR_ID
+from presenter.config.log import Logger, LOG_TO
 from presenter.config.config_func import unban_user, is_suitable, int_check, \
     get_system_configs, photo_video_gif_get, get_target_message, number_to_case, \
     update_systems_json, create_system, create_chat, SystemUpdate, case_analyzer, \
@@ -15,7 +16,7 @@ from presenter.config.config_func import unban_user, is_suitable, int_check, \
 import presenter.config.config_func as cf  # TODO Поменять все импорты из конфиг функа на этот
 from view.output import kick, reply, promote, send, forward, restrict
 
-LOG = Logger(log_to)
+LOG = Logger(LOG_TO)
 
 
 def add_stuff_to_storage(message, storage_name):
@@ -32,7 +33,7 @@ def add_stuff_to_storage(message, storage_name):
                 storages_dict[storage_name]['contents'].append(insert)
                 forward(CREATOR_ID, message.chat.id, rep.message_id)
                 send(CREATOR_ID, f"Норм контент?) user={message.from_user.id}, "
-                                f"text={message.text}, id=<code>{insert[0]}</code>",
+                     f"text={message.text}, id=<code>{insert[0]}</code>",
                      parse_mode='HTML')
                 write_storage_json(storages_dict)
                 reply(message, "ОК!")

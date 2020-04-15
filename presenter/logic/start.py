@@ -1,14 +1,14 @@
 # -*- coding: utf-8 -*-
 """Special module for all /start commands"""
 from view.output import send, reply, register_handler
-from presenter.config.log import Logger, log_to
+from presenter.config.log import Logger, LOG_TO
 import presenter.config.files_paths as files
 from presenter.config.config_var import ADEQUATE_KEYBOARD, ADAPT_ADEQUATE_KEYBOARD, CREATOR_ID
 from presenter.config.config_func import language_analyzer
 
 WORK = True
 
-LOG = Logger(log_to)
+LOG = Logger(LOG_TO)
 
 
 def new_option(message, vote_id):

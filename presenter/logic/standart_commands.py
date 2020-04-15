@@ -68,8 +68,8 @@ def helper(message):
         answer += '/system - Показать настройки по умолчанию\n\n'\
                   '<b>Хранилище:</b>\n'\
                   '/storages - Посмотреть список хранилищ\n'\
-                  '/get [хранилище] [номер] - Получать контент из хранилища, если номер не указан, '\
-                  'будет прислан случайный контент из хранилища\n'\
+                  '/get [хранилище] [номер] - Получать контент из хранилища,' \
+                  'если номер не указан, будет прислан случайный контент из хранилища\n'\
                   '/size [хранилище] - Получить инфо о количестве контента и модеров хранилища\n\n'
         if feature_is_available(message.chat.id, system, 'standart_commands'):
             answer += '<b>Развлекательные команды:</b>\n'
@@ -209,8 +209,7 @@ def send_numbered_stuff_from_storage(message, storage_name, stuff_number):
             result = contents[stuff_number]
         except IndexError:
             reply(message, "Не вижу такого номера в этом хранилище :-(")
-            return # ничего не возвращает, но досрочно завершает работу функции
-        
+            return  # ничего не возвращает, но досрочно завершает работу функции
         args_to_send = [message.chat.id, result[0]]
         kwargs_to_send = {'reply_to_message_id': message.message_id,
                           'caption': result[2], 'parse_mode': 'HTML'}
@@ -225,6 +224,7 @@ def send_numbered_stuff_from_storage(message, storage_name, stuff_number):
     else:
         reply(message, "На данный момент хранилище пусто :-(")
 
+
 def number_to_intcase(amount):
     """ converts number of items to number of case """
     if 10 < amount < 20:
@@ -232,31 +232,34 @@ def number_to_intcase(amount):
     last_number = amount % 10
     if last_number == 1:
         return 0
-    elif last_number in (2, 3, 4):
+    if last_number in (2, 3, 4):
         return 1
-    else:
-        return 2
+    return 2
 
 
-def dict_to_natural_language(d):
+def dict_to_natural_language(counter_dictionary):
+    """
+
+    :param counter_dictionary: Counter dictionary {'photo': 13, ...}
+    :return: description of the dictionary
+    """
     translate_dict = defaultdict(
-        lambda:(['???']*3),
+        lambda: (['???']*3),
         {
             'photo': ['фото'] * 3,
             'video': ['видео'] * 3,
             'gif': ['гифка', 'гифки', 'гифок'],
         }
     )
-    if len(d) == 0:
+    if len(counter_dictionary) == 0:
         return ""
-    elif len(d) == 1:
-        key = tuple(d.keys())[0]
+    if len(counter_dictionary) == 1:
+        key = tuple(counter_dictionary.keys())[0]
         return f"все из них {translate_dict[key][1]}"
-    else:
-        media_list = []
-        for key, value in d.items():
-            media_list.append(f"{value} {translate_dict[key][number_to_intcase(value)]}")
-        return 'из них ' + ', '.join(media_list[:-1]) + ' и ' + media_list[-1]
+    media_list = []
+    for key, value in counter_dictionary.items():
+        media_list.append(f"{value} {translate_dict[key][number_to_intcase(value)]}")
+    return 'из них ' + ', '.join(media_list[:-1]) + ' и ' + media_list[-1]
 
 
 def check_storage_size(message, storage_name):
@@ -266,8 +269,8 @@ def check_storage_size(message, storage_name):
     moderators_number = len(storage['moders'])
     media_number = len(storage['contents'])
     moderator = case_analyzer('модератор', 'Russian', *number_to_case(moderators_number, 'Russian'))
-    
-    descr = dict_to_natural_language(Counter(map(lambda x: x[1],storage['contents'])))
+
+    descr = dict_to_natural_language(Counter(map(lambda x: x[1], storage['contents'])))
     if descr:
         reply(message, "На данный момент в хранилище {} {} {} и {} медиа, {}".format(
             storage_name, moderators_number, moderator, media_number, descr))

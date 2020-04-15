@@ -3,11 +3,11 @@
 from random import shuffle, choice
 from telebot.types import ReplyKeyboardMarkup, ReplyKeyboardRemove
 from presenter.config.config_func import Database
-from presenter.config.log import Logger, log_to
+from presenter.config.log import Logger, LOG_TO
 from view.output import send, register_handler, reply
 
 
-LOG = Logger(log_to)
+LOG = Logger(LOG_TO)
 
 
 def ask_question(message, question):

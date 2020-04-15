@@ -1,14 +1,14 @@
 # -*- coding: utf-8 -*-
 """Module with reactions bot does if there's no certain command"""
 from time import time
-from presenter.config.log import Logger, log_to
+from presenter.config.log import Logger, LOG_TO
 from presenter.config.config_func import Database, is_suitable, \
     feature_is_available, get_system_configs, create_captcha_keyboard, \
     create_chat, CaptchaBan, person_info_in_html, chat_info_in_html, html_cleaner
 import presenter.config.config_func as cf  # TODO Поменять все импорты из конфиг функа на этот
 from view.output import delete, kick, send, promote, reply, restrict
 
-LOG = Logger(log_to)
+LOG = Logger(LOG_TO)
 
 
 def trigger(message):

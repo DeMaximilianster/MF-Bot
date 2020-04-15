@@ -2,36 +2,29 @@
 from random import shuffle
 
 from presenter.config.token import BOT
-from presenter.config.log import Logger, log_to
-from view import output
+from presenter.config.log import Logger, LOG_TO
 from presenter.config import config_func
 from presenter.logic import (boss_commands, complicated_commands, reactions, standart_commands,
                              developer_commands)
 from presenter.config import config_var, files_paths
 from presenter.logic.elite import elite
 from presenter.logic.start import starter
+from view import output
 
-LOG = Logger(log_to)
+LOG = Logger(LOG_TO)
 WORK = True
 
 
-# лотерея
-
-@BOT.message_handler(commands=['lottery'])
-def lottery_handler(message):
-    """ make a lottery """
-    LOG.log_print("lottery_handler invoked")
+@BOT.message_handler(commands=['shuffle'])
+def shuffle_handler(message):
+    """ Shuffle a list """
+    LOG.log_print("shuffle_handler invoked")
     analyzer = config_func.Analyzer(message, value_necessary=False)
-    members = analyzer.parameters_dictionary['comment'].split()
-    if not members:
-        output.reply(message, 'Пожалуйста, напишите список участников и количество победителей если надо')
-    shuffle(members)
-    if 'value' in analyzer.parameters_dictionary:
-        winners_count = analyzer.parameters_dictionary['value']
-        winners_list = members[:winners_count]
-    else:
-        winners_list = members
-    out = '\n'.join(f'{i + 1}. {j}' for i, j in enumerate(winners_list))
+    elements = analyzer.parameters_dictionary['comment'].split()
+    if not elements:
+        output.reply(message, 'Пожалуйста, напишите список, а элементы списка разделите пробелом')
+    shuffle(elements)
+    out = '\n'.join(f'{i + 1}. {j}' for i, j in enumerate(elements))
     output.reply(message, out)
 
 # Реакции на медиа, новых участников и выход участников
@@ -257,9 +250,9 @@ def money_pay_handler(message):
             boss_commands.money_pay(message, person, parameters_dictionary)
 
 
-@BOT.message_handler(func=lambda message: config_func.in_system_commands(message))
+@BOT.message_handler(func=config_func.in_system_commands)
 def rank_changer_handler(message):
-    """Sets person's rank to guest"""
+    """Changes person's rank"""
     LOG.log_print("rank_changer_handler invoked")
     if config_func.in_mf(message, command_type=None, or_private=False):
         # TODO Сделать так, чтоб добавлять можно было только лидера
@@ -322,6 +315,7 @@ def money_mode_change_handler(message):
 
 @BOT.message_handler(commands=['money_reset'])
 def money_reset_handler(message):
+    """Take all users' money to a system fund"""
     LOG.log_print("money_reset_handler invoked")
     if config_func.in_mf(message, command_type=None, or_private=False) and config_func.is_suitable(
             message, message.from_user, "chat_changer"):
@@ -347,7 +341,7 @@ def money_name_handler(message):
 
 
 @BOT.message_handler(commands=config_var.FEATURES_OFFERS + config_var.FEATURES_ONERS +
-                              config_var.FEATURES_DEFAULTERS)
+                     config_var.FEATURES_DEFAULTERS)
 def chat_options_handler(message):
     """ Change chat options """
     LOG.log_print("chat_options_handler invoked")
@@ -630,7 +624,8 @@ def send_stuff_from_storage_handler(message):
     analyzer = config_func.Analyzer(message, value_necessary=False)
     storage_name = analyzer.parameters_dictionary['comment']
     if config_func.in_mf(message, 'standart_commands') and config_func.check_access_to_a_storage(
-            message, storage_name, False) and config_func.cooldown(message, storage_name, timeout=300):
+            message, storage_name, False) and config_func.cooldown(message, storage_name,
+                                                                   timeout=300):
         if "value" in analyzer.parameters_dictionary:
             stuff_number = analyzer.parameters_dictionary["value"]
             standart_commands.send_numbered_stuff_from_storage(message, storage_name, stuff_number)
@@ -698,6 +693,7 @@ def money_give_handler(message):
 
 @BOT.message_handler(commands=['fund'])
 def money_fund_handler(message):
+    """Transfer money to the chat fund"""
     LOG.log_print(f"money_fund_handler invoked")
     if config_func.in_mf(message, 'financial_commands', or_private=False):
         analyzer = config_func.Analyzer(message)
@@ -839,9 +835,9 @@ def database_send_handler(message):
     LOG.log_print('database_send_handler invoked')
     if message.chat.id == config_var.CREATOR_ID:
         for file in (
-        files_paths.DATABASE_FILE, files_paths.VOTES_FILE, files_paths.ADAPT_VOTES_FILE,
-        files_paths.MULTI_VOTES_FILE, files_paths.SYSTEMS_FILE,
-        files_paths.STORAGE_FILE):
+                files_paths.DATABASE_FILE, files_paths.VOTES_FILE,
+                files_paths.ADAPT_VOTES_FILE, files_paths.MULTI_VOTES_FILE,
+                files_paths.SYSTEMS_FILE, files_paths.STORAGE_FILE):
             file_send = open(file, 'rb')
             output.send_document(message.chat.id, file_send)
             file_send.close()
