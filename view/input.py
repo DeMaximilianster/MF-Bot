@@ -14,19 +14,6 @@ from view import output
 LOG = Logger(LOG_TO)
 WORK = True
 
-
-@BOT.message_handler(commands=['shuffle'])
-def shuffle_handler(message):
-    """ Shuffle a list """
-    LOG.log_print("shuffle_handler invoked")
-    analyzer = config_func.Analyzer(message, value_necessary=False)
-    elements = analyzer.parameters_dictionary['comment'].split()
-    if not elements:
-        output.reply(message, 'Пожалуйста, напишите список, а элементы списка разделите пробелом')
-    shuffle(elements)
-    out = '\n'.join(f'{i + 1}. {j}' for i, j in enumerate(elements))
-    output.reply(message, out)
-
 # Реакции на медиа, новых участников и выход участников
 
 
@@ -615,6 +602,22 @@ def minet_handler(message):
         language = config_func.language_analyzer(message, only_one=True)
         if language and config_func.cooldown(message, 'minet'):
             standart_commands.minet(message, language)
+
+
+@BOT.message_handler(commands=['shuffle'])
+def shuffle_handler(message):
+    """ Shuffle a list """
+    LOG.log_print("shuffle_handler invoked")
+    if config_func.in_mf(message, 'standart_commands'):
+        analyzer = config_func.Analyzer(message, value_necessary=False)
+        elements = analyzer.parameters_dictionary['comment'].split()
+        if not elements:
+            output.reply(message, 'Пожалуйста, напишите список, а элементы списка разделите пробелом')
+        shuffle(elements)
+        if 'value' in analyzer.parameters_dictionary:
+            elements = elements[:analyzer.parameters_dictionary['value']]
+        out = '\n'.join(f'{i + 1}. {j}' for i, j in enumerate(elements))
+        output.reply(message, out)
 
 
 @BOT.message_handler(commands=['get'])

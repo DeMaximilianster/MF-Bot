@@ -435,7 +435,8 @@ def add_chat(message):
         new_id = str(max(ids) + 1)
         create_chat(message, new_id, chat_type, link, database)
         create_system(message, new_id, database)
-        reply(message, "Создана новая система чатов с ID {}".format(new_id))
+        reply(message, "Создана новая система чатов с ID {}. Используйте /system и /help "
+                       "для настройки и получения списка доступных команд".format(new_id))
     else:
         reply(message, "Для этой операции прошу вызвать @DeMaximilianster")
 
