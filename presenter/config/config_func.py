@@ -8,7 +8,7 @@ from threading import Thread
 from random import shuffle
 from ast import literal_eval
 from telebot.types import InlineKeyboardButton, InlineKeyboardMarkup, CallbackQuery
-from presenter.config.config_var import BOT_ID, NEW_SYSTEM_JSON_ENTRY, CREATOR_ID
+from presenter.config.config_var import BOT_ID, NEW_SYSTEM_JSON_ENTRY, CREATOR_ID, ENTITIES_TO_PARSE
 from presenter.config.database_lib import Database
 from presenter.config.files_paths import ADAPT_VOTES_FILE, MULTI_VOTES_FILE, VOTES_FILE, \
     SYSTEMS_FILE, STORAGE_FILE
@@ -18,7 +18,31 @@ from view.output import reply, kick, answer_callback, send, edit_text, edit_mark
 
 
 LOG = Logger()
-CAPTCHERS = []
+
+
+class Captchers:
+    """List of people completing the captcha"""
+
+    def __init__(self):
+        self.list = []
+
+    def remove_captcher(self, user_id, chat_id):
+        """Remove the user from CAPTCHERS list"""
+        if (user_id, chat_id) in self.list:
+            self.list.remove((user_id, chat_id))
+            return True
+        return False
+
+    def remove(self, element):
+        """Remove an element from a list"""
+        self.list.remove(element)
+
+    def append(self, element):
+        """Append an element to a list"""
+        self.list.append(element)
+
+
+CAPTCHERS = Captchers()
 
 
 def test_function(excepted_result, gaven_result):
@@ -26,8 +50,7 @@ def test_function(excepted_result, gaven_result):
     if gaven_result == excepted_result:
         print("Test completed!")
     else:
-        print(f"Test failed! Excepted: {excepted_result}. Got: {gaven_result}")
-        raise Exception
+        raise Exception(f"Test failed! Excepted: {excepted_result}. Got: {gaven_result}")
 
 
 class CaptchaBan(Thread):
@@ -40,10 +63,9 @@ class CaptchaBan(Thread):
         self.bots_message = bots_message
 
     def run(self):
-        global CAPTCHERS
         CAPTCHERS.append((self.message.new_chat_members[0].id, self.message.chat.id))
         time.sleep(300)
-        if (self.message.new_chat_members[0].id, self.message.chat.id) in CAPTCHERS:
+        if (self.message.new_chat_members[0].id, self.message.chat.id) in CAPTCHERS.list:
             kick_and_unban(self.message.chat.id, self.message.new_chat_members[0].id)
             edit_text("Испытание креветкой провалено! (время истекло)", self.bots_message.chat.id,
                       self.bots_message.message_id)
@@ -83,15 +105,6 @@ class WaitAndUnban(Thread):
         unban(self.chat_id, self.user_id)
 
 
-def remove_captcher(call):
-    """Remove the user from CAPTCHERS list"""
-    global CAPTCHERS
-    if (call.from_user.id, call.message.chat.id) in CAPTCHERS:
-        CAPTCHERS.remove((call.from_user.id, call.message.chat.id))
-        return True
-    return False
-
-
 def kick_and_unban(chat_id, user_id):
     """Kicks user and unbans them in one flash"""
     kick(chat_id, user_id)
@@ -114,8 +127,7 @@ def entities_saver(text, entities):
     """Copies the text and saving all the entities"""
     points = set()
     entities_blocks = []
-    entities_to_parse = {'bold', 'italic', 'underline', 'strikethrough', 'code', 'text_link'}
-    if entities and ({e.type for e in entities}.intersection(entities_to_parse)):
+    if entities and ({e.type for e in entities}.intersection(ENTITIES_TO_PARSE)):
         for entity in entities:
             if entity.type in ('bold', 'italic', 'underline', 'strikethrough', 'code'):
                 points.add(entity.offset)
@@ -124,9 +136,8 @@ def entities_saver(text, entities):
             elif entity.type == 'text_link':
                 points.add(entity.offset)
                 points.add(entity.offset + entity.length)
-                start = entity.offset
-                finish = start + entity.length
-                entities_blocks.append((start, finish, entity.type, entity.url))
+                entities_blocks.append((entity.offset, entity.offset + entity.length,
+                                        entity.type, entity.url))
         points = list(points)
         points.sort()
         start_text = text[:points[0]]
@@ -139,18 +150,13 @@ def entities_saver(text, entities):
         for point_block in points_blocks:
             for entity_block in entities_blocks:
                 if entity_block[0] <= point_block[0] and point_block[1] <= entity_block[1]:
-                    if entity_block[2] == 'bold':
-                        point_block[2] = "<b>" + point_block[2] + "</b>"
-                    elif entity_block[2] == 'italic':
-                        point_block[2] = "<i>" + point_block[2] + "</i>"
-                    elif entity_block[2] == 'underline':
-                        point_block[2] = "<u>" + point_block[2] + "</u>"
-                    elif entity_block[2] == 'strikethrough':
-                        point_block[2] = "<s>" + point_block[2] + "</s>"
-                    elif entity_block[2] == 'code':
+                    if entity_block[2] == 'code':
                         point_block[2] = "<code>" + point_block[2] + "</code>"
                     elif entity_block[2] == 'text_link':
                         point_block[2] = f'<a href="{entity_block[3]}">{point_block[2]}</a>'
+                    else:
+                        letter = entity_block[2][0]
+                        point_block[2] = f"<{letter}>{point_block[2]}</{letter}>"
         text_blocks = [point_block[2] for point_block in points_blocks]
         return start_text + ''.join(text_blocks) + end_text
     return html_cleaner(text)
@@ -269,45 +275,17 @@ def value_marker(value: object, normal: str, void: str) -> str:
     return normal if value else void
 
 
-def function_worked_correctly(function, *args, **kwargs):
-    """Checks if function worked without throwing an exception"""
-    try:
-        function(*args, **kwargs)
-        return True
-    except Exception as exception:
-        print(exception)
-        return False
-
-
-def function_returned_true(function, *args, **kwargs):
-    """Checks if function worked without throwing an exception and returned True"""
-    try:
-        return bool(function(*args, **kwargs))
-    except Exception as exception:
-        print(exception)
-        return False
-
-
 def photo_video_gif_get(target_message):
     """Gets the media from the target message to save into a storage"""
     text, entities = get_text_and_entities(target_message)
     final_text = entities_saver(text, entities)
     if target_message.photo:
         return target_message.photo[0].file_id, 'photo', final_text
-    elif target_message.video:
+    if target_message.video:
         return target_message.video.file_id, 'video', final_text
-    elif target_message.document:
+    if target_message.document:
         return target_message.document.file_id, 'gif', final_text
-
-
-def int_check(string, positive):
-    """Checks if string is a integet (isdigit() passes ² which crashes (int))"""
-    # TODO Replace this function with isdecimal
-    if positive:
-        if set(string) & set('0123456789') == set(string):
-            return int(string)
-    elif set(string[1:]) & set('0123456789') == set(string[1:]) and string[0] in '-0123456789':
-        return int(string)
+    return None
 
 
 def get_one_language(message):
@@ -376,15 +354,14 @@ class Analyzer:
         self.value_positive = value_positive
         if not self.parameters_dictionary:
             str_value_positive = 'ПОЛОЖИТЕЛЬНОЕ' if self.value_positive else ''
-            reply(
-                self.message, "Пожалуйста, введите {} ".format(str_value_positive) +
-                              "число-значение, необходимое для команды, например\n\n"
-                              "/cmd 866828593 50 Комментарий\n\nили\n\n"
-                              "[Ответ на сообщение]\n/cmd 50 Комментарий\n\n"
-                              "Вы даже можете перемешивать параметры\n\n"
-                              "/cmd Комментарий 50 866828593\n"
-                              "/cmd 50 Комментарий 866828593\n"
-                              "/cmd 866828593 Комментарий 50\n")
+            reply(self.message, "Пожалуйста, введите {} ".format(str_value_positive) +
+                  "число-значение, необходимое для команды, например\n\n"
+                  "/cmd 866828593 50 Комментарий\n\nили\n\n"
+                  "[Ответ на сообщение]\n/cmd 50 Комментарий\n\n"
+                  "Вы даже можете перемешивать параметры\n\n"
+                  "/cmd Комментарий 50 866828593\n"
+                  "/cmd 50 Комментарий 866828593\n"
+                  "/cmd 866828593 Комментарий 50\n")
 
     def return_target_person(self, to_self=False, to_bot=False):
         """Get and check target person"""
@@ -418,6 +395,11 @@ class Analyzer:
         return True
 
 
+def is_integer(string: str):
+    """Returns true if string can be converted into integer and false if it can't"""
+    return string.isdigit() or (string[0] == '-' and string[1:].isdigit())
+
+
 def parameters_analyze(text: str,
                        value_necessary=True,
                        default_value=None,
@@ -441,12 +423,12 @@ def parameters_analyze(text: str,
         dictionary_of_parameters['value'] = default_value
     parts_of_the_message = text.split()[1:]
     for part in parts_of_the_message:
-        if function_worked_correctly(int, part) and get_member(-1001268084945, int(part)):
+        if is_integer(part) and get_member(-1001268084945, int(part)):
             dictionary_of_parameters['person_id'] = int(part)
             parts_of_the_message.remove(part)
             break
     for part in parts_of_the_message:
-        if function_worked_correctly(int, part):
+        if is_integer(part):
             dictionary_of_parameters['value'] = int(part)
             parts_of_the_message.remove(part)
             break
@@ -499,7 +481,7 @@ def get_person(person, system: str, database: Database, system_configs=None) -> 
     return person_entry
 
 
-def rank_required(message, person, system, min_rank, max_rank, loud=True):
+def rank_required(message, person, system, min_rank, loud=True):
     """Checks if person has rank required for something"""
     LOG.log_print("rank_required invoked from userID {}".format(message.from_user.id))
     database = Database()
@@ -509,7 +491,6 @@ def rank_required(message, person, system, min_rank, max_rank, loud=True):
     your_rank = you['rank']
     your_rank_n = ranks.index(your_rank)
     min_rank_n = ranks.index(min_rank)
-    max_rank_n = ranks.index(max_rank)
     if your_rank_n < min_rank_n and loud:
         if isinstance(message, CallbackQuery):
             answer_callback(message.id,
@@ -520,19 +501,7 @@ def rank_required(message, person, system, min_rank, max_rank, loud=True):
             reply(
                 message, "Ваше звание ({}) не дотягивает до необходимого ({}) для этого".format(
                     your_rank, min_rank))
-    elif your_rank_n > max_rank_n and loud:
-        if isinstance(message, CallbackQuery):
-            answer_callback(
-                message.id,
-                "Ваше звание ({}) выше максимального ({}) для жмака. Гордитесь собой".format(
-                    your_rank, max_rank),
-                show_alert=True)
-        else:
-            reply(
-                message,
-                "Ваше звание ({}) выше максимального ({}) для этого. Гордитесь собой".format(
-                    your_rank, max_rank))
-    return min_rank_n <= your_rank_n <= max_rank_n
+    return min_rank_n <= your_rank_n
 
 
 def appointment_required(message, person, system, appointment, loud=True):
@@ -563,7 +532,7 @@ def is_suitable(inputed, person, command_type, system=None, loud=True):
     requirements = chat_configs['commands'][command_type]
     # check if requirement for this command type is a rank or appointment
     if isinstance(requirements, list):  # Requirement is a list
-        return rank_required(inputed, person, system, requirements[0], requirements[1], loud=loud)
+        return rank_required(inputed, person, system, requirements[0], loud=loud)
     if isinstance(requirements, str):  # Requirement is a string
         return appointment_required(message, person, system, requirements, loud=loud)
     return False

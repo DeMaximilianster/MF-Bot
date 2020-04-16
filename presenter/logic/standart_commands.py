@@ -4,10 +4,10 @@ from random import choice
 from collections import Counter, defaultdict
 
 from view.output import reply, send_photo, send_sticker, send, send_video, send_document
-from presenter.config.config_func import member_update, int_check, \
+from presenter.config.config_func import member_update, \
     is_suitable, feature_is_available, get_system_configs, get_systems_json, get_person, \
     get_list_from_storage, person_link, \
-    html_cleaner, link_text_wrapper, function_returned_true, value_marker, get_storage_json
+    html_cleaner, link_text_wrapper, value_marker, get_storage_json
 from presenter.config.database_lib import Database
 from presenter.config.config_var import admin_place, ORIGINAL_TO_ENGLISH, ENGLISH_TO_ORIGINAL, \
     MONTHS_GENITIVE, MONTHS_PREPOSITIONAL, FEATURES, FEATURES_TEXTS
@@ -342,7 +342,7 @@ def send_some_top(message, language, format_string, start='', sort_key=lambda x:
                       'bot_money': database.get('systems', ('id', system))['money']}
     text = start.format(**formating_dict)
     members = database.get_many('members', ('system', system))
-    members = list(filter(lambda x: function_returned_true(sort_key, x), members))
+    members = list(filter(lambda x: sort_key(x) != 0, members))
     members.sort(key=sort_key, reverse=True)
     if len(members) > 50:
         target_chat = message.from_user.id
@@ -380,7 +380,7 @@ def send_short_top(message, language, format_string, start='', sort_key=lambda x
                       'bot_money': database.get('systems', ('id', system))['money']}
     text = start.format(**formating_dict)
     members = database.get_many('members', ('system', system))
-    members = list(filter(lambda x: function_returned_true(sort_key, x), members))
+    members = list(filter(lambda x: sort_key(x) != 0, members))
     members.sort(key=sort_key, reverse=True)
     person_index = 0
     for person_index in range(1, len(members) + 1):
@@ -629,7 +629,7 @@ def anon_message(message):
     system_specification_length = 0
     if len(systems) == 1:
         system = systems[0]
-    elif int_check(message.text.split()[1], positive=True):
+    elif message.text.split()[1].isdecimal():
         system = message.text.split()[1]
         system_specification_length += len(system) + 1
     else:

@@ -612,7 +612,8 @@ def shuffle_handler(message):
         analyzer = config_func.Analyzer(message, value_necessary=False)
         elements = analyzer.parameters_dictionary['comment'].split()
         if not elements:
-            output.reply(message, 'Пожалуйста, напишите список, а элементы списка разделите пробелом')
+            output.reply(message, 'Пожалуйста, напишите список, '
+                                  'а элементы списка разделите пробелом')
         shuffle(elements)
         if 'value' in analyzer.parameters_dictionary:
             elements = elements[:analyzer.parameters_dictionary['value']]
@@ -752,9 +753,11 @@ def month_set_handler(message):
     """Set month of person's birthday"""
     LOG.log_print("month_set_handler invoked")
     if config_func.in_mf(message, command_type=None):
-        month = config_func.int_check(message.text.split()[-1], positive=True)
-        if month and 1 <= month <= 12:
-            standart_commands.month_set(message, month)
+        month = message.text.split()[-1]
+        if month.isdecimal():
+            month = int(month)
+            if month and 1 <= month <= 12:
+                standart_commands.month_set(message, month)
         else:
             output.reply(
                 message, "Последнее слово должно быть положительным числом от 1 до 12 — "
@@ -766,11 +769,13 @@ def day_set_handler(message):
     """Set day of person's birthday"""
     LOG.log_print("day_set_handler invoked")
     if config_func.in_mf(message, command_type=None):
-        day = config_func.int_check(message.text.split()[-1], positive=True)
-        if day and 1 <= day <= 31:
-            language = config_func.get_one_language(message)
-            if language:
-                standart_commands.day_set(message, day, language)
+        day = message.text.split()[-1]
+        if day.isdecimal():
+            day = int(day)
+            if day and 1 <= day <= 31:
+                language = config_func.get_one_language(message)
+                if language:
+                    standart_commands.day_set(message, day, language)
         else:
             output.reply(
                 message, "Последнее слово должно быть положительным числом от 1 до 31 — "

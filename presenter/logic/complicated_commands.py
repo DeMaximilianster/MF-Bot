@@ -7,7 +7,7 @@ from telebot.types import InlineQueryResultArticle, InputTextMessageContent, Inl
 from view.output import edit_markup, answer_inline, reply, \
     answer_callback, edit_text, delete, send, restrict
 from presenter.config.config_func import update_adapt_vote, update_multi_vote, create_adapt_vote, \
-    create_vote, create_multi_vote, remove_captcher, kick_and_unban
+    create_vote, create_multi_vote, CAPTCHERS, kick_and_unban
 from presenter.config.config_var import TEST_KEYBOARD, IRONIC_KEYBOARD, \
     VOTE_KEYBOARD, admin_place
 from presenter.config.database_lib import Database
@@ -22,7 +22,7 @@ WORK = True
 def captcha_completed(call):
     """Bot reacts to someone clicked correct button"""
     LOG.log_print("captcha_completed invoked")
-    if remove_captcher(call):
+    if CAPTCHERS.remove_captcher(call.from_user.id, call.message.chat.id):
         restrict(call.message.chat.id,
                  call.from_user.id,
                  can_send_messages=True,
@@ -39,7 +39,7 @@ def captcha_completed(call):
 def captcha_failed(call):
     """Bot reacts to someone clicked wrong button"""
     LOG.log_print("captcha_failed invoked")
-    if remove_captcher(call):
+    if CAPTCHERS.remove_captcher(call.from_user.id, call.message.chat.id):
         kick_and_unban(call.message.chat.id, call.from_user.id)
         answer_callback(call.id)
         edit_text("Испытание креветкой провалено! (нажата неверная кнопка)", call.message.chat.id,

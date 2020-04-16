@@ -10,8 +10,8 @@ LOG = Logger(LOG_TO)
 CREATOR_ID = 381279599
 
 BOT_ID = 575704111
-PORN_ADDERS = (918715899, CREATOR_ID, 711157379)
-STUFF_ADDERS = (918715899, CREATOR_ID, 432348248)
+
+ENTITIES_TO_PARSE = {'bold', 'italic', 'underline', 'strikethrough', 'code', 'text_link'}
 
 ORIGINAL_TO_ENGLISH = {'Русский': 'Russian', 'English': 'English'}
 ENGLISH_TO_ORIGINAL = {'Russian': 'Русский', 'English': 'English'}

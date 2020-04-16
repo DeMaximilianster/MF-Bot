@@ -8,7 +8,7 @@ from presenter.config.database_lib import Database
 from presenter.config.config_var import full_chat_list, channel_list, BOT_ID, \
     admin_place, chat_list, CREATOR_ID
 from presenter.config.log import Logger, LOG_TO
-from presenter.config.config_func import unban_user, is_suitable, int_check, \
+from presenter.config.config_func import unban_user, is_suitable, \
     get_system_configs, photo_video_gif_get, get_target_message, \
     update_systems_json, create_system, create_chat, SystemUpdate, \
     write_storage_json, get_storage_json, get_person, person_link, \
@@ -256,7 +256,8 @@ def money_pay(message, person, parameters_dictionary):
             send(admin_place(message, database), answer, parse_mode='HTML')
         else:
             reply(message,
-                  "У людей число {} должно быть больше нуля".format(money_name_word.genitive_plural()))
+                  "У людей число {} должно быть больше нуля".format(
+                      money_name_word.genitive_plural()))
     else:
         if bot_money != 'inf' and bot_money < money:
             reply(message, "У нас нет столько {} в банке".format(money_name_word.genitive_plural()))
@@ -512,7 +513,7 @@ def money_mode_change(message):
     update_systems_json(system, mode == 'on', 'money')
     if mode == 'on':
         all_money = message.text.split()[-1]
-        if int_check(all_money, positive=True):
+        if all_money.isdecimal():
             all_money = int(all_money)
             people = list(database.get_many('members', ('system', system)))
             people = list(filter(lambda x: x['money'] != 0 and x['id'] != BOT_ID, people))
