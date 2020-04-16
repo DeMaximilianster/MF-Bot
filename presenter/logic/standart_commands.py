@@ -6,11 +6,12 @@ from collections import Counter, defaultdict
 from view.output import reply, send_photo, send_sticker, send, send_video, send_document
 from presenter.config.config_func import member_update, int_check, \
     is_suitable, feature_is_available, get_system_configs, get_systems_json, get_person, \
-    get_list_from_storage, number_to_case, case_analyzer, person_link, \
+    get_list_from_storage, person_link, \
     html_cleaner, link_text_wrapper, function_returned_true, value_marker, get_storage_json
 from presenter.config.database_lib import Database
 from presenter.config.config_var import admin_place, ORIGINAL_TO_ENGLISH, ENGLISH_TO_ORIGINAL, \
     MONTHS_GENITIVE, MONTHS_PREPOSITIONAL, FEATURES, FEATURES_TEXTS
+from presenter.config.languages import get_word_object
 from presenter.config.log import Logger
 from presenter.config.texts import MINETS
 
@@ -273,7 +274,8 @@ def check_storage_size(message, storage_name):
     storage = get_list_from_storage(storage_name)
     moderators_number = len(storage['moders'])
     media_number = len(storage['contents'])
-    moderator = case_analyzer('модератор', 'Russian', *number_to_case(moderators_number, 'Russian'))
+    moderator_word = get_word_object('модератор', 'Russian')
+    moderator = moderator_word.cased_by_number(moderators_number)
 
     descr = dict_to_natural_language(Counter(map(lambda x: x[1], storage['contents'])))
     if descr:
@@ -303,6 +305,7 @@ def send_me(message, person):
     system = database.get('chats', ('id', message.chat.id))['system']
     chat_config = get_system_configs(system)
     money_name = chat_config['money_name']
+    money_name_word = get_word_object(money_name, 'ru')
     member_update(system, person)  # Update person's messages, nickname and username
     person_entry = get_person(person, system, database, system_configs=chat_config)
     appointments = [x['appointment'] for x in
@@ -320,7 +323,7 @@ def send_me(message, person):
         msg += 'Кол-во сообщений во всей системе: {}\n'.format(person_entry['messages'])
     msg += 'Кол-во предупреждений: {}\n'.format(person_entry['warns'])
     if chat_config['money']:
-        msg += 'Кол-во {}: {}\n'.format(case_analyzer(money_name, 'Russian', 'plural', 'genitivus'),
+        msg += 'Кол-во {}: {}\n'.format(money_name_word.genitive_plural(),
                                         person_entry['money'])
     if appointments:
         msg += 'Должности: ' + ', '.join(appointments)
@@ -413,17 +416,15 @@ def money_give(message, person, parameters_dictionary: dict):
     value_getter = database.get('members', ('id', getter.id), ('system', system))['money']
     value_giver = database.get('members', ('id', giver.id), ('system', system))['money']
     #
-    money_name = get_system_configs(system)['money_name']
-    number_and_case = number_to_case(money, 'Russian')
-    money_name_plural_genitivus = case_analyzer(money_name, 'Russian', 'plural', 'genitivus')
-    money_name = case_analyzer(money_name, 'Russian', *number_and_case)
+    money_name_word = get_word_object(get_system_configs(system)['money_name'], 'Russian')
+    money_name = money_name_word.cased_by_number(abs(money), if_one_then_accusative=True)
     if money < 0:
         reply(message, "Я вам запрещаю воровать")
     elif money == 0:
         reply(message, "Я вам запрещаю делать подобные бессмысленные запросы")
     else:
         if money > value_giver:
-            reply(message, "Не хватает {}".format(money_name_plural_genitivus))
+            reply(message, "Не хватает {}".format(money_name_word.genitive_plural()))
         else:
             value_getter += money
             value_giver -= money
@@ -466,17 +467,15 @@ def money_fund(message, parameters_dictionary):
     system = chat['system']
     value_giver = database.get('members', ('id', giver.id), ('system', system))['money']
     value_system = database.get('systems', ('id', system))['money']
-    money_name = get_system_configs(system)['money_name']
-    number_and_case = number_to_case(money, 'Russian')
-    money_name_plural_genitivus = case_analyzer(money_name, 'Russian', 'plural', 'genitivus')
-    money_name = case_analyzer(money_name, 'Russian', *number_and_case)
+    money_name_word = get_word_object(get_system_configs(system)['money_name'], 'Russian')
+    money_name = money_name_word.cased_by_number(abs(money), if_one_then_accusative=True)
     if money < 0:
         reply(message, "Я вам запрещаю воровать")
     elif money == 0:
         reply(message, "Я вам запрещаю делать подобные бессмысленные запросы")
     else:
         if money > value_giver:
-            reply(message, "Не хватает {}".format(money_name_plural_genitivus))
+            reply(message, "Не хватает {}".format(money_name_word.genitive_plural()))
         else:
             if value_system != 'inf':
                 value_system = int(value_system)

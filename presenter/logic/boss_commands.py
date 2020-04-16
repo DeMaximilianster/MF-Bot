@@ -9,11 +9,12 @@ from presenter.config.config_var import full_chat_list, channel_list, BOT_ID, \
     admin_place, chat_list, CREATOR_ID
 from presenter.config.log import Logger, LOG_TO
 from presenter.config.config_func import unban_user, is_suitable, int_check, \
-    get_system_configs, photo_video_gif_get, get_target_message, number_to_case, \
-    update_systems_json, create_system, create_chat, SystemUpdate, case_analyzer, \
+    get_system_configs, photo_video_gif_get, get_target_message, \
+    update_systems_json, create_system, create_chat, SystemUpdate, \
     write_storage_json, get_storage_json, get_person, person_link, \
     person_info_in_html, chat_info_in_html
 import presenter.config.config_func as cf  # TODO Поменять все импорты из конфиг функа на этот
+from presenter.config.languages import get_word_object
 from view.output import kick, reply, promote, send, forward, restrict
 
 LOG = Logger(LOG_TO)
@@ -229,10 +230,8 @@ def money_pay(message, person, parameters_dictionary):
         bot_money = int(bot_money)
     p_id = person.id
     money = parameters_dictionary['value']
-    money_name = get_system_configs(system)['money_name']
-    number_and_case = number_to_case(abs(money), 'Russian')
-    money_name_plural_genitivus = case_analyzer(money_name, 'Russian', 'plural', 'genitivus')
-    money_name = case_analyzer(money_name, 'Russian', *number_and_case)
+    money_name_word = get_word_object(get_system_configs(system)['money_name'], 'Russian')
+    money_name = money_name_word.cased_by_number(abs(money), if_one_then_accusative=True)
     person_money = get_person(person, system, database)['money']
     if money == 0:
         reply(message, "Я вам запрещаю делать подобные бессмысленные запросы")
@@ -257,16 +256,16 @@ def money_pay(message, person, parameters_dictionary):
             send(admin_place(message, database), answer, parse_mode='HTML')
         else:
             reply(message,
-                  "У людей число {} должно быть больше нуля".format(money_name_plural_genitivus))
+                  "У людей число {} должно быть больше нуля".format(money_name_word.genitive_plural()))
     else:
         if bot_money != 'inf' and bot_money < money:
-            reply(message, "У нас нет столько {} в банке".format(money_name_plural_genitivus))
+            reply(message, "У нас нет столько {} в банке".format(money_name_word.genitive_plural()))
         else:
             person_money += money
             sent = send(p_id, f"#Финансы\n\n"
                               f"На ваш счёт было переведено {money} {money_name} из банка. "
                               f"Теперь у вас {person_money}")
-            # TODO рефакторинг уведомлялки и переименование недег
+            # TODO рефакторинг уведомлялки
             sent = cf.value_marker(sent, "🔔 уведомлён(а)", "🔕 не уведомлён(а)")
             reply(message,
                   '{} получил(а) из банка {} {}!'.format(person_link(person), money, money_name),

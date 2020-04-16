@@ -360,51 +360,6 @@ def language_analyzer(message, only_one):
         return languages
 
 
-def case_analyzer(word: str, language: str, number: str, case: str) -> str:
-    """For now it's some stupid command
-    But in the future it will be able to comprehend cases in different languages
-
-    Don't touch this
-    """
-    end = ''
-    if language == 'Russian':
-        if word[-1] in 'аьй':
-            end = word[-1]
-        if number == 'singular':
-            if case == 'genitivus':
-                if not end:
-                    return word + 'а'
-                if end in 'аь':
-                    return word[:-1] + 'и'
-                return word[:-1] + 'ев'
-        elif number == 'plural':
-            if case == 'nominativus':
-                if not end:
-                    return word + 'и'
-                return word[:-1] + 'и'
-            elif case == 'genitivus':
-                if not end:
-                    return word + 'ов'
-                elif end == 'а':
-                    return word[:-1]
-                elif end == 'ь':
-                    return word[:-1] + 'ей'
-                elif end == 'й':
-                    return word[:-1] + 'ев'
-    return word
-
-
-def number_to_case(number: int, language: str) -> tuple:
-    """Get case by the number"""
-    if language == 'Russian':
-        if number % 10 == 1 and not 10 <= number <= 20:
-            return 'singular', 'nominativus'
-        if number % 10 in (2, 3, 4):
-            return 'singular', 'genitivus'
-        return 'plural', 'genitivus'
-    return 'singular', 'nominativus'
-
-
 def left_new_or_else_member(target_message):
     """Get the target person in leave/entering messages"""
     if target_message.new_chat_members:
