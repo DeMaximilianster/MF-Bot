@@ -4,7 +4,7 @@ from view.output import send, reply, register_handler
 from presenter.config.log import Logger, LOG_TO
 import presenter.config.files_paths as files
 from presenter.config.config_var import ADEQUATE_KEYBOARD, ADAPT_ADEQUATE_KEYBOARD, CREATOR_ID
-from presenter.config.config_func import language_analyzer
+from presenter.config.config_func import get_languages
 
 WORK = True
 
@@ -48,7 +48,7 @@ def starter(message):
         sent = reply(message, "Введите ваш вариант ответа на голосовании")
         register_handler(sent, new_adapt_option, vote_id)
     else:
-        languages = language_analyzer(message, only_one=False)
+        languages = get_languages(message)
         text = ''
         if languages['English']:
             text += "Hello. To get all existing functions click /help\n\n"

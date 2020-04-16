@@ -599,7 +599,7 @@ def minet_handler(message):
     """Приносит удовольствие"""
     LOG.log_print(f"minet_handler invoked")
     if config_func.is_correct_message(message) and config_func.in_mf(message, 'standart_commands'):
-        language = config_func.language_analyzer(message, only_one=True)
+        language = config_func.get_one_language(message)
         if language and config_func.cooldown(message, 'minet'):
             standart_commands.minet(message, language)
 
@@ -672,7 +672,7 @@ def all_members_handler(message):
     """Присылает человеку все записи в БД"""
     LOG.log_print("all_members_handler invoked")
     if config_func.in_mf(message, command_type=None, or_private=False):
-        language = config_func.language_analyzer(message, only_one=True)
+        language = config_func.get_one_language(message)
         if language:
             if config_func.is_suitable(message, message.from_user, 'boss', loud=False):
                 standart_commands.send_some_top(message, language,
@@ -710,7 +710,7 @@ def money_top_handler(message):
     """Топ ЯМ"""
     LOG.log_print("money_top_handler invoked")
     if config_func.in_mf(message, 'financial_commands', or_private=False):
-        language = config_func.language_analyzer(message, only_one=True)
+        language = config_func.get_one_language(message)
         if language:
             args = message, language, '{index}. {p_link} — {money} {m_emo}\n'
             kwargs = {'start': 'Бюджет: {bot_money} {m_emo}\n\n', 'sort_key': lambda x: x['money']}
@@ -725,7 +725,7 @@ def warns_top_handler(message):
     """ Show all warns """
     LOG.log_print('warns_top_handler invoked')
     if config_func.in_mf(message, command_type=None, or_private=False):
-        language = config_func.language_analyzer(message, only_one=True)
+        language = config_func.get_one_language(message)
         if language:
             args = message, language, '{index}. {p_link} — {warns} ⛔️\n'
             kwargs = {'start': 'Количество варнов:\n\n', 'sort_key': lambda x: x['warns']}
@@ -737,7 +737,7 @@ def messages_top_handler(message):
     """Messages top"""
     LOG.log_print("messages_top_handler invoked")
     if config_func.in_mf(message, command_type=None, or_private=False):
-        language = config_func.language_analyzer(message, only_one=True)
+        language = config_func.get_one_language(message)
         if language:
             args = message, language, '{index}. {p_link} — {messages} сообщ.\n'
             kwargs = {'sort_key': lambda x: x['messages']}
@@ -768,7 +768,7 @@ def day_set_handler(message):
     if config_func.in_mf(message, command_type=None):
         day = config_func.int_check(message.text.split()[-1], positive=True)
         if day and 1 <= day <= 31:
-            language = config_func.language_analyzer(message, only_one=True)
+            language = config_func.get_one_language(message)
             if language:
                 standart_commands.day_set(message, day, language)
         else:
@@ -782,7 +782,7 @@ def birthday_handler(message):
     """Show the nearest birthdays"""
     LOG.log_print(f"birthday_handler invoked")
     if config_func.in_mf(message, command_type=None):
-        language = config_func.language_analyzer(message, only_one=True)
+        language = config_func.get_one_language(message)
         if language:
             standart_commands.send_some_top(
                 message,

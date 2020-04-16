@@ -310,54 +310,49 @@ def int_check(string, positive):
         return int(string)
 
 
-def language_analyzer(message, only_one):
+def get_one_language(message):
     """Analyzes the language that is suitable for some situation"""
     LOG.log_print(f"language_analyzer invoked")
     database = Database()
     entry = database.get('languages', ('id', message.chat.id))
+    if entry:
+        return entry['language']
+    reply(message, "Если вы говорите на русском, напишите '/lang Русский'\n\n"
+                   "If you speak English, type '/lang English'\n\n")
+    return ''
+
+
+def get_languages(message):
+    """Gets all labguages that are possibly spoken by user
+    :param message: message
+    :return dictionary {"Russian": bool, "English": bool}
+    :rtype dict"""
+    LOG.log_print(f"get_languages invoked")
+    database = Database()
+    entry = database.get('languages', ('id', message.chat.id))
     languages = {"Russian": False, "English": False}
     if entry:
-        if only_one:
-            return entry['language']
-        else:
-            languages[entry['language']] = True
-            return languages
+        languages[entry['language']] = True
+        return languages
+    russian = set("ёйцукенгшщзхъфывапролджэячсмитьбюЁЙЦУКЕНГШЩЗХЪФЫВАПРОЛДЖЭЯЧСМИТЬБЮ")
+    english = set("qwertyuiopasdfghjklzxcvbnmQWERTYUIOPASDFGHJKLZXCVBNM")
+    text = message.text
+    # filling the variable text chat title, description etc.
+    if message.chat.id > 0:
+        user = message.from_user
+        text += user.first_name
+        if user.last_name:
+            text += user.last_name
     else:
-        russian = set("ёйцукенгшщзхъфывапролджэячсмитьбюЁЙЦУКЕНГШЩЗХЪФЫВАПРОЛДЖЭЯЧСМИТЬБЮ")
-        english = set("qwertyuiopasdfghjklzxcvbnmQWERTYUIOPASDFGHJKLZXCVBNM")
-        text = message.text
-        if message.chat.id > 0:
-            user = message.from_user
-            text += user.first_name
-            if user.last_name:
-                text += user.last_name
-        else:
-            chat = get_chat(message.chat.id)
-            if chat.title:
-                text += chat.title
-            if chat.description:
-                text += chat.description
+        chat = get_chat(message.chat.id)
+        if chat.title:
+            text += chat.title
+        if chat.description:
+            text += chat.description
     text = set(text)
     languages['Russian'] = bool(russian & text) or (message.from_user.language_code == 'ru')
     languages['English'] = bool(english & text) or (message.from_user.language_code == 'en')
-    count = 0
-    language_answer = None
-    for language in languages:
-        if languages[language]:
-            count += 1
-            language_answer = languages[language]
-    if only_one and count == 1:
-        return language_answer
-    elif only_one:
-        answer = ''
-        if languages['Russian']:
-            answer += "Если вы говорите на русском, напишите '/lang Русский'\n\n"
-        if languages['English']:
-            answer += "If you speak English, type '/lang English'\n\n"
-        reply(message, answer)
-        return None
-    else:
-        return languages
+    return languages
 
 
 def left_new_or_else_member(target_message):
