@@ -150,7 +150,8 @@ NEW_SYSTEM_JSON_ENTRY = {
         "advanced": ["Участник", "Лидер"],
         "boss": ["Админ", "Лидер"],
         "uber": ["Старший Админ", "Лидер"],
-        "chat_changer": ["Старший Админ", "Лидер"]
+        "chat_changer": ["Старший Админ", "Лидер"]  # TODO add a rank deputy to this hierarchy
+                                                    #  chat_changer: ["Заместитель", "Лидер"]
     },
     "greetings": {
         "standart": "Добро пожаловать, {name}",
