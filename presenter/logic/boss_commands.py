@@ -241,7 +241,7 @@ def money_pay(message, person, parameters_dictionary):
             person_money -= money
             if bot_money != 'inf':
                 bot_money += money
-            sent = send(p_id, f"#Финансы\n\n"
+            sent = send(p_id, "#Финансы\n\n"
                               f"С вашего счёта было снято {money} {money_name} в банк. "
                               f"Теперь у вас {person_money}")
             sent = cf.value_marker(sent, "🔔 уведомлён(а)", "🔕 не уведомлён(а)")
@@ -263,7 +263,7 @@ def money_pay(message, person, parameters_dictionary):
             reply(message, "У нас нет столько {} в банке".format(money_name_word.genitive_plural()))
         else:
             person_money += money
-            sent = send(p_id, f"#Финансы\n\n"
+            sent = send(p_id, "#Финансы\n\n"
                               f"На ваш счёт было переведено {money} {money_name} из банка. "
                               f"Теперь у вас {person_money}")
             # TODO рефакторинг уведомлялки

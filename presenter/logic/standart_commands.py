@@ -500,7 +500,7 @@ def money_fund(message, parameters_dictionary):
 # TODO More comfortable way to insert birthday
 def month_set(message, month):
     """Set the month of person's birthday"""
-    LOG.log_print(f"month_set invoked")
+    LOG.log_print("month_set invoked")
     database = Database()
     reply(message, "Ставлю человеку с ID {} месяц рождения {}".format(message.from_user.id, month))
     database.change(month, 'month_birthday', 'members', ('id', message.from_user.id))
@@ -508,7 +508,7 @@ def month_set(message, month):
 
 def day_set(message, day, language):
     """Set the day of person's birthday"""
-    LOG.log_print(f"day_set invoked")
+    LOG.log_print("day_set invoked")
     days = (31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31)
     database = Database()
     month = database.get('members', ('id', message.from_user.id))['month_birthday'] - 1

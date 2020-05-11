@@ -38,7 +38,7 @@ def trigger(message):
 
 def new_member(message, member):
     """Реагирует на вход в чат"""
-    LOG.log_print(f"new_member invoked")
+    LOG.log_print("new_member invoked")
     database = Database()
     # Declaring variables
     text = ''

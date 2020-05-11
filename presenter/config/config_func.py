@@ -290,7 +290,7 @@ def photo_video_gif_get(target_message):
 
 def get_one_language(message):
     """Analyzes the language that is suitable for some situation"""
-    LOG.log_print(f"language_analyzer invoked")
+    LOG.log_print("language_analyzer invoked")
     database = Database()
     entry = database.get('languages', ('id', message.chat.id))
     if entry:
@@ -305,7 +305,7 @@ def get_languages(message):
     :param message: message
     :return dictionary {"Russian": bool, "English": bool}
     :rtype dict"""
-    LOG.log_print(f"get_languages invoked")
+    LOG.log_print("get_languages invoked")
     database = Database()
     entry = database.get('languages', ('id', message.chat.id))
     languages = {"Russian": False, "English": False}

@@ -44,7 +44,7 @@ MONTHS_PREPOSITIONAL = [month_to_prepositional(i) for i in MONTHS]
 
 def admin_place(message, database):
     """Finds the admin place of the system"""
-    LOG.log_print(f"admin_place invoked")
+    LOG.log_print("admin_place invoked")
     chat = database.get('chats', ('id', message.chat.id))
     system = chat['system']
     return database.get('systems', ('id', system))['admin_place']
@@ -52,14 +52,14 @@ def admin_place(message, database):
 
 def chat_list(database, system):  # TODO Сделать приличную чатоискалку
     """Список всех МФ2-чатов, кроме Админосостава и Комитета"""
-    LOG.log_print(f"chat_list invoked")
+    LOG.log_print("chat_list invoked")
     ch_list = database.get_many('chats', ('system', system))
     return ch_list
 
 
 def full_chat_list(database, system):
     """Список всех МФ2-чатов"""
-    LOG.log_print(f"full_chat_list invoked")
+    LOG.log_print("full_chat_list invoked")
     return database.get_many('chats', ('system', system))
 
 
