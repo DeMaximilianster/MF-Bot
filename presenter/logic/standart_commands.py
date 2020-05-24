@@ -96,7 +96,7 @@ def helper(message):
             answer += '/senior_admin - Снять бан, дать продвинутую админку\n\n'
         if is_suitable(message, message.from_user, 'chat_changer', loud=False):
             answer += '<b>Настройщики чатов:</b>\n'
-            answer += '/add_chat [номер системы чатов] - Добавить чат в систему чатов\n'
+            answer += '/add_chat [ID системы чатов] - Добавить чат в систему чатов\n'
             answer += '/admin_place - Отметить чат как админский\n'
             answer += '/standart_greetings [текст] — Изменить приветствие для простого человека\n' \
                       '/captcha_greetings [текст] — Изменить приветствие при капче\n' \
