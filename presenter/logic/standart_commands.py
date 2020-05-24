@@ -49,12 +49,10 @@ def helper(message):
     """Предоставляет человеку список команд"""
     LOG.log_print(str(message.from_user.id) + ": helper invoked")
     database = Database()
-    # TODO Возможность посмотреть номер своей системы
     # TODO Адаптативность званий
     answer = '<b>Команды:</b>\n\n'
     if message.chat.id < 0:  # Command is used in chat
         system = database.get('chats', ('id', message.chat.id))['system']
-
         answer += '<b>Общие команды:</b>\n' \
                   '/me - Присылает вашу запись в базе данных\n' \
                   '/anon - Прислать анонимное послание в админский чат (если таковой имеется)\n' \
@@ -111,7 +109,8 @@ def helper(message):
                   "командами типа /me можно отвечать на сообщения других людей, " \
                   "тогда команда выполнится на выбранном человеке. " \
                   "Ещё вы можете после команды написать ID человека (можно достать " \
-                  "в /members), чтобы не отвлекать его от дел :3"
+                  "в /members), чтобы не отвлекать его от дел :3\n\n"
+        answer += f'<b><i>ID вашей системы: {system} </i></b>'
     else:  # Command is used in PM
         answer += '/help - Прислать это сообщение\n'
         answer += '/minet - Делает приятно\n'
@@ -125,6 +124,7 @@ def helper(message):
                   'Число x необязательно, но если указано, ' \
                   'то бот оставит только x первых элементов\n\n'
         answer += 'В чате мой функционал значительно шире'
+
     reply(message, answer, parse_mode='HTML')
 
 
