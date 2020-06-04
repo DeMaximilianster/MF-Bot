@@ -445,10 +445,7 @@ def rank_superiority(message, person):
     database = Database()
     chat = database.get('chats', ('id', message.chat.id))
     system = chat['system']
-    read_file = open(SYSTEMS_FILE, 'r', encoding='utf-8')
-    data = json.load(read_file)
-    read_file.close()
-    chat_configs = data[str(system)]
+    chat_configs = get_system_configs(system)
     ranks = chat_configs['ranks']
     your_rank = database.get('members', ('id', message.from_user.id), ('system', system))['rank']
     person_entry = get_person(person, system, database, system_configs=chat_configs)
