@@ -48,7 +48,8 @@ def new_member(message, member):
     name = html_cleaner(member.first_name)
     system = database.get('chats', ('id', message.chat.id))['system']
     chat_configs = get_system_configs(system)
-    if database.get('members', ('id', member.id), ('rank', chat_configs['ranks'][0])) and \
+    if database.get('members', ('id', member.id), ('rank', chat_configs['ranks'][0]),
+                    ('system', system)) and \
             feature_is_available(message.chat.id, system, 'violators_ban'):
         kick(message.chat.id, member.id)
     elif is_suitable(message, member, 'uber', loud=False) and feature_is_available(
