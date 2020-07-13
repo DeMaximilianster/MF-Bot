@@ -106,6 +106,12 @@ ADAPT_ADEQUATE_KEYBOARD.add(InlineKeyboardButton("Адекватно", callback_
 ADAPT_ADEQUATE_KEYBOARD.add(InlineKeyboardButton("Неадекватно", callback_data="inadequate"))
 ADAPT_ADEQUATE_KEYBOARD.row_width = 1
 
+ADD_CHAT_KEYBOARD = InlineKeyboardMarkup()
+ADD_CHAT_KEYBOARD.add(InlineKeyboardButton("Новый чат", callback_data="new_chat"))
+ADD_CHAT_KEYBOARD.add(InlineKeyboardButton("Часть другого чата",
+                                           callback_data="part_of_other_chat"))
+ADD_CHAT_KEYBOARD.row_width = 1
+
 FEATURES = ('standart_commands', 'erotic_commands', 'boss_commands', 'financial_commands',
             'mutual_invites', 'messages_count', 'violators_ban', 'admins_promote', 'moves_delete',
             'newbies_captched')
@@ -113,7 +119,8 @@ FEATURES_TEXTS = dict()
 FEATURES_TEXTS['Russian'] = [
     'Разлекательные команды', 'Эротические команды', 'Админские команды (/ban, /warn...)',
     'Денежные команды (/pay, /give, /fund)',
-    'Ссылка учитывается', 'Сообщения считаются', 'Нарушители банятся', 'Админы получают админку',
+    'Ссылка учитывается', 'Сообщения считаются',
+    'Нарушители банятся при входе', 'Админы получают админку',
     'Сообщения о входе и выходе удаляются '
     '(если вкл, а капча выкл, бот не будет здороваться)', 'Новички проходят капчу'
 ]
@@ -128,12 +135,6 @@ FEATURES_OFFERS = tuple(map(lambda x: x + '_off', FEATURES))
 FEATURES_DEFAULTERS = tuple(map(lambda x: x + '_default', FEATURES))
 SYSTEM_FEATURES_ONERS = tuple(map(lambda x: 's_' + x + '_on', FEATURES))
 SYSTEM_FEATURES_OFFERS = tuple(map(lambda x: 's_' + x + '_off', FEATURES))
-
-COMMANDS_TO_ADD_STUFF = ('artadd', 'addart', 'art_add', 'add_art', 'drakkenadd', 'adddrakken',
-                         'drakken_add', 'add_drakken')
-
-COMMANDS_TO_ADD_VULGAR_STUFF = ('breastsadd', 'addbreasts', 'breasts_add', 'add_breasts', 'assadd',
-                                'addass', 'ass_add', 'add_ass')
 
 NEW_SYSTEM_JSON_ENTRY = {
     "name": "",
@@ -150,8 +151,7 @@ NEW_SYSTEM_JSON_ENTRY = {
         "advanced": ["Участник", "Лидер"],
         "boss": ["Админ", "Лидер"],
         "uber": ["Старший Админ", "Лидер"],
-        "chat_changer": ["Старший Админ", "Лидер"]  # TODO add a rank deputy to this hierarchy
-                                                    #  chat_changer: ["Заместитель", "Лидер"]
+        "chat_changer": ["Админ", "Лидер"]
     },
     "greetings": {
         "standart": "Добро пожаловать, {name}",

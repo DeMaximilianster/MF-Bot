@@ -10,7 +10,7 @@ from presenter.config.config_var import full_chat_list, channel_list, BOT_ID, \
 from presenter.config.log import Logger, LOG_TO
 from presenter.config.config_func import unban_user, is_suitable, \
     get_system_configs, photo_video_gif_get, get_target_message, \
-    update_systems_json, create_system, create_chat, SystemUpdate, \
+    update_systems_json, create_chat, SystemUpdate, \
     write_storage_json, get_storage_json, get_person, person_link, \
     person_info_in_html, chat_info_in_html
 import presenter.config.config_func as cf  # TODO Поменять все импорты из конфиг функа на этот
@@ -232,7 +232,7 @@ def money_pay(message, person, parameters_dictionary):
     money = parameters_dictionary['value']
     money_name_word = get_word_object(get_system_configs(system)['money_name'], 'Russian')
     money_name = money_name_word.cased_by_number(abs(money), if_one_then_accusative=True)
-    person_money = get_person(person, system, database)['money']
+    person_money = get_person(message, person, system, database)['money']
     if money == 0:
         reply(message, "Я вам запрещаю делать подобные бессмысленные запросы")
     elif money < 0:
@@ -417,28 +417,24 @@ def add_chat(message):
     chat_type, link = cf.get_chat_type_and_chat_link(message.chat)
     if database.get('chats', ('id', message.chat.id)):
         reply(message, "Этот чат уже записан")
-    elif system:
+    elif system:  # system is specified
         if database.get('systems', ('id', system)):  # Adding new chat to existing system
             if database.get('members', ('id', message.from_user.id), ('system', system)):
                 if is_suitable(message, message.from_user, "chat_changer", system=system):
                     create_chat(message, system, chat_type, link, database)
-                    reply(message, "Теперь я здесь работаю! Проверьте /help")
+                    reply(message, "Теперь я здесь работаю! "
+                                   "Вы можете менять настройки по умолчанию в /system, "
+                                   "так что чтобы поменять настройки везде, вам не надо "
+                                   "в каждом чате лезть в /chat")
                 else:
-                    reply(message, "Произошла ошибка!")
+                    reply(message,
+                          "У вас в этой системе нет полномочий для добавления чатов в неё)")
             else:
-                reply(message, "У вас в этой системе нет полномочий для добавления чатов в неё)")
+                reply(message, "Произошла ошибка!")
         else:
             reply(message, "Такой системы не существует")
-    elif message.from_user.id in [CREATOR_ID]:  # Creating new system if adder is an MF diplomate
-        all_systems = database.get_all('systems', 'id')
-        ids = [int(sys['id']) for sys in all_systems]
-        new_id = str(max(ids) + 1)
-        create_chat(message, new_id, chat_type, link, database)
-        create_system(message, new_id, database)
-        reply(message, "Создана новая система чатов с ID {}. Используйте /system и /help "
-                       "для настройки и получения списка доступных команд".format(new_id))
     else:
-        reply(message, "Для этой операции прошу вызвать @DeMaximilianster")
+        reply(message, "Пожалуйста укажите номер системы после команды")
 
 
 def del_chat(message):

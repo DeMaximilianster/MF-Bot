@@ -61,12 +61,12 @@ def helper(message):
                   '/warns - Посмотреть, у кого сколько предупреждений\n\n'
         # Helps
         answer += '<b>Помощь и менюшки:</b>\n'
-        answer += '/help - Прислать это сообщение\n'
-        answer += '/money_help - Финансовый режим\n'
-        answer += '/chat - Показать настройки в чате\n'
-        answer += '/system - Показать настройки во всей системе ' \
-                  '(бесполезная менюшка, если у вас тут только 1 чат)\n\n'\
-                  '<b>Хранилище:</b>\n'\
+        answer += '/help - Прислать это сообщение\n'\
+                  '/money_help - Финансовый режим\n'\
+                  '/chat - Показать настройки в чате\n'
+        if len(database.get_many('chats', ("system", system))) > 1:  # More than 1 chat in system
+            answer += '/system - Показать настройки во всей системе (по умолчанию)\n'
+        answer += '\n<b>Хранилище:</b>\n'\
                   '/storages - Посмотреть список хранилищ\n'\
                   '/get [хранилище] [номер] - Получать контент из хранилища,' \
                   'если номер не указан, будет прислан случайный контент из хранилища\n'\
@@ -307,7 +307,7 @@ def send_me(message, person):
     money_name = chat_config['money_name']
     money_name_word = get_word_object(money_name, 'ru')
     member_update(system, person)  # Update person's messages, nickname and username
-    person_entry = get_person(person, system, database, system_configs=chat_config)
+    person_entry = get_person(message, person, system, database, system_configs=chat_config)
     appointments = [x['appointment'] for x in
                     database.get_many('appointments', ('id', person.id), ('system', system))]
     messages_here = 0

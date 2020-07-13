@@ -8,6 +8,7 @@ from view.output import edit_markup, answer_inline, reply, \
     answer_callback, edit_text, delete, send, restrict
 from presenter.config.config_func import update_adapt_vote, update_multi_vote, create_adapt_vote, \
     create_vote, create_multi_vote, CAPTCHERS, kick_and_unban
+import presenter.config.config_func as cf
 from presenter.config.config_var import TEST_KEYBOARD, IRONIC_KEYBOARD, \
     VOTE_KEYBOARD, admin_place
 from presenter.config.database_lib import Database
@@ -17,6 +18,21 @@ from presenter.config.log import Logger, LOG_TO
 
 LOG = Logger(LOG_TO)
 WORK = True
+
+
+def create_new_chat(call):
+    """Add new system of chats"""
+    LOG.log_print("create_new_chat invoked")
+    database = Database()
+    chat_type, link = cf.get_chat_type_and_chat_link(call.message.chat)
+    all_systems = database.get_all('systems', 'id')
+    ids = [int(sys['id']) for sys in all_systems]
+    new_id = str(max(ids) + 1)
+    cf.create_chat(call.message, new_id, chat_type, link, database)
+    cf.create_system(call.message, new_id, database)
+    edit_text("Создана новая система чатов с ID {}. Используйте /chat и /help "
+              "для настройки и получения списка доступных команд".format(new_id),
+              call.message.chat.id, call.message.message_id)
 
 
 def captcha_completed(call):

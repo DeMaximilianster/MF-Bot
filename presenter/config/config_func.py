@@ -8,12 +8,13 @@ from threading import Thread
 from random import shuffle
 from ast import literal_eval
 from telebot.types import InlineKeyboardButton, InlineKeyboardMarkup, CallbackQuery
-from presenter.config.config_var import BOT_ID, NEW_SYSTEM_JSON_ENTRY, CREATOR_ID, ENTITIES_TO_PARSE
+from presenter.config.config_var import BOT_ID, NEW_SYSTEM_JSON_ENTRY,\
+    ADD_CHAT_KEYBOARD, ENTITIES_TO_PARSE
 from presenter.config.database_lib import Database
 from presenter.config.files_paths import ADAPT_VOTES_FILE, MULTI_VOTES_FILE, VOTES_FILE, \
     SYSTEMS_FILE, STORAGE_FILE
 from presenter.config.log import Logger
-from view.output import reply, kick, answer_callback, send, edit_text, edit_markup, get_member, \
+from view.output import reply, kick, answer_callback, edit_text, edit_markup, get_member, \
     unban, get_chat, get_me
 
 
@@ -448,7 +449,7 @@ def rank_superiority(message, person):
     chat_configs = get_system_configs(system)
     ranks = chat_configs['ranks']
     your_rank = database.get('members', ('id', message.from_user.id), ('system', system))['rank']
-    person_entry = get_person(person, system, database, system_configs=chat_configs)
+    person_entry = get_person(message, person, system, database, system_configs=chat_configs)
     their_rank = person_entry['rank']
     your_rank_n = ranks.index(your_rank)
     their_rank_n = ranks.index(their_rank)
@@ -458,22 +459,29 @@ def rank_superiority(message, person):
     return your_rank_n > their_rank_n
 
 
-def add_person(person, system, database, system_configs):
+def add_person(message, person, system, database, system_configs):
     """Add entry to database about some person in some system"""
-    # TODO ранг зависит от статуса чела, при обнаружении ботом
     # TODO часть данных должна браться из других записей, например день и месяц рождения
+    chat_member_status = get_member(message.chat.id, message.from_user.id).status
+    boss_commands_requirements = system_configs["commands"]["boss"]
+    if chat_member_status == "creator":
+        rank = system_configs['ranks'][-1]
+    elif chat_member_status == 'administrator' and isinstance(boss_commands_requirements, list):
+        rank = boss_commands_requirements[0]  # minimal rank to use admin commands
+    else:
+        rank = system_configs['ranks'][1]
     person_entry = (person.id, system, person.username, person.first_name,
-                    system_configs['ranks'][1], 0, 0, 0, 0, 0)
+                    rank, 0, 0, 0, 0, 0)
     database.append(person_entry, 'members')
 
 
-def get_person(person, system: str, database: Database, system_configs=None) -> dict:
+def get_person(message, person, system: str, database: Database, system_configs=None) -> dict:
     """Get entry about some person in some system, create if there wasn't"""
     person_entry = database.get('members', ('id', person.id), ('system', system))
     if not person_entry:
         if not system_configs:
             system_configs = get_system_configs(system)
-        add_person(person, system, database, system_configs)
+        add_person(message, person, system, database, system_configs)
         person_entry = database.get('members', ('id', person.id), ('system', system))
     return person_entry
 
@@ -484,7 +492,7 @@ def rank_required(message, person, system, min_rank, loud=True):
     database = Database()
     chat_configs = get_system_configs(system)
     ranks = chat_configs['ranks']
-    you = get_person(person, system, database, system_configs=chat_configs)
+    you = get_person(message, person, system, database, system_configs=chat_configs)
     your_rank = you['rank']
     your_rank_n = ranks.index(your_rank)
     min_rank_n = ranks.index(min_rank)
@@ -579,10 +587,6 @@ def in_mf(message, command_type, or_private=True, loud=True):
     person = left_new_or_else_member(message)
     if message.chat.id > 0:
         if loud and not or_private:
-            send(CREATOR_ID,
-                 "Некто {} попыталcя использовать команду {} в личке".format(
-                     person_info_in_html(message.from_user), message.text),
-                 parse_mode='HTML')
             reply(message, "Эта команда отключена в ЛС")
         return or_private
 
@@ -591,27 +595,25 @@ def in_mf(message, command_type, or_private=True, loud=True):
         chat_id = message.chat.id
         system = chat['system']
         chat_configs = get_system_configs(system)
-        get_person(person, system, database, system_configs=chat_configs)
+        get_person(message, person, system, database, system_configs=chat_configs)
         counter(message, person)  # Отправляем сообщение на учёт в БД
         if command_type == 'financial_commands':
             if not chat_configs['money']:
                 reply(message, "В этом чате система денег не включена. Смотрите /money_help")
                 return False
-        if command_type:
+        if command_type is not None:
             if feature_is_available(chat_id, system, command_type):
                 return True
             if loud and not database.get('systems', ('id', system), (command_type, 0)):
-                reply(message, "В данном чате команды такого типа не поддерживаются")
+                reply(message, "В данном чате команды типа {} не поддерживаются. "
+                               "Проверьте /chat".format(command_type))
             return False
         return True
     if loud:
-        text = "Люди из чата {}, в частности {} попытались мной воспользоваться"
-        send(CREATOR_ID,
-             text.format(chat_info_in_html(message.chat), person_info_in_html(message.from_user)),
-             parse_mode='HTML')
-        reply(
-            message, "Hmm, I don't know this chat. Call @DeMaximilianster for help\n\n"
-                     "Хмм, я не знаю этот чат. Обратитесь к @DeMaximilianster за помощью\n\n")
+        reply(message, "Доброго времени суток! Перед тем как мной пользоваться, "
+                       "ответьте мне на 1 вопрос: "
+                       "Этот чат новый или связан с уже существующим чатом?",
+              reply_markup=ADD_CHAT_KEYBOARD)
     return False
 
 

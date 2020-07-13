@@ -420,6 +420,30 @@ def inadequate_handler(call):
     complicated_commands.inadequate(call)
 
 
+@BOT.callback_query_handler(func=lambda call: call.data == "new_chat")
+def create_new_chat_handler(call):
+    """Add new system of chats"""
+    LOG.log_print("create_new_chat_handler invoked")
+    if output.get_member(call.message.chat.id, call.from_user.id).status in \
+            ("creator", "administrator"):
+        complicated_commands.create_new_chat(call)
+    else:
+        output.answer_callback(call.id, "Для жмака нужно иметь админку")
+
+
+@BOT.callback_query_handler(func=lambda call: call.data == "part_of_other_chat")
+def message_about_add_chat_handler(call):
+    """Tell users to use /add_chat x"""
+    if output.get_member(call.message.chat.id, call.from_user.id).status in \
+            ("creator", "administrator"):
+        output.edit_text("Введите команду\n\n/add_chat x\n\n"
+                         "Где x это номер системы вашего чата (ищите его в /help вашего чата",
+                         call.message.chat.id, call.message.message_id)
+    else:
+        output.answer_callback(call.id, "Для жмака нужно иметь админку")
+
+
+
 @BOT.inline_handler(lambda query: query.query == 'test')
 def response_handler(inline_query):
     """Тестовая инлайновая команда, бесполезная"""

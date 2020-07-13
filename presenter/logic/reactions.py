@@ -135,3 +135,4 @@ def chat_id_update(message):
     if old_chat:
         chat_type, link = cf.get_chat_type_and_chat_link(message.chat)
         create_chat(message, old_chat['system'], chat_type, link, database)
+        database.remove('chats', ('id', message.migrate_from_chat_id))
