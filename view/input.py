@@ -341,7 +341,7 @@ def chat_options_handler(message):
 def update_standart_greetings_handler(message):
     """ Change standart greeting """
     LOG.log_print("update_standart_greetings_handler invoked")
-    if config_func.in_mf(message, command_type=False, or_private=False) and config_func.is_suitable(
+    if config_func.in_mf(message, command_type=None, or_private=False) and config_func.is_suitable(
             message, message.from_user, "chat_changer"):
         boss_commands.update_greetings_json(message, 'standart')
 
@@ -350,7 +350,7 @@ def update_standart_greetings_handler(message):
 def update_captcha_greetings_handler(message):
     """ Change captcha greeting """
     LOG.log_print("update_captcha_greetings_handler invoked")
-    if config_func.in_mf(message, command_type=False, or_private=False) and config_func.is_suitable(
+    if config_func.in_mf(message, command_type=None, or_private=False) and config_func.is_suitable(
             message, message.from_user, "chat_changer"):
         boss_commands.update_greetings_json(message, 'captcha')
 
@@ -359,7 +359,7 @@ def update_captcha_greetings_handler(message):
 def update_admin_greetings_handler(message):
     """ Change admin's greeting """
     LOG.log_print("update_admin_greetings_handler invoked")
-    if config_func.in_mf(message, command_type=False, or_private=False) and config_func.is_suitable(
+    if config_func.in_mf(message, command_type=None, or_private=False) and config_func.is_suitable(
             message, message.from_user, "chat_changer"):
         boss_commands.update_greetings_json(message, 'admin')
 
@@ -368,7 +368,7 @@ def update_admin_greetings_handler(message):
 def update_full_admin_greetings_handler(message):
     """ Change full admin's greeting """
     LOG.log_print("update_full_admin_greetings_handler invoked")
-    if config_func.in_mf(message, command_type=False, or_private=False) and config_func.is_suitable(
+    if config_func.in_mf(message, command_type=None, or_private=False) and config_func.is_suitable(
             message, message.from_user, "chat_changer"):
         boss_commands.update_greetings_json(message, 'full_admin')
 
