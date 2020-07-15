@@ -194,7 +194,7 @@ class RussianWord(Word):
         if not self.end:
             return self.word + 'ов'  # стол - столов
         if self.end == 'а':
-            return self.word[:-1]  # TODO кошка -> кошек, бутылка -> бутылок
+            return self.word[:-1]
         if self.end == 'ь':
             return self.word[:-1] + 'ей'
         if self.end == 'й':

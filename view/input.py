@@ -57,6 +57,15 @@ def elite_handler(message):
 # Админские обычные команды
 
 
+@BOT.message_handler(commands=['lang'])
+def language_getter_handler(message):
+    """Gets the language of the chat"""
+    LOG.log_print("language_getter_handler invoked")
+    if config_func.in_mf(message, command_type=None, or_private=True):
+        if message.chat.id > 0 or config_func.is_suitable(message, message.from_user, 'boss'):
+            boss_commands.language_setter(message)
+
+
 @BOT.message_handler(commands=['add'])
 def upload_stuff_to_storage_handler(message):
     """ Add stuff to a media storage """
@@ -127,7 +136,6 @@ def add_moderator_to_storage_handler(message):
     if config_func.in_mf(message, command_type=None) and person and \
             config_func.check_access_to_a_storage(message, storage_name, False):
         if message.from_user.id == config_var.CREATOR_ID:
-            # TODO function is_demax, checks if demax uses it + says if it is demax only
             boss_commands.add_moderator_to_storage(message, storage_name, person.id)
         else:
             output.reply(message, "Эта команда только для моего хозяина")
@@ -242,12 +250,7 @@ def rank_changer_handler(message):
     """Changes person's rank"""
     LOG.log_print("rank_changer_handler invoked")
     if config_func.in_mf(message, command_type=None, or_private=False):
-        # TODO Сделать так, чтоб добавлять можно было только лидера
-        if message.from_user.id == config_var.CREATOR_ID:
-            person = config_func.Analyzer(message, value_necessary=False).return_target_person()
-            if person:
-                boss_commands.rank_changer(message, person)
-        elif config_func.is_suitable(message, message.from_user, 'uber'):
+        if config_func.is_suitable(message, message.from_user, 'uber'):
             person = config_func.Analyzer(message, value_necessary=False).return_target_person()
             if person and config_func.rank_superiority(message, person):
                 boss_commands.rank_changer(message, person)
@@ -267,10 +270,11 @@ def messages_change_handler(message):
 
 
 @BOT.message_handler(commands=['add_chat'])
-def add_chat_handler(message):  # TODO Она работает в личке, а не должна
+def add_chat_handler(message):
     """Добавляет чат в базу данных чатов, входящих в систему МФ2"""
     LOG.log_print("add_chat_handler invoked")
-    boss_commands.add_chat(message)
+    if message.chat.id < 0:
+        boss_commands.add_chat(message)
 
 
 @BOT.message_handler(commands=['del_chat'])
@@ -382,13 +386,6 @@ def system_options_handler(message):
         boss_commands.system_options(message)
 
 
-# @bot.message_handler(commands=['change_database'])
-# def database_changer_handler(message):
-#     """Добавляет чат в базу данных чатов, входящих в систему МФ2"""
-#     LOG.log_print(f"{__name__} invoked")
-#     if rank_required(message, "Deputy"):
-#         database_changer()
-
 # Составные команды
 
 
@@ -443,7 +440,6 @@ def message_about_add_chat_handler(call):
         output.answer_callback(call.id, "Для жмака нужно иметь админку")
 
 
-
 @BOT.inline_handler(lambda query: query.query == 'test')
 def response_handler(inline_query):
     """Тестовая инлайновая команда, бесполезная"""
@@ -452,8 +448,7 @@ def response_handler(inline_query):
 
 
 @BOT.message_handler(regexp='Признаю оскорблением')
-def insult_handler(message):  # TODO В частных чатах бот не умеет указать ссылку нормально
-    # TODO Проверка на наличие админосостава
+def insult_handler(message):
     """Спращивает, иронично ли признание оскорблением"""
     LOG.log_print("insult_handler invoked")
     if config_func.in_mf(message, command_type=None, or_private=False) and config_func.is_suitable(
@@ -508,7 +503,6 @@ def place_here_handler(call):
 def mv_handler(call):
     """Обновляет мульти-голосовашку"""
     LOG.log_print("mv_handler invoked")
-    # TODO Убрать привязку к МФным голосовашкам
     if call.chat_instance != "-8294084429973252853" or config_func.is_suitable(
             call, call.from_user, "advanced"):
         complicated_commands.multi_vote(call)
@@ -534,16 +528,6 @@ def add_vote_handler(call):
 
 
 # Простые команды и старт
-
-
-# TODO Это блять не простая команда, а админская
-@BOT.message_handler(commands=['lang'])
-def language_getter_handler(message):
-    """Gets the language of the chat"""
-    LOG.log_print("language_getter_handler invoked")  # TODO Более удобную ставилку языков
-    if config_func.in_mf(message, command_type=None, or_private=True):
-        if message.chat.id > 0 or config_func.is_suitable(message, message.from_user, 'boss'):
-            standart_commands.language_setter(message)
 
 
 @BOT.message_handler(commands=['start'])

@@ -50,7 +50,7 @@ def admin_place(message, database):
     return database.get('systems', ('id', system))['admin_place']
 
 
-def chat_list(database, system):  # TODO Сделать приличную чатоискалку
+def chat_list(database, system):
     """Список всех МФ2-чатов, кроме Админосостава и Комитета"""
     LOG.log_print("chat_list invoked")
     ch_list = database.get_many('chats', ('system', system))

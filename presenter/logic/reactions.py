@@ -5,7 +5,7 @@ from presenter.config.log import Logger, LOG_TO
 from presenter.config.config_func import Database, is_suitable, \
     feature_is_available, get_system_configs, create_captcha_keyboard, \
     create_chat, CaptchaBan, person_info_in_html, chat_info_in_html, html_cleaner
-import presenter.config.config_func as cf  # TODO Поменять все импорты из конфиг функа на этот
+import presenter.config.config_func as cf
 from view.output import delete, kick, send, promote, reply, restrict
 
 LOG = Logger(LOG_TO)
@@ -81,7 +81,6 @@ def new_member(message, member):
         captcha = True
     else:
         text = chat_configs['greetings']['standart'].format(name=name)
-    # TODO Немнжко по быдлокодерски устроено неудаление сообщения о входе
     if feature_is_available(message.chat.id, system, 'moves_delete') and not feature_is_available(
             message.chat.id, system, 'newbies_captched'):
         delete(message.chat.id, message.message_id)

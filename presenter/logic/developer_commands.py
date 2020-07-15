@@ -114,5 +114,3 @@ def simulate_error(message):
     """Simulates an error"""
     reply(message, "Запускаю ошибку!")
     reply(message, 5/0)
-
-# TODO Команда для просмотра админских полномочий бота

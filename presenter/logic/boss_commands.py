@@ -6,18 +6,45 @@ from time import time
 
 from presenter.config.database_lib import Database
 from presenter.config.config_var import full_chat_list, channel_list, BOT_ID, \
-    admin_place, chat_list, CREATOR_ID
+    admin_place, chat_list, CREATOR_ID, ORIGINAL_TO_ENGLISH, ENGLISH_TO_ORIGINAL
 from presenter.config.log import Logger, LOG_TO
 from presenter.config.config_func import unban_user, is_suitable, \
     get_system_configs, photo_video_gif_get, get_target_message, \
     update_systems_json, create_chat, SystemUpdate, \
     write_storage_json, get_storage_json, get_person, person_link, \
     person_info_in_html, chat_info_in_html
-import presenter.config.config_func as cf  # TODO Поменять все импорты из конфиг функа на этот
+import presenter.config.config_func as cf
 from presenter.config.languages import get_word_object
 from view.output import kick, reply, promote, send, forward, restrict
 
 LOG = Logger(LOG_TO)
+
+
+def language_setter(message):
+    """Sets the language of the chat"""
+    LOG.log_print("language_setter invoked")
+    database = Database()
+    original_languages = ['Русский', 'English']
+    english_languages = ['Russian', 'English']
+    language = message.text[6:].title()
+    if language in original_languages + english_languages:
+        if language in original_languages:
+            language = (language, ORIGINAL_TO_ENGLISH[language])
+        else:  # language in english_languages
+            language = (ENGLISH_TO_ORIGINAL[language], language)
+        if database.get('languages', ('id', message.chat.id)):
+            database.change(language[1], 'language', 'languages', ('id', message.chat.id))
+        else:
+            database.append((message.chat.id, language[1]), 'languages')
+        if language[0] == language[1]:
+            reply(message, f"✅ {language[0]} ✅")
+        else:
+            reply(message, f"✅ {language[0]} | {language[1]} ✅")
+    else:
+        answer = ''
+        answer += "Если вы говорите на русском, напишите '/lang Русский'\n\n"
+        answer += "If you speak English, type '/lang English'\n\n"
+        reply(message, answer)
 
 
 def add_stuff_to_storage(message, storage_name):
@@ -124,7 +151,6 @@ def warn(message, person, parameters_dictionary):
         send(adm_place, "Пользователь {} получил(а) {} варн(а) и их стало {}".format(
             person_info_in_html(person), warns, value), parse_mode='HTML')
     blowout = database.get('channels', ('name', 'Проколы'))['id']
-    # TODO каждому чату своё хранилище преступлений
     how_many = 10  # Сколько пересылает сообщений
     end_forwarding = message.reply_to_message.message_id
     start_forwarding = end_forwarding - how_many
@@ -133,7 +159,7 @@ def warn(message, person, parameters_dictionary):
          parse_mode='HTML')
     for msg_id in range(start_forwarding, end_forwarding + 1):
         forward(blowout, message.chat.id, msg_id)
-    if value >= 3:  # TODO Выборочное количество варнов для бана для каждой системы
+    if value >= 3:
         ban(message, person)
 
 
@@ -219,8 +245,6 @@ def mute(message, person, parameters_dictionary):
 
 def money_pay(message, person, parameters_dictionary):
     """Платит человеку деньги из бюджета чата"""
-    # TODO Добавить уведомление о человеке, совершившем перевод
-    # TODO add nice link's to people instead of id's
     LOG.log_print(f"money pay invoked to person {person.id}")
     database = Database()
     chat = database.get('chats', ('id', message.chat.id))
@@ -245,7 +269,6 @@ def money_pay(message, person, parameters_dictionary):
                               f"С вашего счёта было снято {money} {money_name} в банк. "
                               f"Теперь у вас {person_money}")
             sent = cf.value_marker(sent, "🔔 уведомлён(а)", "🔕 не уведомлён(а)")
-            # TODO Уточнять чат
             reply(message,
                   'У {} забрали {} {} в банк!'.format(person_link(person), money, money_name),
                   parse_mode='HTML')
@@ -266,7 +289,6 @@ def money_pay(message, person, parameters_dictionary):
             sent = send(p_id, "#Финансы\n\n"
                               f"На ваш счёт было переведено {money} {money_name} из банка. "
                               f"Теперь у вас {person_money}")
-            # TODO рефакторинг уведомлялки
             sent = cf.value_marker(sent, "🔔 уведомлён(а)", "🔕 не уведомлён(а)")
             reply(message,
                   '{} получил(а) из банка {} {}!'.format(person_link(person), money, money_name),
@@ -280,7 +302,6 @@ def money_pay(message, person, parameters_dictionary):
     database.change(person_money, 'money', 'members', ('id', p_id), ('system', system))
     if bot_money != 'inf':
         database.change(bot_money, 'money', 'systems', ('id', system))
-    # TODO Засунуть эти зассанские уебанские денежные функции в отдельный блять модуль
 
 
 def money_reset(message):
@@ -304,7 +325,6 @@ def give_admin(message, person, loud=True):
     database = Database()
     chat = database.get('chats', ('id', message.chat.id))
     system = chat['system']
-    # TODO пусть бот шлёт админу ссылку на чат админосостава и меняет её при входе
     # Дать челу админку во всех чатах, кроме Комитета и Админосостава
     for chat in chat_list(database, system):
         promote(chat['id'], person.id,
@@ -334,7 +354,6 @@ def del_admin(message, person, loud=True):
 
 
 def rank_changer(message, person):
-    # TODO Если у чела 3+ варна, то их нужно обнулить
     """Changes person's rank"""
     LOG.log_print("rank_changer invoked")
     database = Database()
@@ -548,7 +567,6 @@ def money_emoji(message):
 
 def set_money_name(message):
     """Change money's name in json"""
-    # TODO Добавить проверку по падежам
     LOG.log_print("set_money_name invoked")
     database = Database()
     mode = ' '.join(message.text.split()[1:])
@@ -573,7 +591,3 @@ def update_greetings_json(message, which_greeting: str):
     data[system] = system_configs
     cf.write_systems_json(data)
     reply(message, 'Поставлен текст: "{}"'.format(text), parse_mode='HTML')
-
-# TODO Команда /add_channel
-# TODO Команда /del_chat
-# TODO Команда /del_channel

@@ -186,7 +186,6 @@ def create_captcha_keyboard():
     wrong_animals_string = '🦀🦞🦑🐡🐶🐱🐭🐹🐰🦊🐻🐼🐵🐸🐷🐮🦁🐯🐨🙈🙉🙊🐒🐔🐧🐦🐤🐗🐺🦇🦉🦅🦆🐥🐣🐴🦄'
     wrong_animals_string += '🐝🐛🦋🐌🐞🐜🦎🐍🐢🦂🕷🦗🦟🐆🦓🦍🐘🦛🦏🐪🐫🐏🐖🐎🦔🐈'
     wrong_animals_buttons = []
-    # TODO Регулятор сложности капчи
     for wrong_animal in wrong_animals_string[:24]:
         wrong_animals_buttons.append(InlineKeyboardButton(wrong_animal,
                                                           callback_data="captcha_fail"))
@@ -461,7 +460,6 @@ def rank_superiority(message, person):
 
 def add_person(message, person, system, database, system_configs):
     """Add entry to database about some person in some system"""
-    # TODO часть данных должна браться из других записей, например день и месяц рождения
     chat_member_status = get_member(message.chat.id, message.from_user.id).status
     boss_commands_requirements = system_configs["commands"]["boss"]
     if chat_member_status == "creator":
@@ -564,7 +562,6 @@ def cooldown(message, command, timeout=3600):
         seconds %= 60
         answer = "Воу, придержи коней, ковбой. Ты сможешь воспользоваться этой командой только "
         answer += f"через {minutes} минут и {seconds} секунд 🤠"
-        # TODO use cases for this message (check /give command for example)
         reply(message, answer)
 
         return False
@@ -689,7 +686,6 @@ def counter(message, person):
                             ('chat_id', message.chat.id))['messages']
     database.change(messages + 1, 'messages', 'messages', ('person_id', person.id),
                     ('chat_id', message.chat.id))
-    # TODO Добавить время последнего сообщения и элитократические взаимодействия с ним
 
 
 def member_update(system, person):
@@ -810,11 +806,9 @@ def create_chat(message, system_id, chat_type, link, database):
     database.append(chat_tuple, 'chats')
 
 
-# TODO перенести все голосовашки в базу данных или ещё куда-то (JSON)
 def create_vote(vote_message):
     """Создаёт голосовашку"""
     LOG.log_print("create_vote invoked")
-    # TODO Параметр purpose, отвечающий за действие, которое надо сделать при закрытии голосовашки
     file = open(VOTES_FILE, 'r', encoding='utf-8')
     votes_shelve = file.read()
     if votes_shelve:
@@ -940,7 +934,6 @@ def unban_user(person):
     """Remove ban from user"""
     LOG.log_print("unban_user invoked")
     database = Database()
-    # TODO Уточнить систему
     chats_to_unban = database.get_many('chats', ('violators_ban', 2))
     for chat in chats_to_unban:
         member = get_member(chat['id'], person.id)

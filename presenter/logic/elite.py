@@ -28,7 +28,7 @@ def ask_question(message, question):
                      question)  # Следующее сообщение будет проверяться, как ответ на вопрос
 
 
-def submit(message):  # TODO возможность отменить свои ответы
+def submit(message):
     """Подсчитывает результаты"""
     LOG.log_print("submit invoked")
     database = Database()
@@ -40,9 +40,6 @@ def submit(message):  # TODO возможность отменить свои о
                         ('right', database.get('basic_logic_tested',
                                                ('id', message.from_user.id))[f'answer_{i}'])):
             success += 1
-    # TODO записывать время прохождения
-    # TODO В некоторые вопросы и ответы теста добавить капс лок
-    # TODO Записывать результаты в elite_results
     if success >= 4:
         send(person.id,
              "Поздравляю! Ваше количество баллов ({}) достаточно для прохождения".format(
@@ -51,7 +48,6 @@ def submit(message):  # TODO возможность отменить свои о
         send(
             -1001233124059, '#тест_на_логику {} ({}) [{}] осилил(а) тест со счётом {}'.format(
                 person.first_name, person.username, person.id, success))
-        # TODO вырубить повторные присылания сообщений о прохождении теста на логику
     else:
         send(person.id,
              "К сожалению, количество ваших правильных ответов ({}) недостаточно для прохождения".
@@ -79,7 +75,7 @@ def check(message, ques):
             submit(message)
 
 
-def elite(message):  # TODO Привести эти команды в порядок
+def elite(message):
     """Start the basic logic test"""
     LOG.log_print("elite invoked")
     database = Database()
@@ -106,8 +102,4 @@ def elite(message):  # TODO Привести эти команды в поряд
 
             break
     else:
-        submit(message)  # TODO тест когда-то проходили, пересдача
-
-# TODO Продвинутая логика
-# TODO Сочинение
-# TODO Мораль
+        submit(message)
