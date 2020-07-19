@@ -54,7 +54,7 @@ class Logger:
         def decorator(func):
             def wrapper(*func_args, **func_kwargs):
                 self.log(func.__name__ + " invoked")
-                func(func_args, func_kwargs)
+                func(*func_args, **func_kwargs)
             return wrapper
         return decorator
 
