@@ -47,7 +47,7 @@ CAPTCHERS = Captchers()
 
 
 def test_function(excepted_result, gaven_result):
-    """Test whenever function has done correctly or not"""
+    """Check whether function has ended correctly or not"""
     if gaven_result == excepted_result:
         print("Test completed!")
     else:
@@ -55,7 +55,7 @@ def test_function(excepted_result, gaven_result):
 
 
 class CaptchaBan(Thread):
-    """Waits for person to complete the captcha or ban if time is passed"""
+    """Waits for person to complete the captcha. Bans them if time is up."""
 
     def __init__(self, message, bots_message):
         Thread.__init__(self)
@@ -74,7 +74,7 @@ class CaptchaBan(Thread):
 
 
 class SystemUpdate(Thread):
-    """Updates all the entries in some system"""
+    """Updates all entries in some system"""
 
     def __init__(self, chat_id, system_id, members, sent):
         Thread.__init__(self)
@@ -107,14 +107,14 @@ class WaitAndUnban(Thread):
 
 
 def kick_and_unban(chat_id, user_id):
-    """Kicks user and unbans them in one flash"""
+    """Kicks user and unbans them immediately"""
     kick(chat_id, user_id)
     wait_and_unban = WaitAndUnban(chat_id, user_id)
     wait_and_unban.start()
 
 
 def get_text_and_entities(target_message):
-    """Get the text and entities from the message"""
+    """Get text and entities from the message"""
     if target_message.text:
         text = target_message.text
         entities = target_message.entities
@@ -125,7 +125,7 @@ def get_text_and_entities(target_message):
 
 
 def entities_saver(text, entities):
-    """Copies the text and saving all the entities"""
+    """Copies the text and saves all the entities"""
     points = set()
     entities_blocks = []
     if entities and ({e.type for e in entities}.intersection(ENTITIES_TO_PARSE)):
@@ -171,7 +171,7 @@ def html_cleaner(text: str) -> str:
 
 
 def get_target_message(message):
-    """Aims message that was perlied to or cuurent message if it's not a reply"""
+    """Returns message that was replied to or current message if it's not a reply"""
     reply_to = message.reply_to_message
     if reply_to:
         return reply_to
@@ -301,7 +301,7 @@ def get_one_language(message):
 
 
 def get_languages(message):
-    """Gets all labguages that are possibly spoken by user
+    """Gets all languages that are possibly spoken by user
     :param message: message
     :return dictionary {"Russian": bool, "English": bool}
     :rtype dict"""
@@ -343,7 +343,7 @@ def left_new_or_else_member(target_message):
 
 
 class Analyzer:
-    """Class to get target_person and other paramters"""
+    """Class to get target_person and other parameters"""
 
     def __init__(self, message, value_necessary=True, default_value=None, value_positive=False):
         self.message = message
@@ -379,7 +379,7 @@ class Analyzer:
         return self.message.from_user
 
     def check_person(self, person, to_self, to_bot):
-        """Checks if target person chosen correctly"""
+        """Checks if target person is chosen correctly"""
         LOG.log_print("person_check invoked")
         if person.id == self.message.from_user.id and not to_self and self.parameters_dictionary:
             reply(
@@ -615,7 +615,7 @@ def in_mf(message, command_type, or_private=True, loud=True):
 
 
 def is_correct_message(message):
-    """ Checks if a command has been sent to this bot or if the command is not a forwarding """
+    """ Checks if a command has been sent to this bot or if the command is not a forward"""
     cmd = message.text.split("@")
     return not message.forward_from and (len(cmd) == 1 or cmd[1] == get_me().username)
 
