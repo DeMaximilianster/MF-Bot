@@ -49,11 +49,11 @@ class Logger:
                 with open(path, 'a+', encoding='utf-8') as log_file:
                     log_file.write(all_logs)
 
-    def function(self, *args):
+    def wrap(self):
         """Logging wrapper around a function"""
         def decorator(func):
             def wrapper(*func_args, **func_kwargs):
-                self.log(*args)
+                self.log(func.__name__ + " invoked")
                 func(func_args, func_kwargs)
             return wrapper
         return decorator
