@@ -251,9 +251,10 @@ def rank_changer_handler(message):
     LOG.log_print("rank_changer_handler invoked")
     if config_func.in_mf(message, command_type=None, or_private=False):
         if config_func.is_suitable(message, message.from_user, 'uber'):
-            person = config_func.Analyzer(message, value_necessary=False).return_target_person()
-            if person and config_func.rank_superiority(message, person):
-                boss_commands.rank_changer(message, person)
+            person = config_func.Analyzer(message, value_necessary=False).return_target_person(to_self=True)
+            if person:
+                if person.id == message.from_user.id or config_func.rank_superiority(message, person):
+                    boss_commands.rank_changer(message, person)
 
 
 @BOT.message_handler(commands=['messages'])
