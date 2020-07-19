@@ -9,7 +9,7 @@ from presenter.config.config_func import member_update, \
     get_list_from_storage, person_link, \
     html_cleaner, link_text_wrapper, value_marker, get_storage_json
 from presenter.config.database_lib import Database
-from presenter.config.config_var import admin_place, ORIGINAL_TO_ENGLISH, ENGLISH_TO_ORIGINAL, \
+from presenter.config.config_var import admin_place, \
     MONTHS_GENITIVE, MONTHS_PREPOSITIONAL, FEATURES, FEATURES_TEXTS
 from presenter.config.languages import get_word_object
 from presenter.config.log import Logger
@@ -18,38 +18,10 @@ from presenter.config.texts import MINETS
 LOG = Logger()
 
 
-def language_setter(message):
-    """Gets the language of the chat"""
-    LOG.log_print("language_getter invoked")
-    database = Database()
-    original_languages = ['Русский', 'English']
-    english_languages = ['Russian', 'English']
-    language = message.text[6:].title()
-    if language in original_languages + english_languages:
-        if language in original_languages:
-            language = (language, ORIGINAL_TO_ENGLISH[language])
-        else:  # language in english_languages
-            language = (ENGLISH_TO_ORIGINAL[language], language)
-        if database.get('languages', ('id', message.chat.id)):
-            database.change(language[1], 'language', 'languages', ('id', message.chat.id))
-        else:
-            database.append((message.chat.id, language[1]), 'languages')
-        if language[0] == language[1]:
-            reply(message, f"✅ {language[0]} ✅")
-        else:
-            reply(message, f"✅ {language[0]} | {language[1]} ✅")
-    else:
-        answer = ''
-        answer += "Если вы говорите на русском, напишите '/lang Русский'\n\n"
-        answer += "If you speak English, type '/lang English'\n\n"
-        reply(message, answer)
-
-
 def helper(message):
     """Предоставляет человеку список команд"""
     LOG.log_print(str(message.from_user.id) + ": helper invoked")
     database = Database()
-    # TODO Адаптативность званий
     answer = '<b>Команды:</b>\n\n'
     if message.chat.id < 0:  # Command is used in chat
         system = database.get('chats', ('id', message.chat.id))['system']
@@ -332,7 +304,6 @@ def send_me(message, person):
 
 def send_some_top(message, language, format_string, start='', sort_key=lambda x: True):
     """Send a full version of a top for admins"""
-    # TODO Кто вышел из чата, а кто находится в чате
     LOG.log_print("send_some_top invoked")
     database = Database()
     # Declaring variables
@@ -412,10 +383,8 @@ def money_give(message, person, parameters_dictionary: dict):
     giver = message.from_user
     money = parameters_dictionary['value']
     system = database.get('chats', ('id', message.chat.id))['system']
-    # TODO Replace these strings in each 3 money function with get_person()
-    value_getter = database.get('members', ('id', getter.id), ('system', system))['money']
-    value_giver = database.get('members', ('id', giver.id), ('system', system))['money']
-    #
+    value_getter = get_person(message, getter, system, database)['money']
+    value_giver = get_person(message, giver, system, database)['money']
     money_name_word = get_word_object(get_system_configs(system)['money_name'], 'Russian')
     money_name = money_name_word.cased_by_number(abs(money), if_one_then_accusative=True)
     if money < 0:
@@ -497,7 +466,6 @@ def money_fund(message, parameters_dictionary):
             database.change(value_system, 'money', 'systems', ('id', system))
 
 
-# TODO More comfortable way to insert birthday
 def month_set(message, month):
     """Set the month of person's birthday"""
     LOG.log_print("month_set invoked")
@@ -563,7 +531,6 @@ def chats(message):
 def chat_check(message):
     """Show which options are chosen in chat"""
     database = Database()
-    # TODO Сделать функцию для обновы чата
     database.change(message.chat.title, 'name', 'chats', ('id', message.chat.id))
     if message.chat.username:
         database.change('public', 'type', 'chats', ('id', message.chat.id))

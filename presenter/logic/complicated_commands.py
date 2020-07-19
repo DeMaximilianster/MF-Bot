@@ -47,7 +47,6 @@ def captcha_completed(call):
                  can_add_web_page_previews=True)
         answer_callback(call.id, text='Испытание креветкой пройдено!')
         edit_markup(call.message.chat.id, call.message.message_id)
-        # TODO Менять текст сообщения на текст-приветствие при выключенной капче
     else:
         answer_callback(call.id, text='Это не ваша креветка 👀')
 
@@ -121,7 +120,6 @@ def non_ironic(call):
     LOG.log_print("non_ironic invoked")
     # Проверка, нажал ли на кнопку не тот, кто нужен
     edit_text("Неиронично!", call.message.chat.id, call.message.message_id)
-    # TODO добавить сюда голосовашку
     send(admin_place(call.message, Database()),
          "Произошло оскорбление! " + "[Ссылка на инцидент](t.me/{}/{})".format(
              call.message.reply_to_message.chat.username, call.message.reply_to_message.message_id),
@@ -181,11 +179,10 @@ def multi_vote(call):
     votey = votes_shelve[msg_id]  # Получаем необходимую нам голосовашку в хранилище
     file.close()
 
-    if user_id in votey['votes'][which][1].keys(
-    ):  # Челик нажал на кнопку, на которой есть его мнение
+    if user_id in votey['votes'][which][1].keys():
+        # Челик нажал на кнопку, на которой есть его мнение
         # удаляем челика из словаря
-        votey['votes'][which][1].pop(
-            user_id)  # TODO Убрать быдлокод такого вида, изменив структуру МГ и АГ
+        votey['votes'][which][1].pop(user_id)
     else:
         # если чедика нету - то просто добавляем
         votey['votes'][which][1].update([(user_id, link)])
@@ -195,7 +192,7 @@ def multi_vote(call):
     file.write(str(votes_shelve))
     file.close()
     answer_callback(call.id, text="Жмак учтён!")
-    update_multi_vote(call.message.message_id)  # TODO возможность стопнуть мульти-голосовашку
+    update_multi_vote(call.message.message_id)
 
 
 def adapt_vote(call):
@@ -229,7 +226,7 @@ def adapt_vote(call):
     file.write(str(votes_shelve))
     file.close()
     answer_callback(call.id, text="Жмак учтён!")
-    update_adapt_vote(call.message.message_id)  # TODO возможность стопнуть адапт-голосовашку
+    update_adapt_vote(call.message.message_id)
 
 
 def add_vote(call):
@@ -292,4 +289,3 @@ def vote(message):
     where_keyboard.add(InlineKeyboardButton("Сюда", callback_data="here"))
     reply(message, "А запостить куда?", reply_markup=where_keyboard)
 
-# TODO разделить этот модуль на сообщения с кнопками и триггеры кнопок

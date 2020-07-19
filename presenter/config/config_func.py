@@ -47,7 +47,7 @@ CAPTCHERS = Captchers()
 
 
 def test_function(excepted_result, gaven_result):
-    """Test whenever function has done correctly or not"""
+    """Check whether function has ended correctly or not"""
     if gaven_result == excepted_result:
         print("Test completed!")
     else:
@@ -55,7 +55,7 @@ def test_function(excepted_result, gaven_result):
 
 
 class CaptchaBan(Thread):
-    """Waits for person to complete the captcha or ban if time is passed"""
+    """Waits for person to complete the captcha. Bans them if time is up."""
 
     def __init__(self, message, bots_message):
         Thread.__init__(self)
@@ -74,7 +74,7 @@ class CaptchaBan(Thread):
 
 
 class SystemUpdate(Thread):
-    """Updates all the entries in some system"""
+    """Updates all entries in some system"""
 
     def __init__(self, chat_id, system_id, members, sent):
         Thread.__init__(self)
@@ -107,14 +107,14 @@ class WaitAndUnban(Thread):
 
 
 def kick_and_unban(chat_id, user_id):
-    """Kicks user and unbans them in one flash"""
+    """Kicks user and unbans them immediately"""
     kick(chat_id, user_id)
     wait_and_unban = WaitAndUnban(chat_id, user_id)
     wait_and_unban.start()
 
 
 def get_text_and_entities(target_message):
-    """Get the text and entities from the message"""
+    """Get text and entities from the message"""
     if target_message.text:
         text = target_message.text
         entities = target_message.entities
@@ -125,7 +125,7 @@ def get_text_and_entities(target_message):
 
 
 def entities_saver(text, entities):
-    """Copies the text and saving all the entities"""
+    """Copies the text and saves all the entities"""
     points = set()
     entities_blocks = []
     if entities and ({e.type for e in entities}.intersection(ENTITIES_TO_PARSE)):
@@ -171,7 +171,7 @@ def html_cleaner(text: str) -> str:
 
 
 def get_target_message(message):
-    """Aims message that was perlied to or cuurent message if it's not a reply"""
+    """Returns message that was replied to or current message if it's not a reply"""
     reply_to = message.reply_to_message
     if reply_to:
         return reply_to
@@ -186,7 +186,6 @@ def create_captcha_keyboard():
     wrong_animals_string = '🦀🦞🦑🐡🐶🐱🐭🐹🐰🦊🐻🐼🐵🐸🐷🐮🦁🐯🐨🙈🙉🙊🐒🐔🐧🐦🐤🐗🐺🦇🦉🦅🦆🐥🐣🐴🦄'
     wrong_animals_string += '🐝🐛🦋🐌🐞🐜🦎🐍🐢🦂🕷🦗🦟🐆🦓🦍🐘🦛🦏🐪🐫🐏🐖🐎🦔🐈'
     wrong_animals_buttons = []
-    # TODO Регулятор сложности капчи
     for wrong_animal in wrong_animals_string[:24]:
         wrong_animals_buttons.append(InlineKeyboardButton(wrong_animal,
                                                           callback_data="captcha_fail"))
@@ -302,7 +301,7 @@ def get_one_language(message):
 
 
 def get_languages(message):
-    """Gets all labguages that are possibly spoken by user
+    """Gets all languages that are possibly spoken by user
     :param message: message
     :return dictionary {"Russian": bool, "English": bool}
     :rtype dict"""
@@ -344,7 +343,7 @@ def left_new_or_else_member(target_message):
 
 
 class Analyzer:
-    """Class to get target_person and other paramters"""
+    """Class to get target_person and other parameters"""
 
     def __init__(self, message, value_necessary=True, default_value=None, value_positive=False):
         self.message = message
@@ -380,7 +379,7 @@ class Analyzer:
         return self.message.from_user
 
     def check_person(self, person, to_self, to_bot):
-        """Checks if target person chosen correctly"""
+        """Checks if target person is chosen correctly"""
         LOG.log_print("person_check invoked")
         if person.id == self.message.from_user.id and not to_self and self.parameters_dictionary:
             reply(
@@ -461,7 +460,6 @@ def rank_superiority(message, person):
 
 def add_person(message, person, system, database, system_configs):
     """Add entry to database about some person in some system"""
-    # TODO часть данных должна браться из других записей, например день и месяц рождения
     chat_member_status = get_member(message.chat.id, message.from_user.id).status
     boss_commands_requirements = system_configs["commands"]["boss"]
     if chat_member_status == "creator":
@@ -564,7 +562,6 @@ def cooldown(message, command, timeout=3600):
         seconds %= 60
         answer = "Воу, придержи коней, ковбой. Ты сможешь воспользоваться этой командой только "
         answer += f"через {minutes} минут и {seconds} секунд 🤠"
-        # TODO use cases for this message (check /give command for example)
         reply(message, answer)
 
         return False
@@ -618,7 +615,7 @@ def in_mf(message, command_type, or_private=True, loud=True):
 
 
 def is_correct_message(message):
-    """ Checks if a command has been sent to this bot or if the command is not a forwarding """
+    """ Checks if a command has been sent to this bot or if the command is not a forward"""
     cmd = message.text.split("@")
     return not message.forward_from and (len(cmd) == 1 or cmd[1] == get_me().username)
 
@@ -689,7 +686,6 @@ def counter(message, person):
                             ('chat_id', message.chat.id))['messages']
     database.change(messages + 1, 'messages', 'messages', ('person_id', person.id),
                     ('chat_id', message.chat.id))
-    # TODO Добавить время последнего сообщения и элитократические взаимодействия с ним
 
 
 def member_update(system, person):
@@ -810,11 +806,9 @@ def create_chat(message, system_id, chat_type, link, database):
     database.append(chat_tuple, 'chats')
 
 
-# TODO перенести все голосовашки в базу данных или ещё куда-то (JSON)
 def create_vote(vote_message):
     """Создаёт голосовашку"""
     LOG.log_print("create_vote invoked")
-    # TODO Параметр purpose, отвечающий за действие, которое надо сделать при закрытии голосовашки
     file = open(VOTES_FILE, 'r', encoding='utf-8')
     votes_shelve = file.read()
     if votes_shelve:
@@ -940,7 +934,6 @@ def unban_user(person):
     """Remove ban from user"""
     LOG.log_print("unban_user invoked")
     database = Database()
-    # TODO Уточнить систему
     chats_to_unban = database.get_many('chats', ('violators_ban', 2))
     for chat in chats_to_unban:
         member = get_member(chat['id'], person.id)
