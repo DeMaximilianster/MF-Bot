@@ -18,14 +18,14 @@ WORK = True
 
 
 @BOT.message_handler(content_types=['migrate_from_chat_id'])
-@LOG.wrap()
+@LOG.wrap
 def chat_id_update_handler(message):
     """ Update chat ID """
     reactions.chat_id_update(message)
 
 
 @BOT.message_handler(content_types=['new_chat_members'])
-@LOG.wrap()
+@LOG.wrap
 def new_member_handler(message):
     """Реагирует на вход в чат"""
     person = message.new_chat_members[0]
@@ -34,7 +34,7 @@ def new_member_handler(message):
 
 
 @BOT.message_handler(content_types=['left_chat_member'])
-@LOG.wrap()
+@LOG.wrap
 def left_member_handler(message):
     """Комментирует уход участника и прощается участником"""
     if config_func.in_mf(message, command_type=None, or_private=False, loud=False):
@@ -45,7 +45,7 @@ def left_member_handler(message):
 
 
 @BOT.message_handler(commands=['elite'])
-@LOG.wrap()
+@LOG.wrap
 def elite_handler(message):
     """ Runs an Elite test """
     if message.chat.type == 'private':  # Тест на элитность можно провести только в личке у бота
@@ -58,7 +58,7 @@ def elite_handler(message):
 
 
 @BOT.message_handler(commands=['lang'])
-@LOG.wrap()
+@LOG.wrap
 def language_getter_handler(message):
     """Gets the language of the chat"""
     if config_func.in_mf(message, command_type=None, or_private=True):
@@ -67,7 +67,7 @@ def language_getter_handler(message):
 
 
 @BOT.message_handler(commands=['add'])
-@LOG.wrap()
+@LOG.wrap
 def upload_stuff_to_storage_handler(message):
     """ Add stuff to a media storage """
     analyzer = config_func.Analyzer(message, value_necessary=False)
@@ -78,7 +78,7 @@ def upload_stuff_to_storage_handler(message):
 
 
 @BOT.message_handler(commands=['remove'])
-@LOG.wrap()
+@LOG.wrap
 def remove_stuff_from_storage_handler(message):
     """Removes some media from media storage"""
     analyzer = config_func.Analyzer(message, value_necessary=False)
@@ -95,7 +95,7 @@ def remove_stuff_from_storage_handler(message):
 
 
 @BOT.message_handler(commands=['create'])
-@LOG.wrap()
+@LOG.wrap
 def create_new_storage_handler(message):
     """ Creates new media storage """
     analyzer = config_func.Analyzer(message, value_necessary=False)
@@ -111,7 +111,7 @@ def create_new_storage_handler(message):
 
 
 @BOT.message_handler(commands=['create_vulgar'])
-@LOG.wrap()
+@LOG.wrap
 def create_new_vulgar_storage_handler(message):
     """ Creates new vulgar media storage """
     analyzer = config_func.Analyzer(message, value_necessary=False)
@@ -127,7 +127,7 @@ def create_new_vulgar_storage_handler(message):
 
 
 @BOT.message_handler(commands=['add_moder'])
-@LOG.wrap()
+@LOG.wrap
 def add_moderator_to_storage_handler(message):
     """ Adds a moderator to a storage """
     analyzer = config_func.Analyzer(message, value_necessary=False)
@@ -142,7 +142,7 @@ def add_moderator_to_storage_handler(message):
 
 
 @BOT.message_handler(commands=['remove_moder'])
-@LOG.wrap()
+@LOG.wrap
 def remove_moderator_from_storage_handler(message):
     """ Removes a moderator from a storage """
     analyzer = config_func.Analyzer(message, value_necessary=False)
@@ -157,7 +157,7 @@ def remove_moderator_from_storage_handler(message):
 
 
 @BOT.message_handler(commands=['update'])
-@LOG.wrap()
+@LOG.wrap
 def update_all_members_handler(message):
     """ Updates members database """
     if config_func.in_mf(message, 'boss_commands', or_private=False) and config_func.is_suitable(
@@ -166,7 +166,7 @@ def update_all_members_handler(message):
 
 
 @BOT.message_handler(commands=['warn'])
-@LOG.wrap()
+@LOG.wrap
 def warn_handler(message):
     """Даёт участнику предупреждение"""
     if config_func.in_mf(message, 'boss_commands', or_private=False) and config_func.is_suitable(
@@ -186,7 +186,7 @@ def warn_handler(message):
 
 
 @BOT.message_handler(commands=['unwarn'])
-@LOG.wrap()
+@LOG.wrap
 def unwarn_handler(message):
     """Снимает с участника предупреждение"""
     if config_func.in_mf(message, 'boss_commands', or_private=False) and config_func.is_suitable(
@@ -198,7 +198,7 @@ def unwarn_handler(message):
 
 
 @BOT.message_handler(commands=['ban'])
-@LOG.wrap()
+@LOG.wrap
 def ban_handler(message):
     """ Ban member """
     if config_func.in_mf(message, 'boss_commands', or_private=False) and config_func.is_suitable(
@@ -209,7 +209,7 @@ def ban_handler(message):
 
 
 @BOT.message_handler(commands=['kick'])
-@LOG.wrap()
+@LOG.wrap
 def kick_handler(message):
     """ Kicks member """
     if config_func.in_mf(message, 'boss_commands', or_private=False) and config_func.is_suitable(
@@ -220,7 +220,7 @@ def kick_handler(message):
 
 
 @BOT.message_handler(commands=['mute'])
-@LOG.wrap()
+@LOG.wrap
 def mute_handler(message):
     """ Mutes member """
     if config_func.in_mf(message, "boss_commands", or_private=False) and config_func.is_suitable(
@@ -233,7 +233,7 @@ def mute_handler(message):
 
 
 @BOT.message_handler(commands=['pay'])
-@LOG.wrap()
+@LOG.wrap
 def money_pay_handler(message):
     """ Give money from the treasury to the member """
     if config_func.in_mf(message, 'financial_commands', or_private=False) \
@@ -246,7 +246,7 @@ def money_pay_handler(message):
 
 
 @BOT.message_handler(func=config_func.in_system_commands)
-@LOG.wrap()
+@LOG.wrap
 def rank_changer_handler(message):
     """Changes person's rank"""
     if config_func.in_mf(message, command_type=None, or_private=False):
@@ -258,7 +258,7 @@ def rank_changer_handler(message):
 
 
 @BOT.message_handler(commands=['messages'])
-@LOG.wrap()
+@LOG.wrap
 def messages_change_handler(message):
     """Меняет запись в БД о количестве сообщений чела"""
     if config_func.in_mf(message, 'boss_commands', or_private=False) and config_func.is_suitable(
@@ -271,7 +271,7 @@ def messages_change_handler(message):
 
 
 @BOT.message_handler(commands=['add_chat'])
-@LOG.wrap()
+@LOG.wrap
 def add_chat_handler(message):
     """Добавляет чат в базу данных чатов, входящих в систему МФ2"""
     if message.chat.id < 0:
@@ -279,7 +279,7 @@ def add_chat_handler(message):
 
 
 @BOT.message_handler(commands=['del_chat'])
-@LOG.wrap()
+@LOG.wrap
 def del_chat_handler(message):
     """Removes chat from the system."""
     if config_func.in_mf(message, command_type=None, or_private=False) and config_func.is_suitable(
@@ -288,7 +288,7 @@ def del_chat_handler(message):
 
 
 @BOT.message_handler(commands=['admin_place'])
-@LOG.wrap()
+@LOG.wrap
 def add_admin_place_handler(message):
     """Add admin place to system"""
     if config_func.in_mf(message, command_type=None, or_private=False) and config_func.is_suitable(
@@ -297,7 +297,7 @@ def add_admin_place_handler(message):
 
 
 @BOT.message_handler(commands=['money_on', 'money_off'])
-@LOG.wrap()
+@LOG.wrap
 def money_mode_change_handler(message):
     """ Enable or disable money system """
     if config_func.in_mf(message, command_type=None, or_private=False) and config_func.is_suitable(
@@ -306,7 +306,7 @@ def money_mode_change_handler(message):
 
 
 @BOT.message_handler(commands=['money_reset'])
-@LOG.wrap()
+@LOG.wrap
 def money_reset_handler(message):
     """Take all users' money to a system fund"""
     if config_func.in_mf(message, command_type=None, or_private=False) and config_func.is_suitable(
@@ -315,7 +315,7 @@ def money_reset_handler(message):
 
 
 @BOT.message_handler(commands=['m_emoji'])
-@LOG.wrap()
+@LOG.wrap
 def money_emoji_handler(message):
     """ Put emoji to indicate the amount of currency """
     if config_func.in_mf(message, command_type=None, or_private=False) and config_func.is_suitable(
@@ -324,7 +324,7 @@ def money_emoji_handler(message):
 
 
 @BOT.message_handler(commands=['m_name'])
-@LOG.wrap()
+@LOG.wrap
 def money_name_handler(message):
     """ Set currency name """
     if config_func.in_mf(message, command_type=None, or_private=False) and config_func.is_suitable(
@@ -334,7 +334,7 @@ def money_name_handler(message):
 
 @BOT.message_handler(commands=config_var.FEATURES_OFFERS + config_var.FEATURES_ONERS +
                      config_var.FEATURES_DEFAULTERS)
-@LOG.wrap()
+@LOG.wrap
 def chat_options_handler(message):
     """ Change chat options """
     if config_func.in_mf(message, command_type=None, or_private=False) and config_func.is_suitable(
@@ -343,7 +343,7 @@ def chat_options_handler(message):
 
 
 @BOT.message_handler(commands=['standart_greetings'])
-@LOG.wrap()
+@LOG.wrap
 def update_standart_greetings_handler(message):
     """ Change standart greeting """
     if config_func.in_mf(message, command_type=None, or_private=False) and config_func.is_suitable(
@@ -352,7 +352,7 @@ def update_standart_greetings_handler(message):
 
 
 @BOT.message_handler(commands=['captcha_greetings'])
-@LOG.wrap()
+@LOG.wrap
 def update_captcha_greetings_handler(message):
     """ Change captcha greeting """
     if config_func.in_mf(message, command_type=None, or_private=False) and config_func.is_suitable(
@@ -361,7 +361,7 @@ def update_captcha_greetings_handler(message):
 
 
 @BOT.message_handler(commands=['admin_greetings'])
-@LOG.wrap()
+@LOG.wrap
 def update_admin_greetings_handler(message):
     """ Change admin's greeting """
     if config_func.in_mf(message, command_type=None, or_private=False) and config_func.is_suitable(
@@ -370,7 +370,7 @@ def update_admin_greetings_handler(message):
 
 
 @BOT.message_handler(commands=['full_admin_greetings'])
-@LOG.wrap()
+@LOG.wrap
 def update_full_admin_greetings_handler(message):
     """ Change full admin's greeting """
     if config_func.in_mf(message, command_type=None, or_private=False) and config_func.is_suitable(
@@ -379,7 +379,7 @@ def update_full_admin_greetings_handler(message):
 
 
 @BOT.message_handler(commands=config_var.SYSTEM_FEATURES_ONERS + config_var.SYSTEM_FEATURES_OFFERS)
-@LOG.wrap()
+@LOG.wrap
 def system_options_handler(message):
     """ Change chat system options """
     if config_func.in_mf(message, command_type=None, or_private=False) and config_func.is_suitable(
@@ -391,35 +391,35 @@ def system_options_handler(message):
 
 
 @BOT.callback_query_handler(func=lambda call: call.data == 'captcha')
-@LOG.wrap()
+@LOG.wrap
 def captcha_completed_handler(call):
     """ It is executing when new member passes the captcha """
     complicated_commands.captcha_completed(call)
 
 
 @BOT.callback_query_handler(func=lambda call: call.data == 'captcha_fail')
-@LOG.wrap()
+@LOG.wrap
 def captcha_failed_handler(call):
     """ It is executing when new member fails the captcha """
     complicated_commands.captcha_failed(call)
 
 
 @BOT.callback_query_handler(func=lambda call: 'adequate' in call.data and call.data != 'inadequate')
-@LOG.wrap()
+@LOG.wrap
 def adequate_handler(call):
     """Вариант адекватен"""
     complicated_commands.adequate(call)
 
 
 @BOT.callback_query_handler(func=lambda call: call.data == 'inadequate')
-@LOG.wrap()
+@LOG.wrap
 def inadequate_handler(call):
     """Вариант неадекватен"""
     complicated_commands.inadequate(call)
 
 
 @BOT.callback_query_handler(func=lambda call: call.data == "new_chat")
-@LOG.wrap()
+@LOG.wrap
 def create_new_chat_handler(call):
     """Add new system of chats"""
     if output.get_member(call.message.chat.id, call.from_user.id).status in \
@@ -442,14 +442,14 @@ def message_about_add_chat_handler(call):
 
 
 @BOT.inline_handler(lambda query: query.query == 'test')
-@LOG.wrap()
+@LOG.wrap
 def response_handler(inline_query):
     """Тестовая инлайновая команда, бесполезная"""
     complicated_commands.response(inline_query)
 
 
 @BOT.message_handler(regexp='Признаю оскорблением')
-@LOG.wrap()
+@LOG.wrap
 def insult_handler(message):
     """Спращивает, иронично ли признание оскорблением"""
     if config_func.in_mf(message, command_type=None, or_private=False) and config_func.is_suitable(
@@ -459,7 +459,7 @@ def insult_handler(message):
 
 @BOT.callback_query_handler(func=lambda call: call.data == 'non_ironic'
                             )  # триггерится, когда нажата кнопка "Нет"
-@LOG.wrap()
+@LOG.wrap
 def non_ironic_handler(call):
     """Реакция, если обвинение было неироничным"""
     # Проверка, нажал ли на кнопку не тот, кто нужен
@@ -471,7 +471,7 @@ def non_ironic_handler(call):
 
 @BOT.callback_query_handler(func=lambda call: call.data == 'ironic'
                             )  # триггерится, когда нажата кнопка "Да"
-@LOG.wrap()
+@LOG.wrap
 def ironic_handler(call):
     """Реакция, если обвинение было ироничным"""
     # Проверка, нажал ли на кнопку не тот, кто нужен
@@ -482,7 +482,7 @@ def ironic_handler(call):
 
 
 @BOT.message_handler(commands=['vote', 'multi_vote', 'adapt_vote'])
-@LOG.wrap()
+@LOG.wrap
 def vote_handler(message):
     """Генерирует голосовашку"""
     if config_func.in_mf(message, command_type=None, or_private=False):
@@ -490,7 +490,7 @@ def vote_handler(message):
 
 
 @BOT.callback_query_handler(func=lambda call: 'here' in call.data or 'nedostream' in call.data)
-@LOG.wrap()
+@LOG.wrap
 def place_here_handler(call):
     """Выбирает, куда прислать голосовашку"""
     # Проверка, нажал ли на кнопку не тот, кто нужен
@@ -501,7 +501,7 @@ def place_here_handler(call):
 
 
 @BOT.callback_query_handler(func=lambda call: 'mv_' in call.data)
-@LOG.wrap()
+@LOG.wrap
 def mv_handler(call):
     """Обновляет мульти-голосовашку"""
     if call.chat_instance != "-8294084429973252853" or config_func.is_suitable(
@@ -510,7 +510,7 @@ def mv_handler(call):
 
 
 @BOT.callback_query_handler(func=lambda call: 'av_' in call.data)
-@LOG.wrap()
+@LOG.wrap
 def av_handler(call):
     """Обновляет адапт-голосовашку"""
     if call.chat_instance != "-8294084429973252853" or config_func.is_suitable(
@@ -520,7 +520,7 @@ def av_handler(call):
 
 @BOT.callback_query_handler(
     func=lambda call: call.data == 'favor' or call.data == 'against' or call.data == 'abstain')
-@LOG.wrap()
+@LOG.wrap
 def add_vote_handler(call):
     """Вставляет голос в голосоовашку"""
     if call.chat_instance != "-8294084429973252853" or config_func.is_suitable(
@@ -532,7 +532,7 @@ def add_vote_handler(call):
 
 
 @BOT.message_handler(commands=['start'])
-@LOG.wrap()
+@LOG.wrap
 def starter_handler(message):
     """Запуск бота в личке, в чате просто реагирует"""
     if config_func.is_correct_message(message) and config_func.in_mf(message, command_type=None):
@@ -540,7 +540,7 @@ def starter_handler(message):
 
 
 @BOT.message_handler(commands=['help'])
-@LOG.wrap()
+@LOG.wrap
 def helper_handler(message):
     """Предоставляет человеку список команд"""
     if config_func.is_correct_message(message) and config_func.in_mf(message, command_type=None):
@@ -548,7 +548,7 @@ def helper_handler(message):
 
 
 @BOT.message_handler(commands=['money_help', 'help_money'])
-@LOG.wrap()
+@LOG.wrap
 def money_helper_handler(message):
     """Financial instructions"""
     if config_func.in_mf(message, command_type=None):
@@ -556,7 +556,7 @@ def money_helper_handler(message):
 
 
 @BOT.message_handler(commands=['storages'])
-@LOG.wrap()
+@LOG.wrap
 def send_list_of_storages_handler(message):
     """ Sends list of all storages """
     if config_func.in_mf(message, command_type=None):
@@ -564,7 +564,7 @@ def send_list_of_storages_handler(message):
 
 
 @BOT.message_handler(commands=['id'])
-@LOG.wrap()
+@LOG.wrap
 def show_id_handler(message):
     """Присылает различные ID'шники, зачастую бесполезные"""
     if config_func.in_mf(message, command_type=None):
@@ -572,7 +572,7 @@ def show_id_handler(message):
 
 
 @BOT.message_handler(commands=['echo'])
-@LOG.wrap()
+@LOG.wrap
 def echo_message_handler(message):
     """ Repeats message """
     if config_func.in_mf(message, command_type=None):
@@ -580,7 +580,7 @@ def echo_message_handler(message):
 
 
 @BOT.message_handler(commands=['clear'])
-@LOG.wrap()
+@LOG.wrap
 def clear_echo_message_handler(message):
     """ Clears echo messages """
     if config_func.in_mf(message, command_type=None):
@@ -588,7 +588,7 @@ def clear_echo_message_handler(message):
 
 
 @BOT.message_handler(commands=['html'])
-@LOG.wrap()
+@LOG.wrap
 def html_echo_message_handler(message):
     """ Repeats message with HTML message markup """
     if config_func.in_mf(message, command_type=None):
@@ -596,7 +596,7 @@ def html_echo_message_handler(message):
 
 
 @BOT.message_handler(commands=['rights'])
-@LOG.wrap()
+@LOG.wrap
 def rights_handler(message):
     """ Check bot rights """
     if config_func.in_mf(message, command_type=None):
@@ -604,7 +604,7 @@ def rights_handler(message):
 
 
 @BOT.message_handler(commands=['minet', 'french_style_sex', 'blowjob'])
-@LOG.wrap()
+@LOG.wrap
 def minet_handler(message):
     """Приносит удовольствие"""
     if config_func.is_correct_message(message) and config_func.in_mf(message, 'standart_commands'):
@@ -614,7 +614,7 @@ def minet_handler(message):
 
 
 @BOT.message_handler(commands=['shuffle'])
-@LOG.wrap()
+@LOG.wrap
 def shuffle_handler(message):
     """ Shuffle a list """
     if config_func.in_mf(message, 'standart_commands'):
@@ -631,7 +631,7 @@ def shuffle_handler(message):
 
 
 @BOT.message_handler(commands=['get'])
-@LOG.wrap()
+@LOG.wrap
 def send_stuff_from_storage_handler(message):
     """Send random media from the storage"""
     analyzer = config_func.Analyzer(message, value_necessary=False)
@@ -647,7 +647,7 @@ def send_stuff_from_storage_handler(message):
 
 
 @BOT.message_handler(commands=['size'])
-@LOG.wrap()
+@LOG.wrap
 def check_storage_size_handler(message):
     """ Checks how many moderators and how much media there is in a storage """
     analyzer = config_func.Analyzer(message, value_necessary=False)
@@ -659,7 +659,7 @@ def check_storage_size_handler(message):
 
 @BOT.message_handler(regexp='есть один мем')
 @BOT.message_handler(commands=['meme'])
-@LOG.wrap()
+@LOG.wrap
 def send_meme_handler(message):
     """Присылает мем"""
     if config_func.in_mf(message, 'standart_commands') and config_func.cooldown(message, 'meme'):
@@ -667,7 +667,7 @@ def send_meme_handler(message):
 
 
 @BOT.message_handler(commands=['me', 'check', 'check_me', 'check_ebalo'])
-@LOG.wrap()
+@LOG.wrap
 def send_me_handler(message):
     """Присылает человеку его запись в БД"""
     if config_func.in_mf(message, command_type=None, or_private=False):
@@ -678,7 +678,7 @@ def send_me_handler(message):
 
 
 @BOT.message_handler(commands=['members'])
-@LOG.wrap()
+@LOG.wrap
 def all_members_handler(message):
     """Присылает человеку все записи в БД"""
     if config_func.in_mf(message, command_type=None, or_private=False):
@@ -693,7 +693,7 @@ def all_members_handler(message):
 
 
 @BOT.message_handler(commands=['give'])
-@LOG.wrap()
+@LOG.wrap
 def money_give_handler(message):
     """Обмен денег между пользователями"""
     if config_func.in_mf(message, 'financial_commands', or_private=False):
@@ -705,7 +705,7 @@ def money_give_handler(message):
 
 
 @BOT.message_handler(commands=['fund'])
-@LOG.wrap()
+@LOG.wrap
 def money_fund_handler(message):
     """Transfer money to the chat fund"""
     if config_func.in_mf(message, 'financial_commands', or_private=False):
@@ -716,7 +716,7 @@ def money_fund_handler(message):
 
 
 @BOT.message_handler(commands=['top', 'money_top'])
-@LOG.wrap()
+@LOG.wrap
 def money_top_handler(message):
     """Топ ЯМ"""
     if config_func.in_mf(message, 'financial_commands', or_private=False):
@@ -731,7 +731,7 @@ def money_top_handler(message):
 
 
 @BOT.message_handler(commands=['warns'])
-@LOG.wrap()
+@LOG.wrap
 def warns_top_handler(message):
     """ Show all warns """
     if config_func.in_mf(message, command_type=None, or_private=False):
@@ -743,7 +743,7 @@ def warns_top_handler(message):
 
 
 @BOT.message_handler(commands=['messages_top'])
-@LOG.wrap()
+@LOG.wrap
 def messages_top_handler(message):
     """Messages top"""
     if config_func.in_mf(message, command_type=None, or_private=False):
@@ -758,7 +758,7 @@ def messages_top_handler(message):
 
 
 @BOT.message_handler(commands=['month'])
-@LOG.wrap()
+@LOG.wrap
 def month_set_handler(message):
     """Set month of person's birthday"""
     if config_func.in_mf(message, command_type=None):
@@ -774,7 +774,7 @@ def month_set_handler(message):
 
 
 @BOT.message_handler(commands=['day'])
-@LOG.wrap()
+@LOG.wrap
 def day_set_handler(message):
     """Set day of person's birthday"""
     if config_func.in_mf(message, command_type=None):
@@ -792,7 +792,7 @@ def day_set_handler(message):
 
 
 @BOT.message_handler(commands=['bdays', 'birthdays'])
-@LOG.wrap()
+@LOG.wrap
 def birthday_handler(message):
     """Show the nearest birthdays"""
     if config_func.in_mf(message, command_type=None):
@@ -806,7 +806,7 @@ def birthday_handler(message):
 
 
 @BOT.message_handler(commands=['admins', 'report'])
-@LOG.wrap()
+@LOG.wrap
 def admins_handler(message):
     """Ping admins"""
     if config_func.in_mf(message, command_type=None) and config_func.is_suitable(message,
@@ -817,7 +817,7 @@ def admins_handler(message):
 
 
 @BOT.message_handler(commands=['chat'])
-@LOG.wrap()
+@LOG.wrap
 def chat_check_handler(message):
     """Show options of the current chat"""
     if config_func.in_mf(message, command_type=None, or_private=False):
@@ -825,7 +825,7 @@ def chat_check_handler(message):
 
 
 @BOT.message_handler(commands=['system'])
-@LOG.wrap()
+@LOG.wrap
 def system_check_handler(message):
     """Show options of the current chat"""
     if config_func.in_mf(message, command_type=None, or_private=False):
@@ -833,7 +833,7 @@ def system_check_handler(message):
 
 
 @BOT.message_handler(commands=['anon'])
-@LOG.wrap()
+@LOG.wrap
 def anon_message_handler(message):
     """Send anon message to admin place"""
     if message.chat.id > 0:
@@ -847,7 +847,7 @@ def anon_message_handler(message):
 
 
 @BOT.message_handler(commands=['test'])
-@LOG.wrap()
+@LOG.wrap
 def database_send_handler(message):
     """ Send all databases to config_var.CREATOR_ID """
     if message.chat.id == config_var.CREATOR_ID:
@@ -873,7 +873,7 @@ def simulate_error_handler(message):
 
 
 @BOT.message_handler(func=lambda message: True, content_types=config_var.ALL_CONTENT_TYPES)
-@LOG.wrap()
+@LOG.wrap
 def counter_handler(message):
     """Подсчитывает сообщения"""
     if config_func.in_mf(message, command_type=None, loud=False, or_private=False):
