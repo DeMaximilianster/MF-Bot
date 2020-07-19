@@ -13,7 +13,7 @@ LOG = Logger()
 
 def show_id(message):
     """Присылает различные ID'шники, зачастую бесполезные"""
-    LOG.log_print(str(message.from_user.id) + ": show_id invoked")
+    LOG.log(str(message.from_user.id) + ": show_id invoked")
 
     answer = f'Время отправки вашего сообщения: {cd(ctime(message.date))}\n\n' \
              f'Переводя, выходит: {cd(time_replace(message.date))}\n\n' \

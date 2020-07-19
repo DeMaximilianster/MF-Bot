@@ -20,7 +20,7 @@ LOG = Logger()
 
 def helper(message):
     """Предоставляет человеку список команд"""
-    LOG.log_print(str(message.from_user.id) + ": helper invoked")
+    LOG.log(str(message.from_user.id) + ": helper invoked")
     database = Database()
     answer = '<b>Команды:</b>\n\n'
     if message.chat.id < 0:  # Command is used in chat
@@ -126,7 +126,7 @@ def money_helper(message):
 
 def send_list_of_storages(message):
     """ Sends list of all storages """
-    LOG.log_print("send_list_of_storages invoked")
+    LOG.log("send_list_of_storages invoked")
     storages_dict = get_storage_json()
     vulgar_storages = []
     non_vulgar_storages = []
@@ -144,7 +144,7 @@ def send_list_of_storages(message):
 
 def minet(message, language):
     """Приносит удовольствие"""
-    LOG.log_print(str(message.from_user.id) + ": minet invoked")
+    LOG.log(str(message.from_user.id) + ": minet invoked")
     if language:
         choices = []
         for i in MINETS[language].keys():
@@ -159,7 +159,7 @@ def minet(message, language):
 
 def send_random_stuff_from_storage(message, storage_name):
     """Send a random piece of media from a storage"""
-    LOG.log_print("send_random_stuff_from_storage invoked")
+    LOG.log("send_random_stuff_from_storage invoked")
     contents = get_list_from_storage(storage_name)['contents']
     if len(contents) > 0:
         result = choice(contents)
@@ -180,7 +180,7 @@ def send_random_stuff_from_storage(message, storage_name):
 
 def send_numbered_stuff_from_storage(message, storage_name, stuff_number):
     """Send a numbered piece of media from a storage"""
-    LOG.log_print("send_numbered_stuff_from_storage invoked")
+    LOG.log("send_numbered_stuff_from_storage invoked")
     contents = get_list_from_storage(storage_name)['contents']
     if len(contents) > 0:
         try:
@@ -242,7 +242,7 @@ def dict_to_natural_language(counter_dictionary):
 
 def check_storage_size(message, storage_name):
     """ Checks how many moderators and how much media there is in a storage """
-    LOG.log_print('check_storage_size invoked')
+    LOG.log('check_storage_size invoked')
     storage = get_list_from_storage(storage_name)
     moderators_number = len(storage['moders'])
     media_number = len(storage['contents'])
@@ -260,7 +260,7 @@ def check_storage_size(message, storage_name):
 
 def send_meme(message):
     """Присылает мем"""
-    LOG.log_print(str(message.from_user.id) + ": send_meme invoked")
+    LOG.log(str(message.from_user.id) + ": send_meme invoked")
     meme = choice(('AgADAgADx60xG2S_oUmVz41Dk8a4AkRNUw8ABAEAAwIAA20AAzj4BQABFgQ',
                    'AgADAgADdKsxG7PUsEmfWmu7wYQaSlHNuQ8ABAEAAwIAA20AA2gAAxYE',
                    'AgADAgAD-aoxG0EnIUqnHKx1l-EFFajiug8ABAEAAwIAA20AA3VUAAIWBA',
@@ -272,7 +272,7 @@ def send_meme(message):
 
 def send_me(message, person):
     """Присылает человеку его запись в БД"""
-    LOG.log_print(str(message.from_user.id) + ": send_me invoked")
+    LOG.log(str(message.from_user.id) + ": send_me invoked")
     database = Database()
     system = database.get('chats', ('id', message.chat.id))['system']
     chat_config = get_system_configs(system)
@@ -304,7 +304,7 @@ def send_me(message, person):
 
 def send_some_top(message, language, format_string, start='', sort_key=lambda x: True):
     """Send a full version of a top for admins"""
-    LOG.log_print("send_some_top invoked")
+    LOG.log("send_some_top invoked")
     database = Database()
     # Declaring variables
     sent = False
@@ -343,7 +343,7 @@ def send_some_top(message, language, format_string, start='', sort_key=lambda x:
 
 def send_short_top(message, language, format_string, start='', sort_key=lambda x: True):
     """Send a short version of a top for non-admins"""
-    LOG.log_print("send_short_top invoked")
+    LOG.log("send_short_top invoked")
     database = Database()
     # Declaring variables
     system = database.get('chats', ('id', message.chat.id))['system']
@@ -377,7 +377,7 @@ def send_short_top(message, language, format_string, start='', sort_key=lambda x
 
 def money_give(message, person, parameters_dictionary: dict):
     """Функция обмена деньгами между людьми"""
-    LOG.log_print(f"money_give invoked to person {person.id}")
+    LOG.log(f"money_give invoked to person {person.id}")
     database = Database()
     getter = person
     giver = message.from_user
@@ -427,7 +427,7 @@ def money_give(message, person, parameters_dictionary: dict):
 
 def money_fund(message, parameters_dictionary):
     """Transfer money to the chat fund"""
-    LOG.log_print("money_fund invoked")
+    LOG.log("money_fund invoked")
     database = Database()
 
     giver = message.from_user
@@ -468,7 +468,7 @@ def money_fund(message, parameters_dictionary):
 
 def month_set(message, month):
     """Set the month of person's birthday"""
-    LOG.log_print("month_set invoked")
+    LOG.log("month_set invoked")
     database = Database()
     reply(message, "Ставлю человеку с ID {} месяц рождения {}".format(message.from_user.id, month))
     database.change(month, 'month_birthday', 'members', ('id', message.from_user.id))
@@ -476,7 +476,7 @@ def month_set(message, month):
 
 def day_set(message, day, language):
     """Set the day of person's birthday"""
-    LOG.log_print("day_set invoked")
+    LOG.log("day_set invoked")
     days = (31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31)
     database = Database()
     month = database.get('members', ('id', message.from_user.id))['month_birthday'] - 1
@@ -589,7 +589,7 @@ def system_check(message):
 
 def anon_message(message):
     """Send an anonymous message to an admin place"""
-    LOG.log_print('anon_message invoked')
+    LOG.log('anon_message invoked')
     database = Database(to_log=False)
     systems = [x['system'] for x in database.get_many('members', ('id', message.from_user.id))]
     system = None

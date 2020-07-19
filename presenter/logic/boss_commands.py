@@ -22,7 +22,7 @@ LOG = Logger(LOG_TO)
 
 def language_setter(message):
     """Sets the language of the chat"""
-    LOG.log_print("language_setter invoked")
+    LOG.log("language_setter invoked")
     database = Database()
     original_languages = ['Русский', 'English']
     english_languages = ['Russian', 'English']
@@ -49,7 +49,7 @@ def language_setter(message):
 
 def add_stuff_to_storage(message, storage_name):
     """Add some media to media storage"""
-    LOG.log_print("add_stuff_to_storage invoked")
+    LOG.log("add_stuff_to_storage invoked")
     rep = message.reply_to_message
     storages_dict = get_storage_json()
     if rep:
@@ -73,7 +73,7 @@ def add_stuff_to_storage(message, storage_name):
 
 def remove_stuff_from_storage(message, storage_name, file_id):
     """Removes some media from media storage"""
-    LOG.log_print("remove_stuff_from_storage invoked")
+    LOG.log("remove_stuff_from_storage invoked")
     storages_dict = get_storage_json()
     storage = storages_dict[storage_name]
     for index in range(len(storage['contents'])):
@@ -88,7 +88,7 @@ def remove_stuff_from_storage(message, storage_name, file_id):
 
 def create_new_storage(message, storage_mame, is_vulgar):
     """ Creates new media storage """
-    LOG.log_print('create_new_storage invoked')
+    LOG.log('create_new_storage invoked')
     storages_dict = get_storage_json()
     if storage_mame not in storages_dict.keys():
         new_storage = {'is_vulgar': is_vulgar, 'moders': [CREATOR_ID], 'contents': []}
@@ -102,7 +102,7 @@ def create_new_storage(message, storage_mame, is_vulgar):
 
 def add_moderator_to_storage(message, storage_name, person_id):
     """ Adds a moderator to a storage """
-    LOG.log_print('add_moderator_to_storage invoked')
+    LOG.log('add_moderator_to_storage invoked')
     storages_dict = get_storage_json()
     if person_id not in storages_dict[storage_name]['moders']:
         storages_dict[storage_name]['moders'].append(person_id)
@@ -114,7 +114,7 @@ def add_moderator_to_storage(message, storage_name, person_id):
 
 def remove_moderator_from_storage(message, storage_name, person_id):
     """ Removes a moderator from a storage """
-    LOG.log_print('remove_moderator_from_storage invoked')
+    LOG.log('remove_moderator_from_storage invoked')
     storages_dict = get_storage_json()
     if person_id in storages_dict[storage_name]['moders']:
         storages_dict[storage_name]['moders'].remove(person_id)
@@ -126,7 +126,7 @@ def remove_moderator_from_storage(message, storage_name, person_id):
 
 def update_all_members(message):
     """Updates all the messages, usernames and nicknames"""
-    LOG.log_print("money_top invoked")
+    LOG.log("money_top invoked")
     sent = reply(message, "Начинаю обновление...")
     database = Database(to_log=False)
     chat = database.get('chats', ('id', message.chat.id))
@@ -138,7 +138,7 @@ def update_all_members(message):
 
 def warn(message, person, parameters_dictionary):
     """Даёт участнику предупреждение"""
-    LOG.log_print("warn invoked")
+    LOG.log("warn invoked")
     database = Database()
     warns = parameters_dictionary['value']
     chat = database.get('chats', ('id', message.chat.id))
@@ -165,7 +165,7 @@ def warn(message, person, parameters_dictionary):
 
 def unwarn(message, person, parameters_dictionary: dict):
     """Снимает с участника предупреждение"""
-    LOG.log_print("unwarn invoked")
+    LOG.log("unwarn invoked")
     database = Database()
     unwarns = parameters_dictionary['value']
     chat = database.get('chats', ('id', message.chat.id))
@@ -195,7 +195,7 @@ def unwarn(message, person, parameters_dictionary: dict):
 
 def ban(message, person, comment=True, unban_then=False):
     """Даёт участнику бан"""
-    LOG.log_print("ban invoked")
+    LOG.log("ban invoked")
     database = Database()
     blowout = database.get('channels', ('name', 'Проколы'))['id']
     how_many = 3  # Сколько пересылает сообщений
@@ -229,7 +229,7 @@ def ban(message, person, comment=True, unban_then=False):
 
 def mute(message, person, parameters_dictionary):
     """Даёт участнику бан"""
-    LOG.log_print("mute invoked")
+    LOG.log("mute invoked")
     database = Database()
     hours = parameters_dictionary['value']
     chat = database.get('chats', ('id', message.chat.id))
@@ -245,7 +245,7 @@ def mute(message, person, parameters_dictionary):
 
 def money_pay(message, person, parameters_dictionary):
     """Платит человеку деньги из бюджета чата"""
-    LOG.log_print(f"money pay invoked to person {person.id}")
+    LOG.log(f"money pay invoked to person {person.id}")
     database = Database()
     chat = database.get('chats', ('id', message.chat.id))
     system = chat['system']
@@ -321,7 +321,7 @@ def money_reset(message):
 
 def give_admin(message, person, loud=True):
     """Назначает человека админом"""
-    LOG.log_print("give_admin invoked")
+    LOG.log("give_admin invoked")
     database = Database()
     chat = database.get('chats', ('id', message.chat.id))
     system = chat['system']
@@ -338,7 +338,7 @@ def give_admin(message, person, loud=True):
 
 def del_admin(message, person, loud=True):
     """Remove admin's right"""
-    LOG.log_print("del_admin invoked")
+    LOG.log("del_admin invoked")
     database = Database()
     chat = database.get('chats', ('id', message.chat.id))
     system = chat['system']
@@ -355,7 +355,7 @@ def del_admin(message, person, loud=True):
 
 def rank_changer(message, person):
     """Changes person's rank"""
-    LOG.log_print("rank_changer invoked")
+    LOG.log("rank_changer invoked")
     database = Database()
     chat = database.get('chats', ('id', message.chat.id))
     system = chat['system']
@@ -400,7 +400,7 @@ def rank_changer(message, person):
 
 def message_change(message, person, parameters_dictionary):
     """Меняет запись в БД о количестве сообщений чела"""
-    LOG.log_print(f"message_change invoked to person {person.id}")
+    LOG.log(f"message_change invoked to person {person.id}")
     database = Database()
     p_id = person.id
     ch_id = message.chat.id
@@ -414,7 +414,7 @@ def message_change(message, person, parameters_dictionary):
 
 def deleter_mode(message):
     """Удалять медиа или нет"""
-    LOG.log_print("deleter_mode invoked")
+    LOG.log("deleter_mode invoked")
     database = Database()
     delete = int(database.get('config', ('var', 'delete'))['value'])
     delete = (delete + 1) % 2  # Переводит 0 в 1, а 1 в 0
@@ -427,7 +427,7 @@ def deleter_mode(message):
 
 def add_chat(message):
     """Добавляет чат в базу данных чатов, входящих в систему МФ2"""
-    LOG.log_print("add_chat invoked")
+    LOG.log("add_chat invoked")
     database = Database()
     system = None
     message_words = message.text.split()
@@ -458,7 +458,7 @@ def add_chat(message):
 
 def del_chat(message):
     """Removes chat from the system."""
-    LOG.log_print("del_chat invoked")
+    LOG.log("del_chat invoked")
     chat = message.chat.id
     database = Database()
 
@@ -469,7 +469,7 @@ def del_chat(message):
 
 def add_admin_place(message):
     """Add admin place to system"""
-    LOG.log_print("add_admin_place invoked")
+    LOG.log("add_admin_place invoked")
     database = Database()
     chat = database.get('chats', ('id', message.chat.id))
     if chat:
@@ -482,7 +482,7 @@ def add_admin_place(message):
 
 def chat_options(message):
     """Optimize current chat"""
-    LOG.log_print("chat_options invoked")
+    LOG.log("chat_options invoked")
     database = Database()
     text = message.text.split(sep='@')[0]
     last_word = text.split(sep='_')[-1]
@@ -501,7 +501,7 @@ def chat_options(message):
 
 def system_options(message):
     """Optimize current system"""
-    LOG.log_print("system_options invoked")
+    LOG.log("system_options invoked")
     database = Database()
     text = message.text.split(sep='@')[0]
     last_word = text.split(sep='_')[-1]
@@ -518,7 +518,7 @@ def system_options(message):
 
 def money_mode_change(message):
     """Change the money mode in system. Infinite, finite or no money"""
-    LOG.log_print("money_mode_change invoked")
+    LOG.log("money_mode_change invoked")
     database = Database()
 
     mode = message.text.split()[0].split(sep='@')[0].split(sep='_')[-1]
@@ -551,7 +551,7 @@ def money_mode_change(message):
 
 def money_emoji(message):
     """Change money's emoji in json"""
-    LOG.log_print("money_emoji invoked")
+    LOG.log("money_emoji invoked")
     database = Database()
     mode = ' '.join(message.text.split()[1:])
     chat = database.get('chats', ('id', message.chat.id))
@@ -567,7 +567,7 @@ def money_emoji(message):
 
 def set_money_name(message):
     """Change money's name in json"""
-    LOG.log_print("set_money_name invoked")
+    LOG.log("set_money_name invoked")
     database = Database()
     mode = ' '.join(message.text.split()[1:])
     chat = database.get('chats', ('id', message.chat.id))

@@ -12,7 +12,7 @@ LOG = Logger(LOG_TO)
 
 def ask_question(message, question):
     """Задаём вопрос"""
-    LOG.log_print("ask_question invoked")
+    LOG.log("ask_question invoked")
     database = Database()
     ask = database.get('basic_logic_tested',
                        ('id', message.from_user.id))[f'question_{question}']  # Получаем вопрос
@@ -30,7 +30,7 @@ def ask_question(message, question):
 
 def submit(message):
     """Подсчитывает результаты"""
-    LOG.log_print("submit invoked")
+    LOG.log("submit invoked")
     database = Database()
     markup = ReplyKeyboardRemove(selective=False)  # убираем клаву
     success = 0  # Переменная для подсчёта правильных ответов
@@ -60,7 +60,7 @@ def submit(message):
 
 def check(message, ques):
     """Запись ответа"""
-    LOG.log_print("check invoked")
+    LOG.log("check invoked")
     if message.text[0] == '/':
         reply(message,
               "Тест приостановлен, введите вашу команду ещё раз",
@@ -77,7 +77,7 @@ def check(message, ques):
 
 def elite(message):
     """Start the basic logic test"""
-    LOG.log_print("elite invoked")
+    LOG.log("elite invoked")
     database = Database()
     if database.get('basic_logic_tested', ('id', message.from_user.id)) is None:
         send(

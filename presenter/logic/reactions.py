@@ -38,7 +38,7 @@ def trigger(message):
 
 def new_member(message, member):
     """Реагирует на вход в чат"""
-    LOG.log_print("new_member invoked")
+    LOG.log("new_member invoked")
     database = Database()
     # Declaring variables
     text = ''
@@ -102,7 +102,7 @@ def new_member(message, member):
 
 def left_member(message):
     """Комментирует уход участника и прощается участником"""
-    LOG.log_print("left_member invoked")
+    LOG.log("left_member invoked")
     database = Database()
     chat = database.get('chats', ('id', message.chat.id))
     system = chat['system']
@@ -128,7 +128,7 @@ def left_member(message):
 
 def chat_id_update(message):
     """Update chat id if group converts to supergroup"""
-    LOG.log_print("chat_id_update invoked")
+    LOG.log("chat_id_update invoked")
     database = Database()
     old_chat = database.get('chats', ('id', message.migrate_from_chat_id))
     if old_chat:
