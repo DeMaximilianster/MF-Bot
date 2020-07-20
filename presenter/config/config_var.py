@@ -42,24 +42,24 @@ MONTHS_GENITIVE = [month_to_genitive(i) for i in MONTHS]
 MONTHS_PREPOSITIONAL = [month_to_prepositional(i) for i in MONTHS]
 
 
+@LOG.wrap
 def admin_place(message, database):
     """Finds the admin place of the system"""
-    LOG.log("admin_place invoked")
     chat = database.get('chats', ('id', message.chat.id))
     system = chat['system']
     return database.get('systems', ('id', system))['admin_place']
 
 
+@LOG.wrap
 def chat_list(database, system):
     """Список всех МФ2-чатов, кроме Админосостава и Комитета"""
-    LOG.log("chat_list invoked")
     ch_list = database.get_many('chats', ('system', system))
     return ch_list
 
 
+@LOG.wrap
 def full_chat_list(database, system):
     """Список всех МФ2-чатов"""
-    LOG.log("full_chat_list invoked")
     return database.get_many('chats', ('system', system))
 
 

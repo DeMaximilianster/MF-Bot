@@ -36,9 +36,9 @@ def trigger(message):
         send(chat_id, text, parse_mode='HTML')
 
 
+@LOG.wrap
 def new_member(message, member):
     """Реагирует на вход в чат"""
-    LOG.log("new_member invoked")
     database = Database()
     # Declaring variables
     text = ''
@@ -100,9 +100,9 @@ def new_member(message, member):
         captcha_ban.start()
 
 
+@LOG.wrap
 def left_member(message):
     """Комментирует уход участника и прощается участником"""
-    LOG.log("left_member invoked")
     database = Database()
     chat = database.get('chats', ('id', message.chat.id))
     system = chat['system']
@@ -126,9 +126,9 @@ def left_member(message):
         send(admin_place, text, parse_mode='HTML')
 
 
+@LOG.wrap
 def chat_id_update(message):
     """Update chat id if group converts to supergroup"""
-    LOG.log("chat_id_update invoked")
     database = Database()
     old_chat = database.get('chats', ('id', message.migrate_from_chat_id))
     if old_chat:

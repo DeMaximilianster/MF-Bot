@@ -124,9 +124,9 @@ def money_helper(message):
     reply(message, answer, parse_mode='HTML')
 
 
+@LOG.wrap
 def send_list_of_storages(message):
     """ Sends list of all storages """
-    LOG.log("send_list_of_storages invoked")
     storages_dict = get_storage_json()
     vulgar_storages = []
     non_vulgar_storages = []
@@ -157,9 +157,9 @@ def minet(message, language):
             send_sticker(message.chat.id, rep, reply_to_message_id=message.message_id)
 
 
+@LOG.wrap
 def send_random_stuff_from_storage(message, storage_name):
     """Send a random piece of media from a storage"""
-    LOG.log("send_random_stuff_from_storage invoked")
     contents = get_list_from_storage(storage_name)['contents']
     if len(contents) > 0:
         result = choice(contents)
@@ -178,9 +178,9 @@ def send_random_stuff_from_storage(message, storage_name):
         reply(message, "На данный момент хранилище пусто :-(")
 
 
+@LOG.wrap
 def send_numbered_stuff_from_storage(message, storage_name, stuff_number):
     """Send a numbered piece of media from a storage"""
-    LOG.log("send_numbered_stuff_from_storage invoked")
     contents = get_list_from_storage(storage_name)['contents']
     if len(contents) > 0:
         try:
@@ -240,9 +240,9 @@ def dict_to_natural_language(counter_dictionary):
     return 'из них ' + ', '.join(media_list[:-1]) + ' и ' + media_list[-1]
 
 
+@LOG.wrap
 def check_storage_size(message, storage_name):
     """ Checks how many moderators and how much media there is in a storage """
-    LOG.log('check_storage_size invoked')
     storage = get_list_from_storage(storage_name)
     moderators_number = len(storage['moders'])
     media_number = len(storage['contents'])
@@ -302,9 +302,9 @@ def send_me(message, person):
     reply(message, msg)
 
 
+@LOG.wrap
 def send_some_top(message, language, format_string, start='', sort_key=lambda x: True):
     """Send a full version of a top for admins"""
-    LOG.log("send_some_top invoked")
     database = Database()
     # Declaring variables
     sent = False
@@ -341,9 +341,9 @@ def send_some_top(message, language, format_string, start='', sort_key=lambda x:
         reply(message, "Ничего нет!")
 
 
+@LOG.wrap
 def send_short_top(message, language, format_string, start='', sort_key=lambda x: True):
     """Send a short version of a top for non-admins"""
-    LOG.log("send_short_top invoked")
     database = Database()
     # Declaring variables
     system = database.get('chats', ('id', message.chat.id))['system']
@@ -425,9 +425,9 @@ def money_give(message, person, parameters_dictionary: dict):
     database.change(value_giver, 'money', 'members', ('id', giver.id), ('system', system))
 
 
+@LOG.wrap
 def money_fund(message, parameters_dictionary):
     """Transfer money to the chat fund"""
-    LOG.log("money_fund invoked")
     database = Database()
 
     giver = message.from_user
@@ -466,17 +466,17 @@ def money_fund(message, parameters_dictionary):
             database.change(value_system, 'money', 'systems', ('id', system))
 
 
+@LOG.wrap
 def month_set(message, month):
     """Set the month of person's birthday"""
-    LOG.log("month_set invoked")
     database = Database()
     reply(message, "Ставлю человеку с ID {} месяц рождения {}".format(message.from_user.id, month))
     database.change(month, 'month_birthday', 'members', ('id', message.from_user.id))
 
 
+@LOG.wrap
 def day_set(message, day, language):
     """Set the day of person's birthday"""
-    LOG.log("day_set invoked")
     days = (31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31)
     database = Database()
     month = database.get('members', ('id', message.from_user.id))['month_birthday'] - 1
@@ -587,9 +587,9 @@ def system_check(message):
     reply(message, text)
 
 
+@LOG.wrap
 def anon_message(message):
     """Send an anonymous message to an admin place"""
-    LOG.log('anon_message invoked')
     database = Database(to_log=False)
     systems = [x['system'] for x in database.get_many('members', ('id', message.from_user.id))]
     system = None

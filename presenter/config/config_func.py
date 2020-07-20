@@ -288,9 +288,9 @@ def photo_video_gif_get(target_message):
     return None
 
 
+@LOG.wrap
 def get_one_language(message):
     """Analyzes the language that is suitable for some situation"""
-    LOG.log("language_analyzer invoked")
     database = Database()
     entry = database.get('languages', ('id', message.chat.id))
     if entry:
@@ -300,12 +300,12 @@ def get_one_language(message):
     return ''
 
 
+@LOG.wrap
 def get_languages(message):
     """Gets all languages that are possibly spoken by user
     :param message: message
     :return dictionary {"Russian": bool, "English": bool}
     :rtype dict"""
-    LOG.log("get_languages invoked")
     database = Database()
     entry = database.get('languages', ('id', message.chat.id))
     languages = {"Russian": False, "English": False}
@@ -378,9 +378,9 @@ class Analyzer:
             return left_new_or_else_member(self.message.reply_to_message)
         return self.message.from_user
 
+    @LOG.wrap
     def check_person(self, person, to_self, to_bot):
         """Checks if target person is chosen correctly"""
-        LOG.log("person_check invoked")
         if person.id == self.message.from_user.id and not to_self and self.parameters_dictionary:
             reply(
                 self.message, "Пожалуйста, введите ID нужного человека (можно найти в /members) "
@@ -439,9 +439,9 @@ def parameters_analyze(text: str,
     return dict()
 
 
+@LOG.wrap
 def rank_superiority(message, person):
     """Checks if user's rank is superior to person's rank"""
-    LOG.log("rank_superiority invoked")
     database = Database()
     chat = database.get('chats', ('id', message.chat.id))
     system = chat['system']
@@ -507,9 +507,9 @@ def rank_required(message, person, system, min_rank, loud=True):
     return min_rank_n <= your_rank_n
 
 
+@LOG.wrap
 def appointment_required(message, person, system, appointment, loud=True):
     """Checks if person has appointment required for something"""
-    LOG.log("appointment_required invoked")
     database = Database()
     true_false = database.get("appointments", ('id', person.id), ('appointment', appointment),
                               ('system', system))
@@ -518,9 +518,9 @@ def appointment_required(message, person, system, appointment, loud=True):
     return true_false
 
 
+@LOG.wrap
 def is_suitable(inputed, person, command_type, system=None, loud=True):
     """Function to check if this command can be permitted in current chat"""
-    LOG.log("is_suitable invoked")
     database = Database()
     # determine if input is a message or a callback query
     if isinstance(inputed, CallbackQuery):
@@ -541,9 +541,9 @@ def is_suitable(inputed, person, command_type, system=None, loud=True):
     return False
 
 
+@LOG.wrap
 def cooldown(message, command, timeout=3600):
     """Checks if the function is ready to be used again"""
-    LOG.log("cooldown invoked")
     if message.chat.id > 0:  # Command is used in PM's
         return True
     database = Database()
@@ -577,9 +577,9 @@ def time_replace(seconds):
     return days, hours, minutes, seconds
 
 
+@LOG.wrap
 def in_mf(message, command_type, or_private=True, loud=True):
     """Позволяет регулировать использование команл вне чатов и в личке"""
-    LOG.log("in_mf invoked")
     database = Database()
     person = left_new_or_else_member(message)
     if message.chat.id > 0:
@@ -620,9 +620,9 @@ def is_correct_message(message):
     return not message.forward_from and (len(cmd) == 1 or cmd[1] == get_me().username)
 
 
+@LOG.wrap
 def in_system_commands(message):
     """Check if command is available in this system"""
-    LOG.log("in_system_commands invoked")
     database = Database()
     chat = database.get('chats', ('id', message.chat.id))
     if message.text:
@@ -637,9 +637,9 @@ def in_system_commands(message):
     return False
 
 
+@LOG.wrap
 def feature_is_available(chat_id, system, command_type):
     """Checks if some feature is available in this system"""
-    LOG.log("command_is_available invoked")
     database = Database()
     command_mode = database.get('chats', ('id', chat_id))[command_type]
     if command_mode == 1:
@@ -676,9 +676,9 @@ def check_access_to_a_storage(message, storage_name, is_write_mode, to_check_vul
     return False
 
 
+@LOG.wrap
 def counter(message, person):
     """Подсчитывает сообщения, отправленные челом"""
-    LOG.log("counter invoked")
     database = Database()
     if not database.get('messages', ('person_id', person.id), ('chat_id', message.chat.id)):
         database.append((person.id, message.chat.id, 0), 'messages')
@@ -688,9 +688,9 @@ def counter(message, person):
                     ('chat_id', message.chat.id))
 
 
+@LOG.wrap
 def member_update(system, person):
     """Updates nickname, username and messages columns in database"""
-    LOG.log('member_update invoked')
     database = Database()
     chats_ids = [
         x['id'] for x in database.get_many('chats', ('messages_count', 2), ('system', system))
@@ -806,9 +806,9 @@ def create_chat(message, system_id, chat_type, link, database):
     database.append(chat_tuple, 'chats')
 
 
+@LOG.wrap
 def create_vote(vote_message):
     """Создаёт голосовашку"""
-    LOG.log("create_vote invoked")
     file = open(VOTES_FILE, 'r', encoding='utf-8')
     votes_shelve = file.read()
     if votes_shelve:
@@ -828,9 +828,9 @@ def create_vote(vote_message):
     file.close()
 
 
+@LOG.wrap
 def create_multi_vote(vote_message):
     """Создаёт мульти-голосовашку"""
-    LOG.log("create_multi_vote invoked")
     keyboard = InlineKeyboardMarkup()
     url = 'https://t.me/multifandomrubot?start=new_option{}'.format(vote_message.message_id)
     keyboard.row_width = 1
@@ -854,9 +854,9 @@ def create_multi_vote(vote_message):
     edit_markup(vote_message.chat.id, vote_message.message_id, reply_markup=keyboard)
 
 
+@LOG.wrap
 def create_adapt_vote(vote_message):
     """Создаёт адапт-голосовашку"""
-    LOG.log("create_adapt_vote invoked")
     keyboard = InlineKeyboardMarkup()
     url = 'https://t.me/multifandomrubot?start=new_adapt_option{}'.format(vote_message.message_id)
     keyboard.row_width = 1
@@ -880,9 +880,9 @@ def create_adapt_vote(vote_message):
     edit_markup(vote_message.chat.id, vote_message.message_id, reply_markup=keyboard)
 
 
+@LOG.wrap
 def update_multi_vote(vote_id):
     """Обновляет мульти-голосовашку"""
-    LOG.log("update_multi_vote invoked")
     file = open(MULTI_VOTES_FILE, encoding='utf-8')
     votes_shelve = file.read()
     if votes_shelve:
@@ -905,9 +905,9 @@ def update_multi_vote(vote_id):
               reply_markup=keyboard, parse_mode="HTML")
 
 
+@LOG.wrap
 def update_adapt_vote(vote_id):
     """Обновляет адапт голосовашку"""
-    LOG.log("update_adapt_vote")
     file = open(ADAPT_VOTES_FILE, encoding='utf-8')
     votes_shelve = file.read()
     if votes_shelve:
@@ -930,9 +930,9 @@ def update_adapt_vote(vote_id):
               reply_markup=keyboard, parse_mode="HTML")
 
 
+@LOG.wrap
 def unban_user(person):
     """Remove ban from user"""
-    LOG.log("unban_user invoked")
     database = Database()
     chats_to_unban = database.get_many('chats', ('violators_ban', 2))
     for chat in chats_to_unban:
