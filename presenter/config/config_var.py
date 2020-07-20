@@ -112,7 +112,7 @@ ADD_CHAT_KEYBOARD.add(InlineKeyboardButton("Часть другого чата",
                                            callback_data="part_of_other_chat"))
 ADD_CHAT_KEYBOARD.row_width = 1
 
-FEATURES = ('standart_commands', 'erotic_commands', 'boss_commands', 'financial_commands',
+FEATURES = ('standard_commands', 'erotic_commands', 'boss_commands', 'financial_commands',
             'mutual_invites', 'messages_count', 'violators_ban', 'admins_promote', 'moves_delete',
             'newbies_captched')
 FEATURES_TEXTS = dict()
@@ -125,7 +125,7 @@ FEATURES_TEXTS['Russian'] = [
     '(если вкл, а капча выкл, бот не будет здороваться)', 'Новички проходят капчу'
 ]
 FEATURES_TEXTS['English'] = [
-    'Standart commands', 'Admin commands', 'Financial commands', 'Invites links',
+    'standard commands', 'Admin commands', 'Financial commands', 'Invites links',
     'Messages are count for citizenship', 'MF2 violators are automatically banned',
     'MF2 admins are automatically promoted'
 ]
@@ -147,14 +147,14 @@ NEW_SYSTEM_JSON_ENTRY = {
     "appointment_adders": [],
     "appointment_removers": [],
     "commands": {
-        "standart": ["Участник", "Лидер"],
+        "standard": ["Участник", "Лидер"],
         "advanced": ["Участник", "Лидер"],
         "boss": ["Админ", "Лидер"],
         "uber": ["Старший Админ", "Лидер"],
         "chat_changer": ["Админ", "Лидер"]
     },
     "greetings": {
-        "standart": "Добро пожаловать, {name}",
+        "standard": "Добро пожаловать, {name}",
         "captcha": "Добро пожаловать, {name}. Докажите, что не бот, "
                    "нажмите на КРЕВЕТКУ за 5 минут",
         "admin": "О, добро пожаловать, держи админку",
