@@ -53,7 +53,7 @@ class Logger:
         """Logging wrapper around a function"""
         def wrapper(*func_args, **func_kwargs):
             self.log(func.__name__ + " invoked")
-            func(*func_args, **func_kwargs)
+            return func(*func_args, **func_kwargs)
         return wrapper
 
     def add_log_file(self, path):
