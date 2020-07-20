@@ -435,12 +435,15 @@ def rank_superiority(message, person):
     system = chat['system']
     chat_configs = get_system_configs(system)
     ranks = chat_configs['ranks']
+
     your_rank = database.get('members', ('id', message.from_user.id), ('system', system))['rank']
+    your_rank_n = ranks.index(your_rank)
+
     person_entry = get_person(message, person, system, database, system_configs=chat_configs)
     their_rank = person_entry['rank']
-    your_rank_n = ranks.index(your_rank)
     their_rank_n = ranks.index(their_rank)
-    if their_rank_n >= your_rank_n:
+
+    if your_rank_n < their_rank_n:
         text = f"Для этого ваше звание ({your_rank}) должно превосходить звание цели ({their_rank})"
         reply(message, text)
     return your_rank_n > their_rank_n
@@ -634,7 +637,9 @@ def feature_is_available(chat_id, system, command_type):
     command_mode = database.get('chats', ('id', chat_id))[command_type]
     if command_mode == 1:
         return True
-    return command_mode == 2 and database.get('systems', ('id', system), (command_type, 2))
+    elif command_mode == 2:
+        return database.get('systems', ('id', system), (command_type, 2))
+    return False
 
 
 def loud_feature_is_available(message, chat_id, system, command_type):
