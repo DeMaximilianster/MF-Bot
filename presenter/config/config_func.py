@@ -804,13 +804,13 @@ def create_chat(message, system_id, chat_type, link, database):
 @LOG.wrap
 def create_vote(vote_message):
     """Создаёт голосовашку"""
-    file = open(VOTES_FILE, 'r', encoding='utf-8')
-    votes_shelve = file.read()
+    with open(VOTES_FILE, 'r', encoding='utf-8') as file:
+        votes_shelve = file.read()
     if votes_shelve:
         votes_shelve = literal_eval(votes_shelve)
     else:
         votes_shelve = {}
-    file.close()
+
     votes_shelve[vote_message.message_id] = {
         "time": vote_message.date,
         "text": vote_message.text,
@@ -818,9 +818,8 @@ def create_vote(vote_message):
         "against": {},
         "abstain": {}
     }
-    file = open(VOTES_FILE, 'w', encoding='utf-8')
-    file.write(str(votes_shelve))
-    file.close()
+    with open(VOTES_FILE, 'w', encoding='utf-8') as file:
+        file.write(str(votes_shelve))
 
 
 @LOG.wrap
@@ -830,22 +829,21 @@ def create_multi_vote(vote_message):
     url = 'https://t.me/multifandomrubot?start=new_option{}'.format(vote_message.message_id)
     keyboard.row_width = 1
     keyboard.add(InlineKeyboardButton("Предложить вариант", url=url))
-    file = open(MULTI_VOTES_FILE, encoding='utf-8')
-    votes_shelve = file.read()
+    with open(MULTI_VOTES_FILE, encoding='utf-8') as file:
+        votes_shelve = file.read()
     if votes_shelve:
         votes_shelve = literal_eval(votes_shelve)
     else:
         votes_shelve = {}
-    file.close()
+
     votes_shelve[vote_message.message_id] = {
         "text": vote_message.text,
         "votes": [],
         "keyboard": [],
         "chat": vote_message.chat.id
     }
-    file = open(MULTI_VOTES_FILE, 'w', encoding='utf-8')
-    file.write(str(votes_shelve))
-    file.close()
+    with open(MULTI_VOTES_FILE, 'w', encoding='utf-8') as file:
+        file.write(str(votes_shelve))
     edit_markup(vote_message.chat.id, vote_message.message_id, reply_markup=keyboard)
 
 
@@ -856,35 +854,34 @@ def create_adapt_vote(vote_message):
     url = 'https://t.me/multifandomrubot?start=new_adapt_option{}'.format(vote_message.message_id)
     keyboard.row_width = 1
     keyboard.add(InlineKeyboardButton("Предложить вариант", url=url))
-    file = open(ADAPT_VOTES_FILE, encoding='utf-8')
-    votes_shelve = file.read()
+    with open(ADAPT_VOTES_FILE, encoding='utf-8') as file:
+        votes_shelve = file.read()
     if votes_shelve:
         votes_shelve = literal_eval(votes_shelve)
     else:
         votes_shelve = {}
-    file.close()
+
     votes_shelve[vote_message.message_id] = {
         "text": vote_message.text,
         "votes": [],
         "keyboard": [],
         "chat": vote_message.chat.id
     }
-    file = open(ADAPT_VOTES_FILE, 'w', encoding='utf-8')
-    file.write(str(votes_shelve))
-    file.close()
+    with open(ADAPT_VOTES_FILE, 'w', encoding='utf-8') as file:
+        file.write(str(votes_shelve))
     edit_markup(vote_message.chat.id, vote_message.message_id, reply_markup=keyboard)
 
 
 @LOG.wrap
 def update_multi_vote(vote_id):
     """Обновляет мульти-голосовашку"""
-    file = open(MULTI_VOTES_FILE, encoding='utf-8')
-    votes_shelve = file.read()
+    with open(MULTI_VOTES_FILE, encoding='utf-8') as file:
+        votes_shelve = file.read()
     if votes_shelve:
         votes_shelve = literal_eval(votes_shelve)
     else:
         votes_shelve = {}
-    file.close()
+
     votey = dict(votes_shelve[vote_id])
     keyboard = InlineKeyboardMarkup()
     url = 'https://t.me/multifandomrubot?start=new_option{}'.format(vote_id)
@@ -903,13 +900,13 @@ def update_multi_vote(vote_id):
 @LOG.wrap
 def update_adapt_vote(vote_id):
     """Обновляет адапт голосовашку"""
-    file = open(ADAPT_VOTES_FILE, encoding='utf-8')
-    votes_shelve = file.read()
+    with open(ADAPT_VOTES_FILE, encoding='utf-8') as file:
+        votes_shelve = file.read()
     if votes_shelve:
         votes_shelve = literal_eval(votes_shelve)
     else:
         votes_shelve = {}
-    file.close()
+
     votey = dict(votes_shelve[vote_id])
     keyboard = InlineKeyboardMarkup()
     url = 'https://t.me/multifandomrubot?start=new_adapt_option{}'.format(vote_id)

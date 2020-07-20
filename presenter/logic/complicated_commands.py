@@ -79,9 +79,8 @@ def adequate(call):
     votey["keyboard"].append(info[1])
     votey["votes"].append([info[1], {}])  # Добавляем вариант
     votes_shelve[vote_id] = votey
-    file = open(file_place, 'w', encoding='utf-8')
-    file.write(str(votes_shelve))
-    file.close()
+    with open(file_place, 'w', encoding='utf-8') as file:
+        file.write(str(votes_shelve))
     if call.data == 'adequate':
         update_multi_vote(vote_id)
     elif call.data == 'a_adequate':
@@ -174,10 +173,9 @@ def multi_vote(call):
     # Как этот челик будет отображаться в сообщении
     link = f'<a href="t.me/{user_username}">{user_nickname}</a>'
     which = int(call.data[-1])  # Где менять мнение
-    file = open(MULTI_VOTES_FILE, encoding='utf-8')
-    votes_shelve = literal_eval(file.read())
+    with open(MULTI_VOTES_FILE, encoding='utf-8') as file:
+        votes_shelve = literal_eval(file.read())
     votey = votes_shelve[msg_id]  # Получаем необходимую нам голосовашку в хранилище
-    file.close()
 
     if user_id in votey['votes'][which][1].keys():
         # Челик нажал на кнопку, на которой есть его мнение
@@ -188,9 +186,8 @@ def multi_vote(call):
         votey['votes'][which][1].update([(user_id, link)])
     # Сохраняем изменения
     votes_shelve[msg_id] = votey
-    file = open(MULTI_VOTES_FILE, 'w', encoding='utf-8')
-    file.write(str(votes_shelve))
-    file.close()
+    with open(MULTI_VOTES_FILE, 'w', encoding='utf-8') as file:
+        file.write(str(votes_shelve))
     answer_callback(call.id, text="Жмак учтён!")
     update_multi_vote(call.message.message_id)
 
@@ -206,10 +203,10 @@ def adapt_vote(call):
     # Как этот челик будет отображаться в сообщении
     link = f'<a href="t.me/{user_username}">{user_nickname}</a>'
     which = int(call.data[-1])  # Где менять мнение
-    file = open(ADAPT_VOTES_FILE, encoding='utf-8')
-    votes_shelve = literal_eval(file.read())
+    with open(ADAPT_VOTES_FILE, encoding='utf-8') as file:
+        votes_shelve = literal_eval(file.read())
     votey = votes_shelve[msg_id]  # Получаем необходимую нам голосовашку в хранилище
-    file.close()
+
     if msg_id in votes_shelve.keys():
         if user_id in votey['votes'][which][1].keys(
         ):  # Челик нажал на кнопку, на которой есть его мнение
@@ -222,9 +219,8 @@ def adapt_vote(call):
             votey['votes'][which][1].update([(user_id, link)])
     # Сохраняем изменения
     votes_shelve[msg_id] = votey
-    file = open(ADAPT_VOTES_FILE, 'w', encoding='utf-8')
-    file.write(str(votes_shelve))
-    file.close()
+    with open(ADAPT_VOTES_FILE, 'w', encoding='utf-8') as file:
+        file.write(str(votes_shelve))
     answer_callback(call.id, text="Жмак учтён!")
     update_adapt_vote(call.message.message_id)
 
@@ -241,9 +237,9 @@ def add_vote(call):
     msg_id = call.message.message_id  # Ай ди жмакнутого сообщения
     # Как этот челик будет отображаться в сообщении
     link = f'<a href="t.me/{user_username}">{user_nickname}</a>'
-    file = open(VOTES_FILE, 'r', encoding='utf-8')
-    votes_shelve = literal_eval(file.read())
-    file.close()
+    with open(VOTES_FILE, 'r', encoding='utf-8') as file:
+        votes_shelve = literal_eval(file.read())
+
     if msg_id in votes_shelve.keys():
         votey = votes_shelve[msg_id]  # Получаем необходимую нам голосовашку в хранилище
         if time() - votey['time'] > 86400 and len(votey['favor']) != len(
@@ -270,9 +266,8 @@ def add_vote(call):
         text += 'Голосование окончено по причине ненахода записи об этой голосовашки. ' \
                 'Новые голоса не принимаются\n\n'
         text += call.message.text
-    file = open(VOTES_FILE, 'w', encoding='utf-8')
-    file.write(str(votes_shelve))
-    file.close()
+    with open(VOTES_FILE, 'w', encoding='utf-8') as file:
+        file.write(str(votes_shelve))
     edit_text(text=text,
               chat_id=call.message.chat.id,
               message_id=call.message.message_id,
@@ -288,4 +283,3 @@ def vote(message):
     where_keyboard.row_width = 1
     where_keyboard.add(InlineKeyboardButton("Сюда", callback_data="here"))
     reply(message, "А запостить куда?", reply_markup=where_keyboard)
-
