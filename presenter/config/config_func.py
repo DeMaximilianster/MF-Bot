@@ -46,14 +46,6 @@ class Captchers:
 CAPTCHERS = Captchers()
 
 
-def test_function(excepted_result, gaven_result):
-    """Check whether function has ended correctly or not"""
-    if gaven_result == excepted_result:
-        print("Test completed!")
-    else:
-        raise Exception(f"Test failed! Excepted: {excepted_result}. Got: {gaven_result}")
-
-
 class CaptchaBan(Thread):
     """Waits for person to complete the captcha. Bans them if time is up."""
 
@@ -241,10 +233,6 @@ def chat_info_in_html(chat) -> str:
 def code_text_wrapper(text):
     """Simply wraps some text into code html-wrap."""
     return f'<code>{text}</code>'
-
-
-test_function('<code>test</code>', code_text_wrapper('test'))
-test_function('<code>spam</code>', code_text_wrapper('spam'))
 
 
 def id_link_text_wrapper(text, person_id):
