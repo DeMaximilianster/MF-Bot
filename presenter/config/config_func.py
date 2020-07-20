@@ -568,37 +568,39 @@ def time_replace(seconds):
 @LOG.wrap
 def in_mf(message, command_type, or_private=True, loud=True):
     """Позволяет регулировать использование команл вне чатов и в личке"""
-    database = Database()
-    person = left_new_or_else_member(message)
-    if message.chat.id > 0:
+    if message.chat.id > 0:  # is a private chat
         if loud and not or_private:
             reply(message, "Эта команда отключена в ЛС")
         return or_private
 
+    database = Database()
     chat = database.get('chats', ('id', message.chat.id))
-    if chat:
-        chat_id = message.chat.id
-        system = chat['system']
-        chat_configs = get_system_configs(system)
-        get_person(message, person, system, database, system_configs=chat_configs)
-        counter(message, person)  # Отправляем сообщение на учёт в БД
-        if command_type == 'financial_commands':
-            if not chat_configs['money']:
-                reply(message, "В этом чате система денег не включена. Смотрите /money_help")
-                return False
-        if command_type is not None:
-            if feature_is_available(chat_id, system, command_type):
-                return True
-            if loud and not database.get('systems', ('id', system), (command_type, 0)):
-                reply(message, "В данном чате команды типа {} не поддерживаются. "
-                               "Проверьте /chat".format(command_type))
-            return False
+    if not chat:
+        if loud:
+            reply(message, "Доброго времени суток! Перед тем как мной пользоваться, "
+                           "ответьте мне на 1 вопрос: "
+                           "Этот чат новый или связан с уже существующим чатом?",
+                  reply_markup=ADD_CHAT_KEYBOARD)
+        return False
+
+    # Начинаем оруэлловщину
+    person = left_new_or_else_member(message)
+    system = chat['system']
+    chat_configs = get_system_configs(system)
+    get_person(message, person, system, database, system_configs=chat_configs)
+    counter(message, person)  # Отправляем сообщение на учёт в БД
+    # Заканчиваем оруэлловщину
+
+    if command_type == 'financial_commands' and not chat_configs['money']:
+        reply(message, "В этом чате система денег не включена. Смотрите /money_help")
+        return False
+    if command_type is None:
         return True
-    if loud:
-        reply(message, "Доброго времени суток! Перед тем как мной пользоваться, "
-                       "ответьте мне на 1 вопрос: "
-                       "Этот чат новый или связан с уже существующим чатом?",
-              reply_markup=ADD_CHAT_KEYBOARD)
+    if feature_is_available(message.chat.id, system, command_type):
+        return True
+    if loud and not database.get('systems', ('id', system), (command_type, 0)):
+        reply(message, "В данном чате команды типа {} не поддерживаются. "
+                       "Проверьте /chat".format(command_type))
     return False
 
 
