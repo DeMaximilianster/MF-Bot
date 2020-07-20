@@ -80,7 +80,7 @@ def new_member(message, member):
         keyboard = create_captcha_keyboard()
         captcha = True
     else:
-        text = chat_configs['greetings']['standart'].format(name=name)
+        text = chat_configs['greetings']['standard'].format(name=name)
     if feature_is_available(message.chat.id, system, 'moves_delete') and not feature_is_available(
             message.chat.id, system, 'newbies_captched'):
         delete(message.chat.id, message.message_id)

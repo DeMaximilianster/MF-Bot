@@ -4,7 +4,7 @@ from random import shuffle
 from presenter.config.token import BOT
 from presenter.config.log import Logger, LOG_TO
 from presenter.config import config_func
-from presenter.logic import (boss_commands, complicated_commands, reactions, standart_commands,
+from presenter.logic import (boss_commands, complicated_commands, reactions, standard_commands,
                              developer_commands)
 from presenter.config import config_var, files_paths
 from presenter.logic.elite import elite
@@ -342,13 +342,13 @@ def chat_options_handler(message):
         boss_commands.chat_options(message)
 
 
-@BOT.message_handler(commands=['standart_greetings'])
+@BOT.message_handler(commands=['standard_greetings'])
 @LOG.wrap
-def update_standart_greetings_handler(message):
-    """ Change standart greeting """
+def update_standard_greetings_handler(message):
+    """ Change standard greeting """
     if config_func.in_mf(message, command_type=None, or_private=False) and config_func.is_suitable(
             message, message.from_user, "chat_changer"):
-        boss_commands.update_greetings_json(message, 'standart')
+        boss_commands.update_greetings_json(message, 'standard')
 
 
 @BOT.message_handler(commands=['captcha_greetings'])
@@ -453,7 +453,7 @@ def response_handler(inline_query):
 def insult_handler(message):
     """Спращивает, иронично ли признание оскорблением"""
     if config_func.in_mf(message, command_type=None, or_private=False) and config_func.is_suitable(
-            message, message.from_user, "standart"):
+            message, message.from_user, "standard"):
         complicated_commands.insult(message)
 
 
@@ -544,7 +544,7 @@ def starter_handler(message):
 def helper_handler(message):
     """Предоставляет человеку список команд"""
     if config_func.is_correct_message(message) and config_func.in_mf(message, command_type=None):
-        standart_commands.helper(message)
+        standard_commands.helper(message)
 
 
 @BOT.message_handler(commands=['money_help', 'help_money'])
@@ -552,7 +552,7 @@ def helper_handler(message):
 def money_helper_handler(message):
     """Financial instructions"""
     if config_func.in_mf(message, command_type=None):
-        standart_commands.money_helper(message)
+        standard_commands.money_helper(message)
 
 
 @BOT.message_handler(commands=['storages'])
@@ -560,7 +560,7 @@ def money_helper_handler(message):
 def send_list_of_storages_handler(message):
     """ Sends list of all storages """
     if config_func.in_mf(message, command_type=None):
-        standart_commands.send_list_of_storages(message)
+        standard_commands.send_list_of_storages(message)
 
 
 @BOT.message_handler(commands=['id'])
@@ -607,17 +607,17 @@ def rights_handler(message):
 @LOG.wrap
 def minet_handler(message):
     """Приносит удовольствие"""
-    if config_func.is_correct_message(message) and config_func.in_mf(message, 'standart_commands'):
+    if config_func.is_correct_message(message) and config_func.in_mf(message, 'standard_commands'):
         language = config_func.get_one_language(message)
         if language and config_func.cooldown(message, 'minet'):
-            standart_commands.minet(message, language)
+            standard_commands.minet(message, language)
 
 
 @BOT.message_handler(commands=['shuffle'])
 @LOG.wrap
 def shuffle_handler(message):
     """ Shuffle a list """
-    if config_func.in_mf(message, 'standart_commands'):
+    if config_func.in_mf(message, 'standard_commands'):
         analyzer = config_func.Analyzer(message, value_necessary=False)
         elements = analyzer.parameters_dictionary['comment'].split()
         if not elements:
@@ -636,14 +636,14 @@ def send_stuff_from_storage_handler(message):
     """Send random media from the storage"""
     analyzer = config_func.Analyzer(message, value_necessary=False)
     storage_name = analyzer.parameters_dictionary['comment']
-    if config_func.in_mf(message, 'standart_commands') and config_func.check_access_to_a_storage(
+    if config_func.in_mf(message, 'standard_commands') and config_func.check_access_to_a_storage(
             message, storage_name, False) and config_func.cooldown(message, storage_name,
                                                                    timeout=300):
         if "value" in analyzer.parameters_dictionary:
             stuff_number = analyzer.parameters_dictionary["value"]
-            standart_commands.send_numbered_stuff_from_storage(message, storage_name, stuff_number)
+            standard_commands.send_numbered_stuff_from_storage(message, storage_name, stuff_number)
         else:
-            standart_commands.send_random_stuff_from_storage(message, storage_name)
+            standard_commands.send_random_stuff_from_storage(message, storage_name)
 
 
 @BOT.message_handler(commands=['size'])
@@ -652,9 +652,9 @@ def check_storage_size_handler(message):
     """ Checks how many moderators and how much media there is in a storage """
     analyzer = config_func.Analyzer(message, value_necessary=False)
     storage_name = analyzer.parameters_dictionary['comment']
-    if config_func.in_mf(message, 'standart_commands') and config_func.check_access_to_a_storage(
+    if config_func.in_mf(message, 'standard_commands') and config_func.check_access_to_a_storage(
             message, storage_name, False, to_check_vulgarity=False):
-        standart_commands.check_storage_size(message, storage_name)
+        standard_commands.check_storage_size(message, storage_name)
 
 
 @BOT.message_handler(regexp='есть один мем')
@@ -662,8 +662,8 @@ def check_storage_size_handler(message):
 @LOG.wrap
 def send_meme_handler(message):
     """Присылает мем"""
-    if config_func.in_mf(message, 'standart_commands') and config_func.cooldown(message, 'meme'):
-        standart_commands.send_meme(message)
+    if config_func.in_mf(message, 'standard_commands') and config_func.cooldown(message, 'meme'):
+        standard_commands.send_meme(message)
 
 
 @BOT.message_handler(commands=['me', 'check', 'check_me', 'check_ebalo'])
@@ -674,7 +674,7 @@ def send_me_handler(message):
         person = config_func.Analyzer(message,
                                       value_necessary=False).return_target_person(to_self=True)
         if person:
-            standart_commands.send_me(message, person)
+            standard_commands.send_me(message, person)
 
 
 @BOT.message_handler(commands=['members'])
@@ -685,10 +685,10 @@ def all_members_handler(message):
         language = config_func.get_one_language(message)
         if language:
             if config_func.is_suitable(message, message.from_user, 'boss', loud=False):
-                standart_commands.send_some_top(message, language,
+                standard_commands.send_some_top(message, language,
                                                 '{index}. <code>{id}</code> {p_link}\n')
             else:
-                standart_commands.send_some_top(message, language,
+                standard_commands.send_some_top(message, language,
                                                 '{index}. <code>{id}</code> {nickname}\n')
 
 
@@ -701,7 +701,7 @@ def money_give_handler(message):
         person = analyzer.return_target_person()
         parameters_dictionary = analyzer.parameters_dictionary
         if person and parameters_dictionary:
-            standart_commands.money_give(message, person, parameters_dictionary)
+            standard_commands.money_give(message, person, parameters_dictionary)
 
 
 @BOT.message_handler(commands=['fund'])
@@ -712,7 +712,7 @@ def money_fund_handler(message):
         analyzer = config_func.Analyzer(message)
         parameters_dictionary = analyzer.parameters_dictionary
         if parameters_dictionary:
-            standart_commands.money_fund(message, parameters_dictionary)
+            standard_commands.money_fund(message, parameters_dictionary)
 
 
 @BOT.message_handler(commands=['top', 'money_top'])
@@ -725,9 +725,9 @@ def money_top_handler(message):
             args = message, language, '{index}. {p_link} — {money} {m_emo}\n'
             kwargs = {'start': 'Бюджет: {bot_money} {m_emo}\n\n', 'sort_key': lambda x: x['money']}
             if config_func.is_suitable(message, message.from_user, 'boss', loud=False):
-                standart_commands.send_some_top(*args, **kwargs)
+                standard_commands.send_some_top(*args, **kwargs)
             else:
-                standart_commands.send_short_top(*args, **kwargs)
+                standard_commands.send_short_top(*args, **kwargs)
 
 
 @BOT.message_handler(commands=['warns'])
@@ -739,7 +739,7 @@ def warns_top_handler(message):
         if language:
             args = message, language, '{index}. {p_link} — {warns} ⛔️\n'
             kwargs = {'start': 'Количество варнов:\n\n', 'sort_key': lambda x: x['warns']}
-            standart_commands.send_some_top(*args, **kwargs)
+            standard_commands.send_some_top(*args, **kwargs)
 
 
 @BOT.message_handler(commands=['messages_top'])
@@ -752,9 +752,9 @@ def messages_top_handler(message):
             args = message, language, '{index}. {p_link} — {messages} сообщ.\n'
             kwargs = {'sort_key': lambda x: x['messages']}
             if config_func.is_suitable(message, message.from_user, 'boss', loud=False):
-                standart_commands.send_some_top(*args, **kwargs)
+                standard_commands.send_some_top(*args, **kwargs)
             else:
-                standart_commands.send_short_top(*args, **kwargs)
+                standard_commands.send_short_top(*args, **kwargs)
 
 
 @BOT.message_handler(commands=['month'])
@@ -766,7 +766,7 @@ def month_set_handler(message):
         if month.isdecimal():
             month = int(month)
             if month and 1 <= month <= 12:
-                standart_commands.month_set(message, month)
+                standard_commands.month_set(message, month)
         else:
             output.reply(
                 message, "Последнее слово должно быть положительным числом от 1 до 12 — "
@@ -784,7 +784,7 @@ def day_set_handler(message):
             if day and 1 <= day <= 31:
                 language = config_func.get_one_language(message)
                 if language:
-                    standart_commands.day_set(message, day, language)
+                    standard_commands.day_set(message, day, language)
         else:
             output.reply(
                 message, "Последнее слово должно быть положительным числом от 1 до 31 — "
@@ -798,7 +798,7 @@ def birthday_handler(message):
     if config_func.in_mf(message, command_type=None):
         language = config_func.get_one_language(message)
         if language:
-            standart_commands.send_some_top(
+            standard_commands.send_some_top(
                 message,
                 language,
                 '{index}. {p_link} — {day} {month}\n',
@@ -811,9 +811,9 @@ def admins_handler(message):
     """Ping admins"""
     if config_func.in_mf(message, command_type=None) and config_func.is_suitable(message,
                                                                                  message.from_user,
-                                                                                 "standart") \
+                                                                                 "standard") \
             and config_func.cooldown(message, 'admins', 300):
-        standart_commands.admins(message)
+        standard_commands.admins(message)
 
 
 @BOT.message_handler(commands=['chat'])
@@ -821,7 +821,7 @@ def admins_handler(message):
 def chat_check_handler(message):
     """Show options of the current chat"""
     if config_func.in_mf(message, command_type=None, or_private=False):
-        standart_commands.chat_check(message)
+        standard_commands.chat_check(message)
 
 
 @BOT.message_handler(commands=['system'])
@@ -829,7 +829,7 @@ def chat_check_handler(message):
 def system_check_handler(message):
     """Show options of the current chat"""
     if config_func.in_mf(message, command_type=None, or_private=False):
-        standart_commands.system_check(message)
+        standard_commands.system_check(message)
 
 
 @BOT.message_handler(commands=['anon'])
@@ -841,7 +841,7 @@ def anon_message_handler(message):
             output.reply(message,
                          "После команды /anon должно следовать то, что надо отправить админам")
         else:
-            standart_commands.anon_message(message)
+            standard_commands.anon_message(message)
     else:
         output.reply(message, "Эта команда предназначена для лички")
 

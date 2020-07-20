@@ -1,4 +1,4 @@
-"""Standart commands, available for everyone"""
+"""standard commands, available for everyone"""
 # -*- coding: utf-8 -*-
 from random import choice
 from collections import Counter, defaultdict
@@ -43,7 +43,7 @@ def helper(message):
                   '/get [хранилище] [номер] - Получать контент из хранилища,' \
                   'если номер не указан, будет прислан случайный контент из хранилища\n'\
                   '/size [хранилище] - Получить инфо о количестве контента и модеров хранилища\n\n'
-        if feature_is_available(message.chat.id, system, 'standart_commands'):
+        if feature_is_available(message.chat.id, system, 'standard_commands'):
             answer += '<b>Развлекательные команды:</b>\n'
             answer += '/minet - Делает приятно\n'
             answer += '/meme - Присылает мем\n'
@@ -70,7 +70,7 @@ def helper(message):
             answer += '<b>Настройщики чатов:</b>\n'
             answer += '/add_chat [ID системы чатов] - Добавить чат в систему чатов\n'
             answer += '/admin_place - Отметить чат как админский\n'
-            answer += '/standart_greetings [текст] — Изменить приветствие для простого человека\n' \
+            answer += '/standard_greetings [текст] — Изменить приветствие для простого человека\n' \
                       '/captcha_greetings [текст] — Изменить приветствие при капче\n' \
                       '/admin_greetings [текст] — Изменить приветствие для админа\n' \
                       '/full_greetings [текст] — Изменить приветствие для полного админа\n' \

@@ -671,7 +671,7 @@ def check_access_to_a_storage(message, storage_name, is_write_mode, to_check_vul
         system = database.get('chats', ('id', message.chat.id))['system']
         if to_check_vulgarity and storage['is_vulgar']:
             return loud_feature_is_available(message, message.chat.id, system, 'erotic_commands')
-        return loud_feature_is_available(message, message.chat.id, system, 'standart_commands')
+        return loud_feature_is_available(message, message.chat.id, system, 'standard_commands')
     reply(message, "Хранилища '{}' не существует".format(storage_name))
     return False
 
@@ -756,7 +756,7 @@ def create_system(message, system_id, database):
         system_id,
         0,  # money in the system
         0,  # admin places of the system
-        1,  # standart commands
+        1,  # standard commands
         1,  # erotic commands
         1,  # boss commands
         1,  # financial commands
@@ -792,7 +792,7 @@ def create_chat(message, system_id, chat_type, link, database):
         message.chat.title,
         chat_type,
         link,
-        2,  # standart commands
+        2,  # standard commands
         2,  # erotic commands
         2,  # boss commands
         2,  # financial commands

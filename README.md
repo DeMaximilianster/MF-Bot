@@ -26,7 +26,7 @@ and don't enter chats you found in bot's database. Except you found them somewhe
 
 **boss_commands.py** if your command requires some special permissions for a person who tries to use your command
 
-**standart_commands.py** if your command hasn't some special properties like other ones
+**standard_commands.py** if your command hasn't some special properties like other ones
 
 
 >*if your command relates to two or more groups, then choose the highest group of them*
@@ -42,7 +42,7 @@ Name handler like *command_name*_handler. Fill your handler with some checks, li
 
 **in_mf** necessary function. Also fill parameter command_type with:
 
-*'standart_commands'* if your command is for fun
+*'standard_commands'* if your command is for fun
 
 *'boss_commands'* if your command is for admins
 
@@ -53,7 +53,7 @@ Name handler like *command_name*_handler. Fill your handler with some checks, li
 
 **is_suitable** if person must have some permissions in a chat. Fill pararam comand_type with:
 
-*'standart'* if person simply isn't banned
+*'standard'* if person simply isn't banned
 
 *'advanced'* if person is something between admin and member. Like MF-2 citizen
 
