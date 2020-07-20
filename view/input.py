@@ -422,8 +422,8 @@ def inadequate_handler(call):
 @LOG.wrap
 def create_new_chat_handler(call):
     """Add new system of chats"""
-    if output.get_member(call.message.chat.id, call.from_user.id).status in \
-            ("creator", "administrator"):
+    member = output.get_member(call.message.chat.id, call.from_user.id)
+    if member.status in ("creator", "administrator"):
         complicated_commands.create_new_chat(call)
     else:
         output.answer_callback(call.id, "Для жмака нужно иметь админку")

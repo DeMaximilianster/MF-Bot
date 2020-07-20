@@ -51,9 +51,9 @@ class Logger:
 
     def wrap(self, func):
         """Logging wrapper around a function"""
-        def wrapper(*func_args, **func_kwargs):
+        def wrapper(*args, **kwargs):
             self.log(func.__name__ + " invoked")
-            return func(*func_args, **func_kwargs)
+            return func(*args, **kwargs)
         return wrapper
 
     def add_log_file(self, path):

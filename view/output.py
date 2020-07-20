@@ -11,7 +11,7 @@ def handle_errors(function):
     """Ensures fail-safety and logging of possible exceptions"""
     def wrapper(*args, **kwargs):
         try:
-            function(*args, **kwargs)
+            return function(*args, **kwargs)
         except ApiException as exception:
             LOG.log(exception)
     return wrapper
