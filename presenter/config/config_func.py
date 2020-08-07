@@ -460,7 +460,7 @@ def rank_superiority(message, person):
 
 def add_person(message, person, system, database, system_configs):
     """Add entry to database about some person in some system"""
-    chat_member_status = get_member(message.chat.id, message.from_user.id).status
+    chat_member_status = get_member(message.chat.id, person.id).status
     boss_commands_requirements = system_configs["commands"]["boss"]
     if chat_member_status == "creator":
         rank = system_configs['ranks'][-1]
