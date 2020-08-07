@@ -13,7 +13,7 @@ class Database:
     def __init__(self, to_log=True):
         """Подключается к базе данных"""
         if to_log:
-            LOG.log_print("Init database")
+            LOG.log("Init database")
         self.connection = sqlite3.connect(DATABASE_FILE)
         self.connection.row_factory = sqlite3.Row
         self.cursor = self.connection.cursor()
@@ -22,7 +22,7 @@ class Database:
     def __del__(self):
         """Отключается от базы данных"""
         if self.to_log:
-            LOG.log_print("Closing database")
+            LOG.log("Closing database")
         self.connection.close()  # Закрываем БД
 
     def get(self, table, *column_value):
@@ -34,7 +34,7 @@ class Database:
             reqs.append(f"{value[0]}='{val}'")
         sql += " AND ".join(reqs)
         if self.to_log:
-            LOG.log_print("[SQL]: " + sql)
+            LOG.log("[SQL]: " + sql)
         self.cursor.execute(sql)
         row = self.cursor.fetchone()
         if row:
@@ -50,7 +50,7 @@ class Database:
             reqs.append(f"{value[0]}='{val}'")
         sql += " AND ".join(reqs)
         if self.to_log:
-            LOG.log_print("[SQL]: " + sql)
+            LOG.log("[SQL]: " + sql)
         self.cursor.execute(sql)
         rows = self.cursor.fetchall()
         if rows:
@@ -61,7 +61,7 @@ class Database:
         """Read all entries in one table of the database"""
         sql = "SELECT rowid, * FROM {} ORDER BY {} {}".format(table, order_by, how_sort)
         if self.to_log:
-            LOG.log_print("[SQL]: " + sql)
+            LOG.log("[SQL]: " + sql)
         all_list = []
         for element in self.cursor.execute(sql):
             all_list.append(dict(zip([c[0] for c in self.cursor.description], element)))
@@ -79,7 +79,7 @@ class Database:
         sql += f"SET {set_where} = '{set_what}'\n"
         sql += "WHERE " + " AND ".join(reqs)
         if self.to_log:
-            LOG.log_print("[SQL]: " + sql)
+            LOG.log("[SQL]: " + sql)
         self.cursor.execute(sql)
         self.connection.commit()  # Сохраняем изменения
 
@@ -93,7 +93,7 @@ class Database:
         sql += f"SET {increase_where} = {increase_where}+{increase_value}\n"
         sql += "WHERE " + " AND ".join(reqs)
         if self.to_log:
-            LOG.log_print("[SQL]: " + sql)
+            LOG.log("[SQL]: " + sql)
         self.cursor.execute(sql)
         self.connection.commit()
 
@@ -105,10 +105,10 @@ class Database:
             VALUES {}
             """.format(table, tuple(map(str, values)))
             if self.to_log:
-                LOG.log_print("[SQL]: " + sql)
+                LOG.log("[SQL]: " + sql)
             self.cursor.execute(sql)
         except sqlite3.OperationalError as exception:
-            LOG.log_print(exception)
+            LOG.log(exception)
         self.connection.commit()  # Сохраняем изменения
 
     def remove(self, table, *column_value):
@@ -120,6 +120,6 @@ class Database:
             reqs.append(f"{value[0]}='{val}'")
         sql += " AND ".join(reqs)
         if self.to_log:
-            LOG.log_print("[SQL]: " + sql)
+            LOG.log("[SQL]: " + sql)
         self.cursor.execute(sql)
         self.connection.commit()

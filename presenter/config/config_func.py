@@ -46,20 +46,12 @@ class Captchers:
 CAPTCHERS = Captchers()
 
 
-def test_function(excepted_result, gaven_result):
-    """Test whenever function has done correctly or not"""
-    if gaven_result == excepted_result:
-        print("Test completed!")
-    else:
-        raise Exception(f"Test failed! Excepted: {excepted_result}. Got: {gaven_result}")
-
-
 class CaptchaBan(Thread):
-    """Waits for person to complete the captcha or ban if time is passed"""
+    """Waits for person to complete the captcha. Bans them if time is up."""
 
     def __init__(self, message, bots_message):
         Thread.__init__(self)
-        LOG.log_print("CaptchaBan invoked")
+        LOG.log("CaptchaBan invoked")
         self.message = message
         self.bots_message = bots_message
 
@@ -74,11 +66,11 @@ class CaptchaBan(Thread):
 
 
 class SystemUpdate(Thread):
-    """Updates all the entries in some system"""
+    """Updates all entries in some system"""
 
     def __init__(self, chat_id, system_id, members, sent):
         Thread.__init__(self)
-        LOG.log_print("SystemUpdate invoked")
+        LOG.log("SystemUpdate invoked")
         self.chat_id = chat_id
         self.system_id = system_id
         self.members = members
@@ -97,7 +89,7 @@ class WaitAndUnban(Thread):
 
     def __init__(self, chat_id, user_id):
         Thread.__init__(self)
-        LOG.log_print("WaitAndUnban invoked")
+        LOG.log("WaitAndUnban invoked")
         self.chat_id = chat_id
         self.user_id = user_id
 
@@ -107,14 +99,14 @@ class WaitAndUnban(Thread):
 
 
 def kick_and_unban(chat_id, user_id):
-    """Kicks user and unbans them in one flash"""
+    """Kicks user and unbans them immediately"""
     kick(chat_id, user_id)
     wait_and_unban = WaitAndUnban(chat_id, user_id)
     wait_and_unban.start()
 
 
 def get_text_and_entities(target_message):
-    """Get the text and entities from the message"""
+    """Get text and entities from the message"""
     if target_message.text:
         text = target_message.text
         entities = target_message.entities
@@ -125,7 +117,7 @@ def get_text_and_entities(target_message):
 
 
 def entities_saver(text, entities):
-    """Copies the text and saving all the entities"""
+    """Copies the text and saves all the entities"""
     points = set()
     entities_blocks = []
     if entities and ({e.type for e in entities}.intersection(ENTITIES_TO_PARSE)):
@@ -171,7 +163,7 @@ def html_cleaner(text: str) -> str:
 
 
 def get_target_message(message):
-    """Aims message that was perlied to or cuurent message if it's not a reply"""
+    """Returns message that was replied to or current message if it's not a reply"""
     reply_to = message.reply_to_message
     if reply_to:
         return reply_to
@@ -243,10 +235,6 @@ def code_text_wrapper(text):
     return f'<code>{text}</code>'
 
 
-test_function('<code>test</code>', code_text_wrapper('test'))
-test_function('<code>spam</code>', code_text_wrapper('spam'))
-
-
 def id_link_text_wrapper(text, person_id):
     """Simply wraps some text into id_link html-wrap."""
     return f'<a href="tg://user?id={person_id}">{text}</a>'
@@ -288,9 +276,9 @@ def photo_video_gif_get(target_message):
     return None
 
 
+@LOG.wrap
 def get_one_language(message):
     """Analyzes the language that is suitable for some situation"""
-    LOG.log_print("language_analyzer invoked")
     database = Database()
     entry = database.get('languages', ('id', message.chat.id))
     if entry:
@@ -300,12 +288,12 @@ def get_one_language(message):
     return ''
 
 
+@LOG.wrap
 def get_languages(message):
-    """Gets all labguages that are possibly spoken by user
+    """Gets all languages that are possibly spoken by user
     :param message: message
     :return dictionary {"Russian": bool, "English": bool}
     :rtype dict"""
-    LOG.log_print("get_languages invoked")
     database = Database()
     entry = database.get('languages', ('id', message.chat.id))
     languages = {"Russian": False, "English": False}
@@ -343,7 +331,7 @@ def left_new_or_else_member(target_message):
 
 
 class Analyzer:
-    """Class to get target_person and other paramters"""
+    """Class to get target_person and other parameters"""
 
     def __init__(self, message, value_necessary=True, default_value=None, value_positive=False):
         self.message = message
@@ -378,9 +366,9 @@ class Analyzer:
             return left_new_or_else_member(self.message.reply_to_message)
         return self.message.from_user
 
+    @LOG.wrap
     def check_person(self, person, to_self, to_bot):
-        """Checks if target person chosen correctly"""
-        LOG.log_print("person_check invoked")
+        """Checks if target person is chosen correctly"""
         if person.id == self.message.from_user.id and not to_self and self.parameters_dictionary:
             reply(
                 self.message, "Пожалуйста, введите ID нужного человека (можно найти в /members) "
@@ -439,20 +427,23 @@ def parameters_analyze(text: str,
     return dict()
 
 
+@LOG.wrap
 def rank_superiority(message, person):
     """Checks if user's rank is superior to person's rank"""
-    LOG.log_print("rank_superiority invoked")
     database = Database()
     chat = database.get('chats', ('id', message.chat.id))
     system = chat['system']
     chat_configs = get_system_configs(system)
     ranks = chat_configs['ranks']
+
     your_rank = database.get('members', ('id', message.from_user.id), ('system', system))['rank']
+    your_rank_n = ranks.index(your_rank)
+
     person_entry = get_person(message, person, system, database, system_configs=chat_configs)
     their_rank = person_entry['rank']
-    your_rank_n = ranks.index(your_rank)
     their_rank_n = ranks.index(their_rank)
-    if their_rank_n >= your_rank_n:
+
+    if your_rank_n < their_rank_n:
         text = f"Для этого ваше звание ({your_rank}) должно превосходить звание цели ({their_rank})"
         reply(message, text)
     return your_rank_n > their_rank_n
@@ -486,7 +477,7 @@ def get_person(message, person, system: str, database: Database, system_configs=
 
 def rank_required(message, person, system, min_rank, loud=True):
     """Checks if person has rank required for something"""
-    LOG.log_print("rank_required invoked from userID {}".format(message.from_user.id))
+    LOG.log("rank_required invoked from userID {}".format(message.from_user.id))
     database = Database()
     chat_configs = get_system_configs(system)
     ranks = chat_configs['ranks']
@@ -507,9 +498,9 @@ def rank_required(message, person, system, min_rank, loud=True):
     return min_rank_n <= your_rank_n
 
 
+@LOG.wrap
 def appointment_required(message, person, system, appointment, loud=True):
     """Checks if person has appointment required for something"""
-    LOG.log_print("appointment_required invoked")
     database = Database()
     true_false = database.get("appointments", ('id', person.id), ('appointment', appointment),
                               ('system', system))
@@ -518,9 +509,9 @@ def appointment_required(message, person, system, appointment, loud=True):
     return true_false
 
 
+@LOG.wrap
 def is_suitable(inputed, person, command_type, system=None, loud=True):
     """Function to check if this command can be permitted in current chat"""
-    LOG.log_print("is_suitable invoked")
     database = Database()
     # determine if input is a message or a callback query
     if isinstance(inputed, CallbackQuery):
@@ -541,9 +532,9 @@ def is_suitable(inputed, person, command_type, system=None, loud=True):
     return False
 
 
+@LOG.wrap
 def cooldown(message, command, timeout=3600):
     """Checks if the function is ready to be used again"""
-    LOG.log_print("cooldown invoked")
     if message.chat.id > 0:  # Command is used in PM's
         return True
     database = Database()
@@ -577,52 +568,54 @@ def time_replace(seconds):
     return days, hours, minutes, seconds
 
 
+@LOG.wrap
 def in_mf(message, command_type, or_private=True, loud=True):
     """Позволяет регулировать использование команл вне чатов и в личке"""
-    LOG.log_print("in_mf invoked")
-    database = Database()
-    person = left_new_or_else_member(message)
-    if message.chat.id > 0:
+    if message.chat.id > 0:  # is a private chat
         if loud and not or_private:
             reply(message, "Эта команда отключена в ЛС")
         return or_private
 
+    database = Database()
     chat = database.get('chats', ('id', message.chat.id))
-    if chat:
-        chat_id = message.chat.id
-        system = chat['system']
-        chat_configs = get_system_configs(system)
-        get_person(message, person, system, database, system_configs=chat_configs)
-        counter(message, person)  # Отправляем сообщение на учёт в БД
-        if command_type == 'financial_commands':
-            if not chat_configs['money']:
-                reply(message, "В этом чате система денег не включена. Смотрите /money_help")
-                return False
-        if command_type is not None:
-            if feature_is_available(chat_id, system, command_type):
-                return True
-            if loud and not database.get('systems', ('id', system), (command_type, 0)):
-                reply(message, "В данном чате команды типа {} не поддерживаются. "
-                               "Проверьте /chat".format(command_type))
-            return False
+    if not chat:
+        if loud:
+            reply(message, "Доброго времени суток! Перед тем как мной пользоваться, "
+                           "ответьте мне на 1 вопрос: "
+                           "Этот чат новый или связан с уже существующим чатом?",
+                  reply_markup=ADD_CHAT_KEYBOARD)
+        return False
+
+    # Начинаем оруэлловщину
+    person = left_new_or_else_member(message)
+    system = chat['system']
+    chat_configs = get_system_configs(system)
+    get_person(message, person, system, database, system_configs=chat_configs)
+    counter(message, person)  # Отправляем сообщение на учёт в БД
+    # Заканчиваем оруэлловщину
+
+    if command_type == 'financial_commands' and not chat_configs['money']:
+        reply(message, "В этом чате система денег не включена. Смотрите /money_help")
+        return False
+    if command_type is None:
         return True
-    if loud:
-        reply(message, "Доброго времени суток! Перед тем как мной пользоваться, "
-                       "ответьте мне на 1 вопрос: "
-                       "Этот чат новый или связан с уже существующим чатом?",
-              reply_markup=ADD_CHAT_KEYBOARD)
+    if feature_is_available(message.chat.id, system, command_type):
+        return True
+    if loud and not database.get('systems', ('id', system), (command_type, 0)):
+        reply(message, "В данном чате команды типа {} не поддерживаются. "
+                       "Проверьте /chat".format(command_type))
     return False
 
 
 def is_correct_message(message):
-    """ Checks if a command has been sent to this bot or if the command is not a forwarding """
+    """ Checks if a command has been sent to this bot or if the command is not a forward"""
     cmd = message.text.split("@")
     return not message.forward_from and (len(cmd) == 1 or cmd[1] == get_me().username)
 
 
+@LOG.wrap
 def in_system_commands(message):
     """Check if command is available in this system"""
-    LOG.log_print("in_system_commands invoked")
     database = Database()
     chat = database.get('chats', ('id', message.chat.id))
     if message.text:
@@ -637,14 +630,16 @@ def in_system_commands(message):
     return False
 
 
+@LOG.wrap
 def feature_is_available(chat_id, system, command_type):
     """Checks if some feature is available in this system"""
-    LOG.log_print("command_is_available invoked")
     database = Database()
     command_mode = database.get('chats', ('id', chat_id))[command_type]
     if command_mode == 1:
         return True
-    return command_mode == 2 and database.get('systems', ('id', system), (command_type, 2))
+    elif command_mode == 2:
+        return database.get('systems', ('id', system), (command_type, 2))
+    return False
 
 
 def loud_feature_is_available(message, chat_id, system, command_type):
@@ -671,14 +666,14 @@ def check_access_to_a_storage(message, storage_name, is_write_mode, to_check_vul
         system = database.get('chats', ('id', message.chat.id))['system']
         if to_check_vulgarity and storage['is_vulgar']:
             return loud_feature_is_available(message, message.chat.id, system, 'erotic_commands')
-        return loud_feature_is_available(message, message.chat.id, system, 'standart_commands')
+        return loud_feature_is_available(message, message.chat.id, system, 'standard_commands')
     reply(message, "Хранилища '{}' не существует".format(storage_name))
     return False
 
 
+@LOG.wrap
 def counter(message, person):
     """Подсчитывает сообщения, отправленные челом"""
-    LOG.log_print("counter invoked")
     database = Database()
     if not database.get('messages', ('person_id', person.id), ('chat_id', message.chat.id)):
         database.append((person.id, message.chat.id, 0), 'messages')
@@ -688,9 +683,9 @@ def counter(message, person):
                     ('chat_id', message.chat.id))
 
 
+@LOG.wrap
 def member_update(system, person):
     """Updates nickname, username and messages columns in database"""
-    LOG.log_print('member_update invoked')
     database = Database()
     chats_ids = [
         x['id'] for x in database.get_many('chats', ('messages_count', 2), ('system', system))
@@ -756,7 +751,7 @@ def create_system(message, system_id, database):
         system_id,
         0,  # money in the system
         0,  # admin places of the system
-        1,  # standart commands
+        1,  # standard commands
         1,  # erotic commands
         1,  # boss commands
         1,  # financial commands
@@ -792,7 +787,7 @@ def create_chat(message, system_id, chat_type, link, database):
         message.chat.title,
         chat_type,
         link,
-        2,  # standart commands
+        2,  # standard commands
         2,  # erotic commands
         2,  # boss commands
         2,  # financial commands
@@ -806,16 +801,16 @@ def create_chat(message, system_id, chat_type, link, database):
     database.append(chat_tuple, 'chats')
 
 
+@LOG.wrap
 def create_vote(vote_message):
     """Создаёт голосовашку"""
-    LOG.log_print("create_vote invoked")
-    file = open(VOTES_FILE, 'r', encoding='utf-8')
-    votes_shelve = file.read()
+    with open(VOTES_FILE, 'r', encoding='utf-8') as file:
+        votes_shelve = file.read()
     if votes_shelve:
         votes_shelve = literal_eval(votes_shelve)
     else:
         votes_shelve = {}
-    file.close()
+
     votes_shelve[vote_message.message_id] = {
         "time": vote_message.date,
         "text": vote_message.text,
@@ -823,73 +818,70 @@ def create_vote(vote_message):
         "against": {},
         "abstain": {}
     }
-    file = open(VOTES_FILE, 'w', encoding='utf-8')
-    file.write(str(votes_shelve))
-    file.close()
+    with open(VOTES_FILE, 'w', encoding='utf-8') as file:
+        file.write(str(votes_shelve))
 
 
+@LOG.wrap
 def create_multi_vote(vote_message):
     """Создаёт мульти-голосовашку"""
-    LOG.log_print("create_multi_vote invoked")
     keyboard = InlineKeyboardMarkup()
     url = 'https://t.me/multifandomrubot?start=new_option{}'.format(vote_message.message_id)
     keyboard.row_width = 1
     keyboard.add(InlineKeyboardButton("Предложить вариант", url=url))
-    file = open(MULTI_VOTES_FILE, encoding='utf-8')
-    votes_shelve = file.read()
+    with open(MULTI_VOTES_FILE, encoding='utf-8') as file:
+        votes_shelve = file.read()
     if votes_shelve:
         votes_shelve = literal_eval(votes_shelve)
     else:
         votes_shelve = {}
-    file.close()
+
     votes_shelve[vote_message.message_id] = {
         "text": vote_message.text,
         "votes": [],
         "keyboard": [],
         "chat": vote_message.chat.id
     }
-    file = open(MULTI_VOTES_FILE, 'w', encoding='utf-8')
-    file.write(str(votes_shelve))
-    file.close()
+    with open(MULTI_VOTES_FILE, 'w', encoding='utf-8') as file:
+        file.write(str(votes_shelve))
     edit_markup(vote_message.chat.id, vote_message.message_id, reply_markup=keyboard)
 
 
+@LOG.wrap
 def create_adapt_vote(vote_message):
     """Создаёт адапт-голосовашку"""
-    LOG.log_print("create_adapt_vote invoked")
     keyboard = InlineKeyboardMarkup()
     url = 'https://t.me/multifandomrubot?start=new_adapt_option{}'.format(vote_message.message_id)
     keyboard.row_width = 1
     keyboard.add(InlineKeyboardButton("Предложить вариант", url=url))
-    file = open(ADAPT_VOTES_FILE, encoding='utf-8')
-    votes_shelve = file.read()
+    with open(ADAPT_VOTES_FILE, encoding='utf-8') as file:
+        votes_shelve = file.read()
     if votes_shelve:
         votes_shelve = literal_eval(votes_shelve)
     else:
         votes_shelve = {}
-    file.close()
+
     votes_shelve[vote_message.message_id] = {
         "text": vote_message.text,
         "votes": [],
         "keyboard": [],
         "chat": vote_message.chat.id
     }
-    file = open(ADAPT_VOTES_FILE, 'w', encoding='utf-8')
-    file.write(str(votes_shelve))
-    file.close()
+    with open(ADAPT_VOTES_FILE, 'w', encoding='utf-8') as file:
+        file.write(str(votes_shelve))
     edit_markup(vote_message.chat.id, vote_message.message_id, reply_markup=keyboard)
 
 
+@LOG.wrap
 def update_multi_vote(vote_id):
     """Обновляет мульти-голосовашку"""
-    LOG.log_print("update_multi_vote invoked")
-    file = open(MULTI_VOTES_FILE, encoding='utf-8')
-    votes_shelve = file.read()
+    with open(MULTI_VOTES_FILE, encoding='utf-8') as file:
+        votes_shelve = file.read()
     if votes_shelve:
         votes_shelve = literal_eval(votes_shelve)
     else:
         votes_shelve = {}
-    file.close()
+
     votey = dict(votes_shelve[vote_id])
     keyboard = InlineKeyboardMarkup()
     url = 'https://t.me/multifandomrubot?start=new_option{}'.format(vote_id)
@@ -905,16 +897,16 @@ def update_multi_vote(vote_id):
               reply_markup=keyboard, parse_mode="HTML")
 
 
+@LOG.wrap
 def update_adapt_vote(vote_id):
     """Обновляет адапт голосовашку"""
-    LOG.log_print("update_adapt_vote")
-    file = open(ADAPT_VOTES_FILE, encoding='utf-8')
-    votes_shelve = file.read()
+    with open(ADAPT_VOTES_FILE, encoding='utf-8') as file:
+        votes_shelve = file.read()
     if votes_shelve:
         votes_shelve = literal_eval(votes_shelve)
     else:
         votes_shelve = {}
-    file.close()
+
     votey = dict(votes_shelve[vote_id])
     keyboard = InlineKeyboardMarkup()
     url = 'https://t.me/multifandomrubot?start=new_adapt_option{}'.format(vote_id)
@@ -930,9 +922,9 @@ def update_adapt_vote(vote_id):
               reply_markup=keyboard, parse_mode="HTML")
 
 
+@LOG.wrap
 def unban_user(person):
     """Remove ban from user"""
-    LOG.log_print("unban_user invoked")
     database = Database()
     chats_to_unban = database.get_many('chats', ('violators_ban', 2))
     for chat in chats_to_unban:

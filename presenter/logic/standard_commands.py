@@ -1,4 +1,4 @@
-"""Standart commands, available for everyone"""
+"""standard commands, available for everyone"""
 # -*- coding: utf-8 -*-
 from random import choice
 from collections import Counter, defaultdict
@@ -20,7 +20,7 @@ LOG = Logger()
 
 def helper(message):
     """Предоставляет человеку список команд"""
-    LOG.log_print(str(message.from_user.id) + ": helper invoked")
+    LOG.log(str(message.from_user.id) + ": helper invoked")
     database = Database()
     answer = '<b>Команды:</b>\n\n'
     if message.chat.id < 0:  # Command is used in chat
@@ -43,7 +43,7 @@ def helper(message):
                   '/get [хранилище] [номер] - Получать контент из хранилища,' \
                   'если номер не указан, будет прислан случайный контент из хранилища\n'\
                   '/size [хранилище] - Получить инфо о количестве контента и модеров хранилища\n\n'
-        if feature_is_available(message.chat.id, system, 'standart_commands'):
+        if feature_is_available(message.chat.id, system, 'standard_commands'):
             answer += '<b>Развлекательные команды:</b>\n'
             answer += '/minet - Делает приятно\n'
             answer += '/meme - Присылает мем\n'
@@ -70,7 +70,7 @@ def helper(message):
             answer += '<b>Настройщики чатов:</b>\n'
             answer += '/add_chat [ID системы чатов] - Добавить чат в систему чатов\n'
             answer += '/admin_place - Отметить чат как админский\n'
-            answer += '/standart_greetings [текст] — Изменить приветствие для простого человека\n' \
+            answer += '/standard_greetings [текст] — Изменить приветствие для простого человека\n' \
                       '/captcha_greetings [текст] — Изменить приветствие при капче\n' \
                       '/admin_greetings [текст] — Изменить приветствие для админа\n' \
                       '/full_greetings [текст] — Изменить приветствие для полного админа\n' \
@@ -124,9 +124,9 @@ def money_helper(message):
     reply(message, answer, parse_mode='HTML')
 
 
+@LOG.wrap
 def send_list_of_storages(message):
     """ Sends list of all storages """
-    LOG.log_print("send_list_of_storages invoked")
     storages_dict = get_storage_json()
     vulgar_storages = []
     non_vulgar_storages = []
@@ -144,7 +144,7 @@ def send_list_of_storages(message):
 
 def minet(message, language):
     """Приносит удовольствие"""
-    LOG.log_print(str(message.from_user.id) + ": minet invoked")
+    LOG.log(str(message.from_user.id) + ": minet invoked")
     if language:
         choices = []
         for i in MINETS[language].keys():
@@ -157,9 +157,9 @@ def minet(message, language):
             send_sticker(message.chat.id, rep, reply_to_message_id=message.message_id)
 
 
+@LOG.wrap
 def send_random_stuff_from_storage(message, storage_name):
     """Send a random piece of media from a storage"""
-    LOG.log_print("send_random_stuff_from_storage invoked")
     contents = get_list_from_storage(storage_name)['contents']
     if len(contents) > 0:
         result = choice(contents)
@@ -178,9 +178,9 @@ def send_random_stuff_from_storage(message, storage_name):
         reply(message, "На данный момент хранилище пусто :-(")
 
 
+@LOG.wrap
 def send_numbered_stuff_from_storage(message, storage_name, stuff_number):
     """Send a numbered piece of media from a storage"""
-    LOG.log_print("send_numbered_stuff_from_storage invoked")
     contents = get_list_from_storage(storage_name)['contents']
     if len(contents) > 0:
         try:
@@ -240,9 +240,9 @@ def dict_to_natural_language(counter_dictionary):
     return 'из них ' + ', '.join(media_list[:-1]) + ' и ' + media_list[-1]
 
 
+@LOG.wrap
 def check_storage_size(message, storage_name):
     """ Checks how many moderators and how much media there is in a storage """
-    LOG.log_print('check_storage_size invoked')
     storage = get_list_from_storage(storage_name)
     moderators_number = len(storage['moders'])
     media_number = len(storage['contents'])
@@ -260,7 +260,7 @@ def check_storage_size(message, storage_name):
 
 def send_meme(message):
     """Присылает мем"""
-    LOG.log_print(str(message.from_user.id) + ": send_meme invoked")
+    LOG.log(str(message.from_user.id) + ": send_meme invoked")
     meme = choice(('AgADAgADx60xG2S_oUmVz41Dk8a4AkRNUw8ABAEAAwIAA20AAzj4BQABFgQ',
                    'AgADAgADdKsxG7PUsEmfWmu7wYQaSlHNuQ8ABAEAAwIAA20AA2gAAxYE',
                    'AgADAgAD-aoxG0EnIUqnHKx1l-EFFajiug8ABAEAAwIAA20AA3VUAAIWBA',
@@ -272,7 +272,7 @@ def send_meme(message):
 
 def send_me(message, person):
     """Присылает человеку его запись в БД"""
-    LOG.log_print(str(message.from_user.id) + ": send_me invoked")
+    LOG.log(str(message.from_user.id) + ": send_me invoked")
     database = Database()
     system = database.get('chats', ('id', message.chat.id))['system']
     chat_config = get_system_configs(system)
@@ -302,9 +302,9 @@ def send_me(message, person):
     reply(message, msg)
 
 
+@LOG.wrap
 def send_some_top(message, language, format_string, start='', sort_key=lambda x: True):
     """Send a full version of a top for admins"""
-    LOG.log_print("send_some_top invoked")
     database = Database()
     # Declaring variables
     sent = False
@@ -341,9 +341,9 @@ def send_some_top(message, language, format_string, start='', sort_key=lambda x:
         reply(message, "Ничего нет!")
 
 
+@LOG.wrap
 def send_short_top(message, language, format_string, start='', sort_key=lambda x: True):
     """Send a short version of a top for non-admins"""
-    LOG.log_print("send_short_top invoked")
     database = Database()
     # Declaring variables
     system = database.get('chats', ('id', message.chat.id))['system']
@@ -377,7 +377,7 @@ def send_short_top(message, language, format_string, start='', sort_key=lambda x
 
 def money_give(message, person, parameters_dictionary: dict):
     """Функция обмена деньгами между людьми"""
-    LOG.log_print(f"money_give invoked to person {person.id}")
+    LOG.log(f"money_give invoked to person {person.id}")
     database = Database()
     getter = person
     giver = message.from_user
@@ -425,9 +425,9 @@ def money_give(message, person, parameters_dictionary: dict):
     database.change(value_giver, 'money', 'members', ('id', giver.id), ('system', system))
 
 
+@LOG.wrap
 def money_fund(message, parameters_dictionary):
     """Transfer money to the chat fund"""
-    LOG.log_print("money_fund invoked")
     database = Database()
 
     giver = message.from_user
@@ -466,17 +466,17 @@ def money_fund(message, parameters_dictionary):
             database.change(value_system, 'money', 'systems', ('id', system))
 
 
+@LOG.wrap
 def month_set(message, month):
     """Set the month of person's birthday"""
-    LOG.log_print("month_set invoked")
     database = Database()
     reply(message, "Ставлю человеку с ID {} месяц рождения {}".format(message.from_user.id, month))
     database.change(month, 'month_birthday', 'members', ('id', message.from_user.id))
 
 
+@LOG.wrap
 def day_set(message, day, language):
     """Set the day of person's birthday"""
-    LOG.log_print("day_set invoked")
     days = (31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31)
     database = Database()
     month = database.get('members', ('id', message.from_user.id))['month_birthday'] - 1
@@ -587,9 +587,9 @@ def system_check(message):
     reply(message, text)
 
 
+@LOG.wrap
 def anon_message(message):
     """Send an anonymous message to an admin place"""
-    LOG.log_print('anon_message invoked')
     database = Database(to_log=False)
     systems = [x['system'] for x in database.get_many('members', ('id', message.from_user.id))]
     system = None

@@ -13,14 +13,14 @@ LOG = Logger(LOG_TO)
 
 def new_option(message, vote_id):
     """Send option to De'Max to check if it's adequate"""
-    LOG.log_print(str(message.from_user.id) + ": new_option invoked")
+    LOG.log(str(message.from_user.id) + ": new_option invoked")
     send(CREATOR_ID, "[{}, '{}']".format(vote_id, message.text), reply_markup=ADEQUATE_KEYBOARD)
     reply(message, "Ваше мнение выслано на проверку")
 
 
 def new_adapt_option(message, vote_id):
     """Send option to De'Max to check if it's adequate"""
-    LOG.log_print(str(message.from_user.id) + ": new_adapt_option invoked")
+    LOG.log(str(message.from_user.id) + ": new_adapt_option invoked")
     send(CREATOR_ID, "[{}, '{}']".format(vote_id, message.text),
          reply_markup=ADAPT_ADEQUATE_KEYBOARD)
     reply(message, "Ваше мнение выслано на проверку")
@@ -28,7 +28,7 @@ def new_adapt_option(message, vote_id):
 
 def starter(message):
     """Запуск бота в личке, в чате просто реагирует"""
-    LOG.log_print(str(message.from_user.id) + ": starter invoked")
+    LOG.log(str(message.from_user.id) + ": starter invoked")
     if "full_rules" in message.text:
         reply(message, open(files.FULL_RULES, encoding='utf-8').read(), parse_mode="Markdown")
     elif "elitocracy" in message.text:

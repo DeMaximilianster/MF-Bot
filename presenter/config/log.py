@@ -37,7 +37,7 @@ class Logger:
             else:
                 yield f'{date} {arg}'
 
-    def log_print(self, *args):
+    def log(self, *args):
         """Print a log"""
         all_logs = '\n'.join(self.log_strings(args)) + '\n'
 
@@ -48,6 +48,13 @@ class Logger:
             for path in self.log_files:
                 with open(path, 'a+', encoding='utf-8') as log_file:
                     log_file.write(all_logs)
+
+    def wrap(self, func):
+        """Logging wrapper around a function"""
+        def wrapper(*args, **kwargs):
+            self.log(func.__name__ + " invoked")
+            return func(*args, **kwargs)
+        return wrapper
 
     def add_log_file(self, path):
         """Add a log file"""

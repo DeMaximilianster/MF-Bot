@@ -20,9 +20,9 @@ LOG = Logger(LOG_TO)
 WORK = True
 
 
+@LOG.wrap
 def create_new_chat(call):
     """Add new system of chats"""
-    LOG.log_print("create_new_chat invoked")
     database = Database()
     chat_type, link = cf.get_chat_type_and_chat_link(call.message.chat)
     all_systems = database.get_all('systems', 'id')
@@ -35,9 +35,9 @@ def create_new_chat(call):
               call.message.chat.id, call.message.message_id)
 
 
+@LOG.wrap
 def captcha_completed(call):
     """Bot reacts to someone clicked correct button"""
-    LOG.log_print("captcha_completed invoked")
     if CAPTCHERS.remove_captcher(call.from_user.id, call.message.chat.id):
         restrict(call.message.chat.id,
                  call.from_user.id,
@@ -51,9 +51,9 @@ def captcha_completed(call):
         answer_callback(call.id, text='Это не ваша креветка 👀')
 
 
+@LOG.wrap
 def captcha_failed(call):
     """Bot reacts to someone clicked wrong button"""
-    LOG.log_print("captcha_failed invoked")
     if CAPTCHERS.remove_captcher(call.from_user.id, call.message.chat.id):
         kick_and_unban(call.message.chat.id, call.from_user.id)
         answer_callback(call.id)
@@ -63,9 +63,9 @@ def captcha_failed(call):
         answer_callback(call.id, text='Это не ваша животинка 👀')
 
 
+@LOG.wrap
 def adequate(call):
     """Вариант адекватен"""
-    LOG.log_print("adequate invoked")
     file_place = None
     if call.data == 'adequate':
         file_place = MULTI_VOTES_FILE
@@ -79,9 +79,8 @@ def adequate(call):
     votey["keyboard"].append(info[1])
     votey["votes"].append([info[1], {}])  # Добавляем вариант
     votes_shelve[vote_id] = votey
-    file = open(file_place, 'w', encoding='utf-8')
-    file.write(str(votes_shelve))
-    file.close()
+    with open(file_place, 'w', encoding='utf-8') as file:
+        file.write(str(votes_shelve))
     if call.data == 'adequate':
         update_multi_vote(vote_id)
     elif call.data == 'a_adequate':
@@ -89,15 +88,15 @@ def adequate(call):
     edit_markup(call.message.chat.id, call.message.message_id)
 
 
+@LOG.wrap
 def inadequate(call):
     """Вариант неадекватен"""
-    LOG.log_print("inadequate invoked")
     edit_markup(call.message.chat.id, call.message.message_id)
 
 
+@LOG.wrap
 def response(inline_query):
     """Тестовая инлайновая команда, бесполезная"""
-    LOG.log_print("response invoked")
     results = [
         InlineQueryResultArticle('1',
                                  'Тестовый заголовок',
@@ -107,17 +106,17 @@ def response(inline_query):
     answer_inline(inline_query.id, results=results, cache_time=1)
 
 
+@LOG.wrap
 def insult(message):
     """Спращивает, иронично ли признание оскорблением"""
-    LOG.log_print("insult invoked")
     text = "Иронично? \n\n(В случае нажатия 'Неиронично' в админосостав будет послана жалоба. " \
            "Будьте добры не пользоваться каналом жалоб, если вас не оскорбили)"
     reply(message, text, reply_markup=IRONIC_KEYBOARD)
 
 
+@LOG.wrap
 def non_ironic(call):
     """Реакция, если обвинение было неироничным"""
-    LOG.log_print("non_ironic invoked")
     # Проверка, нажал ли на кнопку не тот, кто нужен
     edit_text("Неиронично!", call.message.chat.id, call.message.message_id)
     send(admin_place(call.message, Database()),
@@ -127,16 +126,16 @@ def non_ironic(call):
     answer_callback(call.id)
 
 
+@LOG.wrap
 def ironic(call):
     """Реакция, если обвинение было ироничным"""
-    LOG.log_print("ironic invoked")
     edit_text("Иронично, так иронично", call.message.chat.id, call.message.message_id)
     answer_callback(call.id)
 
 
+@LOG.wrap
 def place_here(call):
     """Выбирает, куда прислать голосовашку"""
-    LOG.log_print("place_here invoked")
     # Проверка, нажал ли на кнопку не тот, кто нужен
     where = None
     if call.data == 'here' or call.data == 'm_here' or call.data == 'a_here':
@@ -163,9 +162,9 @@ def place_here(call):
     delete(call.message.chat.id, call.message.message_id)
 
 
+@LOG.wrap
 def multi_vote(call):
     """Обновляет мульти-голосовашку"""
-    LOG.log_print("mv invoked")
     user = call.from_user
     user_username = user.username  # юзернейм жмакнувшего челика
     user_nickname = user.first_name
@@ -174,10 +173,9 @@ def multi_vote(call):
     # Как этот челик будет отображаться в сообщении
     link = f'<a href="t.me/{user_username}">{user_nickname}</a>'
     which = int(call.data[-1])  # Где менять мнение
-    file = open(MULTI_VOTES_FILE, encoding='utf-8')
-    votes_shelve = literal_eval(file.read())
+    with open(MULTI_VOTES_FILE, encoding='utf-8') as file:
+        votes_shelve = literal_eval(file.read())
     votey = votes_shelve[msg_id]  # Получаем необходимую нам голосовашку в хранилище
-    file.close()
 
     if user_id in votey['votes'][which][1].keys():
         # Челик нажал на кнопку, на которой есть его мнение
@@ -188,16 +186,15 @@ def multi_vote(call):
         votey['votes'][which][1].update([(user_id, link)])
     # Сохраняем изменения
     votes_shelve[msg_id] = votey
-    file = open(MULTI_VOTES_FILE, 'w', encoding='utf-8')
-    file.write(str(votes_shelve))
-    file.close()
+    with open(MULTI_VOTES_FILE, 'w', encoding='utf-8') as file:
+        file.write(str(votes_shelve))
     answer_callback(call.id, text="Жмак учтён!")
     update_multi_vote(call.message.message_id)
 
 
+@LOG.wrap
 def adapt_vote(call):
     """Обновляет адапт-голосовашку"""
-    LOG.log_print("av invoked")
     user = call.from_user
     user_username = user.username  # юзернейм жмакнувшего челика
     user_nickname = user.first_name
@@ -206,10 +203,10 @@ def adapt_vote(call):
     # Как этот челик будет отображаться в сообщении
     link = f'<a href="t.me/{user_username}">{user_nickname}</a>'
     which = int(call.data[-1])  # Где менять мнение
-    file = open(ADAPT_VOTES_FILE, encoding='utf-8')
-    votes_shelve = literal_eval(file.read())
+    with open(ADAPT_VOTES_FILE, encoding='utf-8') as file:
+        votes_shelve = literal_eval(file.read())
     votey = votes_shelve[msg_id]  # Получаем необходимую нам голосовашку в хранилище
-    file.close()
+
     if msg_id in votes_shelve.keys():
         if user_id in votey['votes'][which][1].keys(
         ):  # Челик нажал на кнопку, на которой есть его мнение
@@ -222,16 +219,15 @@ def adapt_vote(call):
             votey['votes'][which][1].update([(user_id, link)])
     # Сохраняем изменения
     votes_shelve[msg_id] = votey
-    file = open(ADAPT_VOTES_FILE, 'w', encoding='utf-8')
-    file.write(str(votes_shelve))
-    file.close()
+    with open(ADAPT_VOTES_FILE, 'w', encoding='utf-8') as file:
+        file.write(str(votes_shelve))
     answer_callback(call.id, text="Жмак учтён!")
     update_adapt_vote(call.message.message_id)
 
 
+@LOG.wrap
 def add_vote(call):
     """Вставляет голос в голосоовашку"""
-    LOG.log_print("add_vote invoked")
     reply_markup = VOTE_KEYBOARD
     text = ''
     user = call.from_user
@@ -241,9 +237,9 @@ def add_vote(call):
     msg_id = call.message.message_id  # Ай ди жмакнутого сообщения
     # Как этот челик будет отображаться в сообщении
     link = f'<a href="t.me/{user_username}">{user_nickname}</a>'
-    file = open(VOTES_FILE, 'r', encoding='utf-8')
-    votes_shelve = literal_eval(file.read())
-    file.close()
+    with open(VOTES_FILE, 'r', encoding='utf-8') as file:
+        votes_shelve = literal_eval(file.read())
+
     if msg_id in votes_shelve.keys():
         votey = votes_shelve[msg_id]  # Получаем необходимую нам голосовашку в хранилище
         if time() - votey['time'] > 86400 and len(votey['favor']) != len(
@@ -270,9 +266,8 @@ def add_vote(call):
         text += 'Голосование окончено по причине ненахода записи об этой голосовашки. ' \
                 'Новые голоса не принимаются\n\n'
         text += call.message.text
-    file = open(VOTES_FILE, 'w', encoding='utf-8')
-    file.write(str(votes_shelve))
-    file.close()
+    with open(VOTES_FILE, 'w', encoding='utf-8') as file:
+        file.write(str(votes_shelve))
     edit_text(text=text,
               chat_id=call.message.chat.id,
               message_id=call.message.message_id,
@@ -281,11 +276,10 @@ def add_vote(call):
     answer_callback(call.id, text="Жмак учтён!")
 
 
+@LOG.wrap
 def vote(message):
     """Create poll"""
-    LOG.log_print(f'vote invoked')
     where_keyboard = InlineKeyboardMarkup()
     where_keyboard.row_width = 1
     where_keyboard.add(InlineKeyboardButton("Сюда", callback_data="here"))
     reply(message, "А запостить куда?", reply_markup=where_keyboard)
-
