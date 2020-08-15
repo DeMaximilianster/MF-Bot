@@ -568,6 +568,14 @@ def time_replace(seconds):
     return days, hours, minutes, seconds
 
 
+def count_message(func):
+    def wrapper(message):
+        person = left_new_or_else_member(message)
+        counter(message, person)  # Отправляем сообщение на учёт в БД
+        func(message)
+    return wrapper
+
+
 @LOG.wrap
 def in_mf(message, command_type, or_private=True, loud=True):
     """Позволяет регулировать использование команл вне чатов и в личке"""
@@ -591,7 +599,7 @@ def in_mf(message, command_type, or_private=True, loud=True):
     system = chat['system']
     chat_configs = get_system_configs(system)
     get_person(message, person, system, database, system_configs=chat_configs)
-    counter(message, person)  # Отправляем сообщение на учёт в БД
+    counter(message, person)
     # Заканчиваем оруэлловщину
 
     if command_type == 'financial_commands' and not chat_configs['money']:
@@ -772,11 +780,35 @@ def create_system(message, system_id, database):
 def update_old_systems_json():
     """Fills old json entries with missing attributes"""
     data = get_systems_json()
-    for system in data.keys():
-        for prop in NEW_SYSTEM_JSON_ENTRY:
-            if prop not in data[system]:
-                data[system][prop] = NEW_SYSTEM_JSON_ENTRY[prop]
+    for system_number in data.keys():
+        data[system_number] = update_dictionary(data[system_number], NEW_SYSTEM_JSON_ENTRY)
     write_systems_json(data)
+
+
+def update_dictionary(current_dictionary: dict, model_dictionary: dict):
+    """Update one dictionary"""
+    # first we make sure we don't change the original dictionaries
+    current_dictionary = dict(current_dictionary)
+    model_dictionary = dict(model_dictionary)
+    # then we add missing keys
+    for key in model_dictionary.keys():
+        if key not in current_dictionary.keys():
+            current_dictionary[key] = model_dictionary[key]
+        elif isinstance(model_dictionary[key], dict):
+            if isinstance(current_dictionary[key], dict):
+                # update next layer of the dictionary
+                current_dictionary[key] = update_dictionary(current_dictionary[key], model_dictionary[key])
+            else:
+                current_dictionary[key] = model_dictionary[key]
+    # finally we delete unnecessary keys
+    key_pop = []  # ha ha k-pop reference
+    for key in current_dictionary:
+        if key not in model_dictionary.keys():
+            key_pop.append(key)
+        # we don't need to go to the next layer because this function already does it higher
+    for key in key_pop:  # if we pop right in previous loop, RunTimeError will be raised
+        current_dictionary.pop(key)
+    return current_dictionary
 
 
 def create_chat(message, system_id, chat_type, link, database):
