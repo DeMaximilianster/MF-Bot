@@ -7,6 +7,8 @@ from presenter.config.config_func import Database, is_suitable, \
     create_chat, CaptchaBan, person_info_in_html, chat_info_in_html, html_cleaner
 import presenter.config.config_func as cf
 from view.output import delete, kick, send, promote, reply, restrict
+from nudity.checker import check_photo_for_nudity
+from api_requests import request_file
 
 LOG = Logger(LOG_TO)
 
@@ -18,6 +20,10 @@ def trigger(message):
     chat = database.get('chats', ('id', chat_id))
     system_id = chat['system']
     content_type = 'text'
+    if 'photo' in message.content_type:
+        filepath = request_file(message.photo.file_id, "nudity/input")
+        if check_photo_for_nudity(filepath) >= 0.9:
+            delete(chat_id, message.message_id) #Delete sexual content
     if message.voice:
         content_type = 'voice'
     trigger_entry = database.get('triggers', ('id', chat_id), ('sys_or_chat', 'chat'),
