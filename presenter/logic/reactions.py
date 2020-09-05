@@ -7,8 +7,8 @@ from presenter.config.config_func import Database, is_suitable, \
     create_chat, CaptchaBan, person_info_in_html, chat_info_in_html, html_cleaner
 import presenter.config.config_func as cf
 from view.output import delete, kick, send, promote, reply, restrict
-from nudity.checker import check_photo_for_nudity
-from api_requests import request_file
+from presenter.logic.nudity.checker import check_photo_for_nudity
+from presenter.logic.api_requests import request_file
 
 LOG = Logger(LOG_TO)
 

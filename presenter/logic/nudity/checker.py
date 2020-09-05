@@ -1,8 +1,8 @@
 from PIL import Image
-from nudity import Nudity
-from compresser import Compresser
-from cutter import Cutter
-import request
+from presenter.logic.nudity.nudity import Nudity
+from presenter.logic.nudity.compresser import Compresser
+from presenter.logic.nudity.cutter import Cutter
+
 
 def check_video_for_nudity(vid_path="input.mp4"):
 	compresser = Compresser()
