@@ -1,5 +1,5 @@
 from presenter.config.token import BOT
-from config.log import Logger
+from presenter.config.log import Logger
 import requests
 
 LOG = Logger(0) # int code for log_to_both

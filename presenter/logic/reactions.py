@@ -21,7 +21,7 @@ def trigger(message):
     system_id = chat['system']
     content_type = 'text'
     if 'photo' in message.content_type:
-        filepath = request_file(message.photo.file_id, "nudity/input")
+        filepath = request_file(message.photo[0].file_id, "nudity/input")
         if check_photo_for_nudity(filepath) >= 0.9:
             delete(chat_id, message.message_id) #Delete sexual content
     if message.voice:
