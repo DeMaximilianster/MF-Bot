@@ -1,7 +1,7 @@
 """ All bot message and call handlers are here """
 from random import shuffle
 
-from presenter.config.token import BOT
+from presenter.config.token_manager import BOT
 from presenter.config.log import Logger, LOG_TO
 from presenter.config import config_func
 from presenter.logic import (boss_commands, complicated_commands, reactions, standard_commands,

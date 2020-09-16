@@ -1,4 +1,4 @@
-from presenter.config.token import BOT
+from presenter.config.token_manager import BOT
 from presenter.config.log import Logger
 import requests
 

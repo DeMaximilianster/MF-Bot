@@ -1,19 +1,16 @@
-# по идее игнорирование такой папки везде
+﻿# ignoring this folder everywhere
 **/__pycache__/
 
-#игнорирование model в корне
+# ignoring model in root
 /model
 
-#игнорирование token.py
-/presenter/config/token.py
-
-#игнор настроек редактора
+# ignoring text editor settings
 /.vscode
 
-#игнор папки с виртуальным окружением
+# ignoring virtual environment
 **/venv/
 
-#игнор настроек PyCharm
+# ignoring PyCharm settings
 /.idea
 /.idea/
 /idea/*
