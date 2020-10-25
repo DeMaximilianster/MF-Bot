@@ -68,7 +68,9 @@ def helper(message):
             answer += '/senior_admin - Снять бан, дать продвинутую админку\n\n'
         if is_suitable(message, message.from_user, 'chat_changer', loud=False):
             answer += '<b>Настройщики чатов:</b>\n'
-            answer += '/add_chat [ID системы чатов] - Добавить чат в систему чатов\n'
+            answer += '/add_chat [ID системы чатов] - Добавить чат в систему чатов\n' \
+                      '/set_limit [x] - Поставить кулдаун на вход. Когда кто-то заходит, ' \
+                      'следующие x секунд никто не сможет зайти\n'
             answer += '/admin_place - Отметить чат как админский\n'
             answer += '/standard_greetings [текст] — Изменить приветствие для простого человека\n' \
                       '/captcha_greetings [текст] — Изменить приветствие при капче\n' \

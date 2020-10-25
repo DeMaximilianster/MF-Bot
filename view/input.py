@@ -270,6 +270,18 @@ def messages_change_handler(message):
             boss_commands.message_change(message, person, parameters_dictionary)
 
 
+@BOT.message_handler(commands=['set_limit', 'limit_set'])
+@LOG.wrap
+def set_limit_handler(message):
+    """Sets the limit for entering the chat"""
+    if config_func.in_mf(message, command_type=None, or_private=False) and config_func.is_suitable(
+            message, message.from_user, "chat_changer"):
+        analyzer = config_func.Analyzer(message)
+        parameters_dictionary = analyzer.parameters_dictionary
+        if parameters_dictionary:
+            boss_commands.set_limit(message, parameters_dictionary)
+
+
 @BOT.message_handler(commands=['add_chat'])
 @LOG.wrap
 def add_chat_handler(message):
