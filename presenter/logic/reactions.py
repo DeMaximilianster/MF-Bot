@@ -52,7 +52,7 @@ def new_member(message, member):
                     ('system', system)) and \
             feature_is_available(message.chat.id, system, 'violators_ban'):
         kick(message.chat.id, member.id)
-    elif not cooldown(message, "entrance", database.get('systems', ('id', system))['entrance_cooldown'],
+    elif not cooldown(message, "entrance", timeout=database.get('systems', ('id', system))['entrance_cooldown'],
                       notify=False, individual=False):
         kick_and_unban(message.chat.id, member.id)
     elif is_suitable(message, member, 'uber', loud=False) and feature_is_available(

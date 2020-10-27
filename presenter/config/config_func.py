@@ -563,7 +563,7 @@ def cooldown(message, command, timeout=3600, notify=True, individual=True):
 
         return False
     # Кулдаун прошёл
-    database.change(message.date, 'time', 'cooldown', ('person_id', message.from_user.id),
+    database.change(message.date, 'time', 'cooldown', ('person_id', person_id),
                     ('command', command), ('chat_id', message.chat.id))
     return True
 
