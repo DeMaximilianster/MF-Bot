@@ -144,6 +144,17 @@ def send_list_of_storages(message):
     reply(message, text, parse_mode='HTML')
 
 
+@LOG.wrap
+def dick_cheek_punch(message, person):
+    """For punching someone's cheek with your dick"""
+    if message.from_user.id == person.id:
+        reply(message, "{} ударился(-ась) своей щекой об член!".format(person.first_name))
+    else:
+        reply(message, "{} ударил(-а) {} членом по щеке!".format(
+              message.from_user.first_name, person.first_name))
+
+
+
 def minet(message, language):
     """Приносит удовольствие"""
     LOG.log(str(message.from_user.id) + ": minet invoked")
