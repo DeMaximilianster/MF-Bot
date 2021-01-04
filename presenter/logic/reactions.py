@@ -11,6 +11,7 @@ from view.output import delete, kick, send, promote, reply, restrict
 LOG = Logger(LOG_TO)
 
 
+@LOG.wrap
 def trigger(message):
     """Reacts to some triggers in people's messages"""
     database = Database()

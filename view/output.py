@@ -203,3 +203,11 @@ def get_chat(chat_id):
 def get_me():
     """ Get information about bot """
     return BOT.get_me()
+
+
+@handle_errors
+@LOG.wrap
+def get_file(file_id: int):
+    """Get basic infor about a file and prepare it for downloading
+    :arg file_id: id of the file"""
+    return BOT.get_file(file_id)
