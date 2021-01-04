@@ -17,6 +17,7 @@ def show_id(message):
 
     answer = f'Время отправки вашего сообщения: {cd(ctime(message.date))}\n\n' \
              f'Переводя, выходит: {cd(time_replace(message.date))}\n\n' \
+             f'В секундах это: {cd(message.date)}\n\n' \
              f'Время отправки моего сообщения: {cd(ctime(time()))}\n\n' \
              f'ID этого чата: {cd(message.chat.id)}\n\n' \
              f'Ваш ID: {cd(message.from_user.id)}\n\n' \

@@ -591,3 +591,11 @@ def update_greetings_json(message, which_greeting: str):
     data[system] = system_configs
     cf.write_systems_json(data)
     reply(message, 'Поставлен текст: "{}"'.format(text), parse_mode='HTML')
+
+
+def set_limit(message, parameters_dictionary):
+    database = Database()
+    seconds = parameters_dictionary['value']
+    system = database.get('chats', ('id', message.chat.id))['system']
+    database.change(seconds, 'entrance_cooldown', 'systems', ('id', system))
+    reply(message, "Поставлено секунд: {}".format(seconds))

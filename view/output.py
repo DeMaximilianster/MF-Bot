@@ -1,7 +1,7 @@
 """Module with functions to send to Telegram servers"""
 
 from telebot.apihelper import ApiException
-from presenter.config.token import BOT
+from presenter.config.token_manager import BOT
 import presenter.config.log as log
 
 LOG = log.Logger(log.LOG_TO_CONSOLE)

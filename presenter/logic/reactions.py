@@ -3,12 +3,10 @@
 from time import time
 from presenter.config.log import Logger, LOG_TO
 from presenter.config.config_func import Database, is_suitable, \
-    feature_is_available, get_system_configs, create_captcha_keyboard, \
-    create_chat, CaptchaBan, person_info_in_html, chat_info_in_html, html_cleaner
+    feature_is_available, get_system_configs, create_captcha_keyboard, kick_and_unban, \
+    create_chat, CaptchaBan, person_info_in_html, chat_info_in_html, html_cleaner, cooldown
 import presenter.config.config_func as cf
 from view.output import delete, kick, send, promote, reply, restrict
-from presenter.logic.nudity.checker import check_photo_for_nudity
-from presenter.logic.api_requests import request_file
 
 LOG = Logger(LOG_TO)
 
@@ -20,10 +18,6 @@ def trigger(message):
     chat = database.get('chats', ('id', chat_id))
     system_id = chat['system']
     content_type = 'text'
-    if 'photo' in message.content_type:
-        filepath = request_file(message.photo.file_id, "nudity/input")
-        if check_photo_for_nudity(filepath) >= 0.9:
-            delete(chat_id, message.message_id) #Delete sexual content
     if message.voice:
         content_type = 'voice'
     trigger_entry = database.get('triggers', ('id', chat_id), ('sys_or_chat', 'chat'),
@@ -58,6 +52,9 @@ def new_member(message, member):
                     ('system', system)) and \
             feature_is_available(message.chat.id, system, 'violators_ban'):
         kick(message.chat.id, member.id)
+    elif not cooldown(message, "entrance", timeout=database.get('systems', ('id', system))['entrance_cooldown'],
+                      notify=False, individual=False):
+        kick_and_unban(message.chat.id, member.id)
     elif is_suitable(message, member, 'uber', loud=False) and feature_is_available(
             message.chat.id, system, 'admins_promote'):
         promote(message.chat.id,

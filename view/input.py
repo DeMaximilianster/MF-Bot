@@ -1,7 +1,7 @@
 """ All bot message and call handlers are here """
 from random import shuffle
 
-from presenter.config.token import BOT
+from presenter.config.token_manager import BOT
 from presenter.config.log import Logger, LOG_TO
 from presenter.config import config_func
 from presenter.logic import (boss_commands, complicated_commands, reactions, standard_commands,
@@ -268,6 +268,18 @@ def messages_change_handler(message):
         parameters_dictionary = analyzer.parameters_dictionary
         if person and parameters_dictionary:
             boss_commands.message_change(message, person, parameters_dictionary)
+
+
+@BOT.message_handler(commands=['set_limit', 'limit_set'])
+@LOG.wrap
+def set_limit_handler(message):
+    """Sets the limit for entering the chat"""
+    if config_func.in_mf(message, command_type=None, or_private=False) and config_func.is_suitable(
+            message, message.from_user, "chat_changer"):
+        analyzer = config_func.Analyzer(message)
+        parameters_dictionary = analyzer.parameters_dictionary
+        if parameters_dictionary:
+            boss_commands.set_limit(message, parameters_dictionary)
 
 
 @BOT.message_handler(commands=['add_chat'])
@@ -601,6 +613,16 @@ def rights_handler(message):
     """ Check bot rights """
     if config_func.in_mf(message, command_type=None):
         developer_commands.get_bot_rights(message)
+
+
+@BOT.message_handler(commands=['dick_punch'])
+@LOG.wrap
+def dick_cheek_punch_handler(message):
+    """For punching someone's cheek with your dick"""
+    if config_func.is_correct_message(message) and config_func.in_mf(message, 'standard_commands'):
+        if config_func.cooldown(message, 'dick_punch'):
+            person = config_func.Analyzer(message, value_necessary=False).return_target_person(to_self=True)
+            standard_commands.dick_cheek_punch(message, person)
 
 
 @BOT.message_handler(commands=['minet', 'french_style_sex', 'blowjob'])

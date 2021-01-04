@@ -68,7 +68,9 @@ def helper(message):
             answer += '/senior_admin - Снять бан, дать продвинутую админку\n\n'
         if is_suitable(message, message.from_user, 'chat_changer', loud=False):
             answer += '<b>Настройщики чатов:</b>\n'
-            answer += '/add_chat [ID системы чатов] - Добавить чат в систему чатов\n'
+            answer += '/add_chat [ID системы чатов] - Добавить чат в систему чатов\n' \
+                      '/set_limit [x] - Поставить кулдаун на вход. Когда кто-то заходит, ' \
+                      'следующие x секунд никто не сможет зайти\n'
             answer += '/admin_place - Отметить чат как админский\n'
             answer += '/standard_greetings [текст] — Изменить приветствие для простого человека\n' \
                       '/captcha_greetings [текст] — Изменить приветствие при капче\n' \
@@ -140,6 +142,17 @@ def send_list_of_storages(message):
     text = "Обычные хранилища: {}\n\nЭротичные хранилища: {}".format(
         str_non_vulgar_storages, str_vulgar_storages)
     reply(message, text, parse_mode='HTML')
+
+
+@LOG.wrap
+def dick_cheek_punch(message, person):
+    """For punching someone's cheek with your dick"""
+    if message.from_user.id == person.id:
+        reply(message, "{} ударился(-ась) своей щекой об член!".format(person.first_name))
+    else:
+        reply(message, "{} ударил(-а) {} членом по щеке!".format(
+              message.from_user.first_name, person.first_name))
+
 
 
 def minet(message, language):

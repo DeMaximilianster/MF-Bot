@@ -533,31 +533,37 @@ def is_suitable(inputed, person, command_type, system=None, loud=True):
 
 
 @LOG.wrap
-def cooldown(message, command, timeout=3600):
+def cooldown(message, command, timeout=3600, notify=True, individual=True):
     """Checks if the function is ready to be used again"""
     if message.chat.id > 0:  # Command is used in PM's
         return True
     database = Database()
-    # Получаем наименование необходимой команды
-    entry = database.get('cooldown', ('person_id', message.from_user.id), ('command', command),
+    person_id = 0
+    if individual:
+        person_id = message.from_user.id
+    entry = database.get('cooldown', ('person_id', person_id), ('command', command),
                          ('chat_id', message.chat.id))
-    if not entry:  # Чел впервые пользуется коммандой
-        database.append((message.from_user.id, command, message.chat.id, message.date), 'cooldown')
-
+    if not entry:  # Person uses this command for the first time
+        database.append((person_id, command, message.chat.id, message.date), 'cooldown')
         return True
-    # Чел уже пользовался командой
+    # The command is already used
     time_passed = message.date - entry['time']
     if time_passed < timeout:  # Кулдаун не прошёл
         seconds = timeout - time_passed
         minutes = seconds // 60
         seconds %= 60
-        answer = "Воу, придержи коней, ковбой. Ты сможешь воспользоваться этой командой только "
-        answer += f"через {minutes} минут и {seconds} секунд 🤠"
-        reply(message, answer)
+        if notify:
+            if individual:
+                answer = "Воу, придержи коней, ковбой. Ты сможешь воспользоваться этой командой только "
+                answer += f"через {minutes} минут и {seconds} секунд 🤠"
+            else:
+                answer = "Воу, придержите коней, ковбои. Вы сможете воспользоваться этой командой только "
+                answer += f"через {minutes} минут и {seconds} секунд 🤠"
+            reply(message, answer)
 
         return False
     # Кулдаун прошёл
-    database.change(message.date, 'time', 'cooldown', ('person_id', message.from_user.id),
+    database.change(message.date, 'time', 'cooldown', ('person_id', person_id),
                     ('command', command), ('chat_id', message.chat.id))
     return True
 
@@ -759,6 +765,7 @@ def create_system(message, system_id, database):
         system_id,
         0,  # money in the system
         0,  # admin places of the system
+        0,  # entrance cooldown
         1,  # standard commands
         1,  # erotic commands
         1,  # boss commands
