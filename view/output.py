@@ -75,6 +75,22 @@ def send_document(chat_id, data, **kwargs):
 
 @handle_errors
 @LOG.wrap
+def send_voice(chat_id, voice, **kwargs):
+    """Send a voice
+    :arg chat_id
+    :arg voice
+    :key caption
+    :key duration
+    :key parse_mode
+    :key reply_to_message_id
+    :key reply_markup
+    :key disable_notification
+    :key timeout"""
+    return BOT.send_voice(chat_id, voice, **kwargs)
+
+
+@handle_errors
+@LOG.wrap
 def reply(message, message_text, **kwargs):
     """Reply to a message
     :arg message: message bot replies to
@@ -203,3 +219,11 @@ def get_chat(chat_id):
 def get_me():
     """ Get information about bot """
     return BOT.get_me()
+
+
+@handle_errors
+@LOG.wrap
+def get_file(file_id: int):
+    """Get basic infor about a file and prepare it for downloading
+    :arg file_id: id of the file"""
+    return BOT.get_file(file_id)
