@@ -620,9 +620,20 @@ def rights_handler(message):
 def dick_cheek_punch_handler(message):
     """For punching someone's cheek with your dick"""
     if config_func.is_correct_message(message) and config_func.in_mf(message, 'standard_commands'):
-        if config_func.cooldown(message, 'dick_punch'):
+        if config_func.cooldown(message, 'dick_punch', 60):
             person = config_func.Analyzer(message, value_necessary=False).return_target_person(to_self=True)
             standard_commands.dick_cheek_punch(message, person)
+
+
+@BOT.message_handler(commands=['hug'])
+@LOG.wrap
+def hug_handler(message):
+    """For hugs"""
+    if config_func.is_correct_message(message) and config_func.in_mf(message, 'standard_commands'):
+        if config_func.cooldown(message, 'hug', 60):
+            person = config_func.Analyzer(message, value_necessary=False).return_target_person(to_self=True)
+            standard_commands.hug(message, person)
+
 
 
 @BOT.message_handler(commands=['minet', 'french_style_sex', 'blowjob'])

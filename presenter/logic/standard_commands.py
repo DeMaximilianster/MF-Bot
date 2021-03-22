@@ -154,6 +154,15 @@ def dick_cheek_punch(message, person):
               message.from_user.first_name, person.first_name))
 
 
+@LOG.wrap
+def hug(message, person):
+    """For hugs"""
+    if message.from_user.id == person.id:
+        reply(message, "{} обнял(-а) себя любим(ого/ую)".format(person.first_name))
+    else:
+        reply(message, "{} обнял(-а) {}".format(
+            message.from_user.first_name, person.first_name))
+
 
 def minet(message, language):
     """Приносит удовольствие"""
