@@ -103,3 +103,10 @@ def elite(message):
             break
     else:
         submit(message)
+        
+
+@LOG.wrap
+def reset_test(message, person):
+    database = Database()
+    database.remove("basic_logic_tested", ("id", person.id))
+    reply(message, "Предудыщий результат удалён. Пользователь {} может попробовать ещё".format(person.id))

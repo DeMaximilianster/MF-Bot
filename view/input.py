@@ -7,7 +7,7 @@ from presenter.config import config_func
 from presenter.logic import (boss_commands, complicated_commands, reactions, standard_commands,
                              developer_commands)
 from presenter.config import config_var, files_paths
-from presenter.logic.elite import elite
+from presenter.logic.elite import elite, reset_test
 from presenter.logic.start import starter
 from view import output
 
@@ -52,6 +52,17 @@ def elite_handler(message):
         elite(message)
     else:
         output.reply(message, "Напиши мне это в личку, я в чате не буду этим заниматься")
+
+
+@BOT.message_handler(commands=["reset_elite", "reset_test"])
+@LOG.wrap
+def reset_test_handler(message):
+    if message.from_user.id == config_var.CREATOR_ID:
+        person = config_func.Analyzer(message, value_necessary=False).return_target_person(to_self=True)
+        if person:
+            reset_test(message, person)
+    else:
+        output.reply(message, "Это команда только для моего босса")
 
 
 # Админские обычные команды
