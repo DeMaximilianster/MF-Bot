@@ -895,7 +895,8 @@ def database_send_handler(message):
         for file in (
                 files_paths.DATABASE_FILE, files_paths.VOTES_FILE,
                 files_paths.ADAPT_VOTES_FILE, files_paths.MULTI_VOTES_FILE,
-                files_paths.SYSTEMS_FILE, files_paths.STORAGE_FILE):
+                files_paths.SYSTEMS_FILE, files_paths.STORAGE_FILE,
+                files_paths.LOG_FILES[0]):
             file_send = open(file, 'rb')
             output.send_document(message.chat.id, file_send)
             file_send.close()
