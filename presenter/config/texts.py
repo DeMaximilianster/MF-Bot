@@ -3,11 +3,11 @@ MINETS = dict()
 MINETS['Russian'] = {
     'text': ('оаоаоаоаооа мммммм)))))', 'Э, нет, эта кнопка не для тебя', 'Попа чистая?', 'Кусь :3',
              'Открывай рот тогда)', 'О, да, эта кнопка для тебя', '😏🤤',
-             'Одна фелляция\nНикакой фрустрации')
+             'Одна фелляция\nНикакой фрустрации', '*вкалывает ацетат ципротерона*')
 }
 MINETS['English'] = {
     'text': ('oaoaoaoaooa mmmmmm)))))', 'No, this button is not for you', '😏🤤',
-             'So open your mouth)', 'One fellation\nNo frustration')
+             'So open your mouth)', 'One fellation\nNo frustration', '*injects cyproterone acetate*')
 }
 
 JANUARY = {'Russian': 'Январь', 'English': 'January'}
