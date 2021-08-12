@@ -262,7 +262,7 @@ def rank_changer_handler(message):
     """Changes person's rank"""
     if config_func.in_mf(message, command_type=None, or_private=False):
         if config_func.is_suitable(message, message.from_user, 'uber'):
-            person = config_func.Analyzer(message, value_necessary=False).return_target_person(to_self=True)
+            person = config_func.Analyzer(message, value_necessary=False).return_target_person(to_self=False)
             if person:
                 if person.id == message.from_user.id or config_func.rank_superiority(message, person):
                     boss_commands.rank_changer(message, person)
