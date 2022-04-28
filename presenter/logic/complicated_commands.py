@@ -44,6 +44,7 @@ def captcha_completed(call):
                  can_send_messages=True,
                  can_send_other_messages=True,
                  can_send_media_messages=True,
+                 can_send_polls=True,
                  can_add_web_page_previews=True)
         answer_callback(call.id, text='Испытание креветкой пройдено!')
         edit_markup(call.message.chat.id, call.message.message_id)

@@ -150,6 +150,7 @@ def restrict(chat_id, user_id, **kwargs):
     :key until_date
     :key can_send_messages
     :key can_send_media_messages
+    :key can_send_polls
     :key can_send_other_messages
     :key can_add_web_page_previews"""
     return BOT.restrict_chat_member(chat_id, user_id, **kwargs)
