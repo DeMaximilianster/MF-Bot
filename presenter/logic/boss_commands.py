@@ -12,7 +12,8 @@ from presenter.config.config_func import unban_user, is_suitable, \
     get_system_configs, photo_video_gif_get, get_target_message, \
     update_systems_json, create_chat, SystemUpdate, \
     write_storage_json, get_storage_json, get_person, person_link, \
-    person_info_in_html, chat_info_in_html
+    person_info_in_html, chat_info_in_html, is_integer, add_person_to_ban, \
+    code_text_wrapper
 import presenter.config.config_func as cf
 from presenter.config.languages import get_word_object
 from view.output import kick, reply, promote, send, forward, restrict
@@ -225,6 +226,32 @@ def ban(message, person, comment=True, unban_then=False):
             person_info_in_html(person) + ', но сразу и разбан' * unban_then), parse_mode='HTML')
     if unban_then:
         unban_user(person)
+
+
+@LOG.wrap
+def ban_unknown(message):
+    database = Database()
+    chat = database.get('chats', ('id', message.chat.id))
+    system = chat['system']
+    chat_configs = get_system_configs(system)
+    person_id = " ".join(message.text.split()[1:])
+    if not person_id:
+        reply(message, "Напишите айди после названия команды, например '/ban_unknown 1234567890'")
+    elif not is_integer(person_id):
+        reply(message, "Напишите только айди после названия команды, например '/ban_unknown 1234567890'")
+    elif database.get("members", ("system", system), ("id", person_id)):
+        reply(message, "Этот человек уже есть в базе данных. Используйте /ban")
+    else:
+        add_person_to_ban(person_id, system, database, chat_configs)
+        for chat in full_chat_list(database, system):
+            kick(chat['id'], person_id)
+        for channel in channel_list(database):
+            kick(channel['id'], person_id)
+        adm_place = admin_place(message, database)
+        if adm_place:
+            send(adm_place, "ID {} получил принудительный бан".format(code_text_wrapper(person_id),
+                                                          parse_mode='HTML'))
+        reply(message, "Выдан принудительный бан")
 
 
 @LOG.wrap

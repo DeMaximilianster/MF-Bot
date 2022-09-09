@@ -464,6 +464,13 @@ def add_person(message, person, system, database, system_configs):
     database.append(person_entry, 'members')
 
 
+def add_person_to_ban(person_id, system, database, system_configs):
+    rank = system_configs['ranks'][0]
+    person_entry = (person_id, system, "None", "Unknown",
+                    rank, 0, 0, 0, 0, 0)
+    database.append(person_entry, 'members')
+
+
 def get_person(message, person, system: str, database: Database, system_configs=None) -> dict:
     """Get entry about some person in some system, create if there wasn't"""
     person_entry = database.get('members', ('id', person.id), ('system', system))

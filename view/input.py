@@ -219,6 +219,14 @@ def ban_handler(message):
             boss_commands.ban(message, person)
 
 
+@BOT.message_handler(commands=['ban_unknown'])
+@LOG.wrap
+def ban_unknown_handler(message):
+    if config_func.in_mf(message, 'boss_commands', or_private=False) and config_func.is_suitable(
+            message, message.from_user, 'boss'):
+        boss_commands.ban_unknown(message)
+
+
 @BOT.message_handler(commands=['kick'])
 @LOG.wrap
 def kick_handler(message):
