@@ -493,6 +493,20 @@ def del_chat(message):
         database.remove('chats', ('id', chat))
         reply(message, "Чат успешно удалён")
 
+@LOG.wrap
+def get_system_chats(message):
+    """ Gets list of chats inside of the given system """
+    database = Database()
+    system_id = message.text.split()[-1]
+    if database.get('systems', ('id', system_id)) is None:
+        reply(message, "Такой системы не существует")
+        return
+    
+    chats = database.get_many('chats', ('system', system_id))
+    if chats is None:
+        reply(message, "В этой системе нет чатов")
+    else:
+        reply(message, f"Чаты в системе с ID {system_id}:\n*" + "\n*".join(f"{chat['name']} (ID :{chat['id']})" for chat in chats))
 
 @LOG.wrap
 def add_admin_place(message):

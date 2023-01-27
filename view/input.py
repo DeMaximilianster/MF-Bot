@@ -318,6 +318,14 @@ def del_chat_handler(message):
         boss_commands.del_chat(message)
 
 
+@BOT.message_handler(commands=['get_system_chats'])
+@LOG.wrap
+def get_system_chats_handler(message):
+    """Returns the list of chats in the system"""
+    if config_func.in_mf(message, command_type=None, or_private=True) and config_func.is_suitable(
+            message, message.from_user, "chat_changer"):
+        boss_commands.get_system_chats(message)
+
 @BOT.message_handler(commands=['admin_place'])
 @LOG.wrap
 def add_admin_place_handler(message):
